@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DMT Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#f3e9d8;
@@ -18,7 +23,7 @@
   *{box-sizing:border-box;}
   html,body{
     margin:0;padding:0;height:100%;
-    font-family:'Georgia','Times New Roman',serif;
+    font-family:'IM Fell English','Georgia','Times New Roman',serif;
     color:var(--ink);
     background:#111;
     overflow:hidden;
@@ -88,13 +93,7 @@
     text-align:center;
   }
   .landing-glow{
-    position:absolute;
-    inset:0;
-    background:
-      repeating-radial-gradient(circle at 15% 30%, rgba(120,40,40,.18) 0 2px, transparent 2px 60px),
-      repeating-radial-gradient(circle at 85% 70%, rgba(60,90,50,.18) 0 2px, transparent 2px 70px);
-    opacity:.6;
-    pointer-events:none;
+    display:none;
   }
   .landing-slogan{
     color:#f0e6c8;
@@ -107,8 +106,9 @@
   }
   .landing-title{
     color:#fffaf0;
+    font-family:'Berkshire Swash',Georgia,serif;
     font-size:clamp(42px,8vw,88px);
-    letter-spacing:6px;
+    letter-spacing:4px;
     text-shadow:0 4px 24px rgba(0,0,0,.6), 0 0 40px rgba(255,220,150,.25);
     margin:0 0 46px 0;
     z-index:2;
@@ -251,9 +251,9 @@
   .shelf-title{
     flex-shrink:0;
     color:#f3e6c8;
-    letter-spacing:4px;
-    font-size:15px;
-    text-transform:uppercase;
+    font-family:'Berkshire Swash',Georgia,serif;
+    letter-spacing:1px;
+    font-size:26px;
     margin-bottom:16px;
     text-align:center;
   }
@@ -338,11 +338,16 @@
     opacity:1;
     pointer-events:auto;
   }
+  /* the open-book "cover": a dark leather-look frame with the two cream
+     pages inset inside it, curved on their outer corners, like a real
+     photographed open book rather than one flat wavy sheet */
   .book-spread{
     display:flex;
-    background:var(--parchment);
-    border-radius:6px;
-    box-shadow:0 30px 70px rgba(0,0,0,.6);
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #5c2029 0%, #451721 55%, #2c0e15 100%);
+    border-radius:8px;
+    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4);
     width:min(1180px,96vw);
     height:min(820px,92vh);
     position:relative;
@@ -350,6 +355,7 @@
     transform:scale(.92) translateY(16px);
     transition:transform .3s ease;
     perspective:1800px;
+    padding:30px 22px;
   }
   #screen-category.open .book-spread{
     transform:scale(1) translateY(0);
@@ -358,56 +364,65 @@
     content:"";
     position:absolute;
     top:0;bottom:0;left:50%;
-    width:2px;
-    background:rgba(0,0,0,.15);
-    box-shadow:0 0 12px rgba(0,0,0,.15);
+    width:46px;
+    margin-left:-23px;
+    background:linear-gradient(90deg,
+      transparent, rgba(0,0,0,.4) 40%, rgba(0,0,0,.55) 50%, rgba(0,0,0,.4) 60%, transparent
+    );
+    pointer-events:none;
     z-index:1;
   }
   .page{
     flex:1;
-    padding:48px 44px;
+    min-width:0;
+    padding:40px 36px;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    min-width:0;
+    background:linear-gradient(180deg,#f5ead0,#e9d7ac 55%,#ddc48f);
+    box-shadow:inset 0 0 30px rgba(120,85,35,.15), 0 2px 10px rgba(0,0,0,.35);
   }
   .cat-title{
     position:absolute;
-    top:16px;left:0;right:0;
+    top:38px;
+    width:50%;
     text-align:center;
-    letter-spacing:3px;
-    font-size:13px;
-    text-transform:uppercase;
+    font-family:'Berkshire Swash',Georgia,serif;
+    letter-spacing:1px;
+    font-size:20px;
     color:#7a6a4a;
     z-index:6;
+    pointer-events:none;
   }
+  .cat-title-left{ left:0; }
+  .cat-title-right{ right:0; }
 
   /* page-flip animation for spread prev/next */
   .flip-page{
     position:absolute;
-    top:0;bottom:0;
-    width:50%;
-    padding:48px 44px;
+    top:30px; bottom:30px;
+    width:calc(50% - 22px);
+    padding:40px 36px;
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
     text-align:center;
-    background:var(--parchment);
+    background:linear-gradient(180deg,#f5ead0,#e9d7ac 55%,#ddc48f);
     backface-visibility:hidden;
     box-shadow:0 0 26px rgba(0,0,0,.3);
     z-index:5;
     pointer-events:none;
   }
   .flip-page.right{
-    right:0;
+    right:22px;
     transform-origin:left center;
     animation:flipNext .5s ease forwards;
   }
   .flip-page.left{
-    left:0;
+    left:22px;
     transform-origin:right center;
     animation:flipPrev .5s ease forwards;
   }
@@ -445,8 +460,8 @@
     box-shadow:0 10px 20px rgba(0,0,0,.3);
   }
   .proj-name{
-    font-size:18px;
-    font-weight:bold;
+    font-family:'Berkshire Swash',Georgia,serif;
+    font-size:22px;
     margin-bottom:10px;
     color:var(--ink);
   }
@@ -523,32 +538,65 @@
   #screen-project.open .project-window{
     transform:scale(1) translateY(0);
   }
-  .project-nav-top{
-    position:absolute;
-    inset:0;
+  /* project switcher: flanks the whole TV set, kept well away from the
+     screen itself so it never reads as a "switch preview" control */
+  .monitor-row{
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    padding:0 12px;
-    pointer-events:none;
-    z-index:5;
+    gap:18px;
   }
   .project-navbtn{
-    pointer-events:auto;
-    width:38px;height:38px;
+    flex-shrink:0;
+    width:48px;height:48px;
     border-radius:50%;
-    background:rgba(243,233,199,.9);
-    border:2px solid var(--ink);
-    font-size:17px;
+    background:var(--cream);
+    border:3px solid var(--ink);
+    font-size:19px;
     color:var(--ink);
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 4px 10px rgba(0,0,0,.3);
+    box-shadow:0 4px 10px rgba(0,0,0,.35);
     transition:transform .15s ease, background .15s ease;
-    flex-shrink:0;
+    cursor:pointer;
   }
-  .project-navbtn:hover{ background:#fff; transform:scale(1.08); }
+  .project-navbtn:hover{ background:#fff; transform:scale(1.1); }
+
+  /* preview switcher: lives ON the screen, invisible until you hover/touch
+     near the edge, so it reads as "this belongs to the video/image" */
+  .media-nav{
+    position:absolute;
+    top:0; bottom:0;
+    width:18%;
+    min-width:44px;
+    display:flex;
+    align-items:center;
+    border:none;
+    color:#fff;
+    font-size:22px;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+    cursor:pointer;
+    opacity:0;
+    transition:opacity .18s ease;
+    z-index:6;
+  }
+  .media-nav-left{
+    left:0;
+    justify-content:flex-start;
+    padding-left:10px;
+    background:linear-gradient(90deg, rgba(0,0,0,.4), transparent);
+  }
+  .media-nav-right{
+    right:0;
+    justify-content:flex-end;
+    padding-right:10px;
+    background:linear-gradient(270deg, rgba(0,0,0,.4), transparent);
+  }
+  .monitor-screen:hover .media-nav{ opacity:1; }
+  .media-nav:focus-visible{ opacity:1; }
+  @media (hover:none){
+    .media-nav{ opacity:.5; }
+  }
   .overlay-close{
     position:absolute;
     top:12px;right:12px;
@@ -663,6 +711,8 @@
     max-width:640px;
   }
   .project-info h2{
+    font-family:'Berkshire Swash',Georgia,serif;
+    font-size:26px;
     margin:0 0 10px;
     letter-spacing:1px;
   }
@@ -847,6 +897,9 @@
     flex-shrink:0;
   }
   .dev-mini-btn:hover{ background:#3d3d3d; }
+  .dev-mini-btn:disabled{ opacity:.4; cursor:default; }
+  .dev-mini-btn.dev-danger{ background:#4a2222; border-color:#6a3232; color:#f0c8c8; }
+  .dev-mini-btn.dev-danger:hover{ background:#5a2a2a; }
   .dev-cat{
     background:#232325;
     border-radius:6px;
@@ -885,6 +938,16 @@
     margin-bottom:6px;
     text-transform:uppercase;
     letter-spacing:.5px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .dev-proj-label .dev-mini-btn{
+    text-transform:none;
+    letter-spacing:0;
+    padding:3px 8px;
+    font-size:10.5px;
   }
   .dev-footer{
     flex-shrink:0;
@@ -932,6 +995,9 @@
     .intro-body{
       min-height:0;
     }
+    .intro-dots{
+      justify-content:center;
+    }
     .book{
       width:58px;
     }
@@ -941,8 +1007,20 @@
       height:auto;
       max-height:90vh;
       overflow-y:auto;
+      padding:34px 16px;
+      gap:14px;
     }
     .book-spread::before{
+      display:none;
+    }
+    .cat-title-right{
+      display:none;
+    }
+    .cat-title-left{
+      width:100%;
+      left:0;
+    }
+    #pageRight{
       display:none;
     }
     .page{
@@ -950,7 +1028,9 @@
       padding:34px 22px;
     }
     .flip-page{
-      width:100%;
+      top:34px; bottom:34px;
+      left:16px; right:16px;
+      width:auto;
     }
     .proj-desc{
       max-width:none;
@@ -958,8 +1038,19 @@
     .project-window{
       padding:56px 18px 24px;
     }
-    .monitor{
+    .monitor-row{
+      gap:8px;
       width:100%;
+    }
+    .monitor{
+      flex:1;
+      min-width:0;
+      width:auto;
+    }
+    .project-navbtn{
+      width:34px;height:34px;
+      font-size:14px;
+      border-width:2px;
     }
     .gallery-thumb{
       width:52px;height:34px;
@@ -1020,7 +1111,8 @@
     <div class="overlay-backdrop" id="categoryBackdrop"></div>
     <div class="book-spread">
       <button class="overlay-close" id="categoryClose">&times;</button>
-      <div class="cat-title" id="catTitle"></div>
+      <div class="cat-title cat-title-left" id="catTitleLeft"></div>
+      <div class="cat-title cat-title-right" id="catTitleRight"></div>
       <div class="page" id="pageLeft"></div>
       <div class="page" id="pageRight"></div>
       <div class="spread-nav">
@@ -1035,14 +1127,16 @@
     <div class="overlay-backdrop" id="projectBackdrop"></div>
     <div class="project-window">
       <button class="overlay-close" id="projectClose">&times;</button>
-      <div class="monitor">
-        <div class="project-nav-top">
-          <button class="project-navbtn" id="projectPrev">&#10094;</button>
-          <button class="project-navbtn" id="projectNext">&#10095;</button>
+      <div class="monitor-row">
+        <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
+        <div class="monitor">
+          <div class="monitor-screen" id="projectScreen">
+            <div class="play-icon"></div>
+            <button class="media-nav media-nav-left" id="mediaPrev" title="Previous preview" aria-label="Previous preview">&#10094;</button>
+            <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
+          </div>
         </div>
-        <div class="monitor-screen" id="projectScreen">
-          <div class="play-icon"></div>
-        </div>
+        <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
       </div>
       <div class="gallery-strip" id="galleryStrip"></div>
       <div class="project-info">
@@ -1064,13 +1158,14 @@
   <div class="dev-body" id="devBody"></div>
   <div class="dev-footer">
     <button id="devSaveBtn">Save &amp; apply</button>
-    <button id="devExportBtn" class="secondary">Export JSON</button>
+    <button id="devExportBtn" class="secondary">Export data.json</button>
     <label class="secondary" for="devImportInput">Import JSON</label>
     <input type="file" id="devImportInput" accept="application/json" style="display:none">
     <button id="devResetBtn" class="danger">Reset all</button>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ================= default content ================= */
 const DEFAULTS = {
@@ -1111,13 +1206,74 @@ const DEFAULTS = {
 /* ================= storage ================= */
 const STORAGE_KEY = 'dmtShowcaseSiteData';
 function cloneDefaults(){ return JSON.parse(JSON.stringify(DEFAULTS)); }
-function loadSiteData(){
+
+// Loading priority:
+// 1. localStorage — this browser's in-progress edits (from the dev panel), if any
+// 2. data.json — the "published" content, hosted next to index.html, same for every visitor
+// 3. built-in DEFAULTS — used if neither of the above is available yet
+async function loadSiteData(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch(e){ console.warn('Could not load saved data, using defaults', e); }
+  } catch(e){ console.warn('Could not read saved data, trying data.json next', e); }
+  try {
+    const res = await fetch('data.json', { cache: 'no-store' });
+    if (res.ok) return await res.json();
+  } catch(e){ /* no data.json published yet, or opened via file:// where fetch is blocked */ }
   return cloneDefaults();
 }
+
+// Optional: project name/description/video/preview can also come from a spreadsheet
+// called "projects.xlsx" placed next to index.html. Expected columns (any order):
+//   Category | Project Name | Description | Video URL | Images
+// "Category" must match one of the existing category names (case-insensitive).
+// "Images" is optional: comma-separated image filenames/URLs, e.g. images/proj1.jpg, images/proj1b.jpg
+// If projects.xlsx is present and readable, it replaces the projects list for any
+// category it mentions (overriding both defaults and Developer Mode edits for those rows).
+async function loadProjectsFromExcel(){
+  if (typeof XLSX === 'undefined') return null;
+  try {
+    const res = await fetch('projects.xlsx', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(sheet, { defval: '' });
+  } catch(e){
+    console.warn('No projects.xlsx found, or it failed to parse — using existing project data', e);
+    return null;
+  }
+}
+function getCol(row, ...names){
+  for (const n of names){
+    for (const key of Object.keys(row)){
+      if (key.trim().toLowerCase() === n.toLowerCase()) return String(row[key]).trim();
+    }
+  }
+  return '';
+}
+function applyExcelRowsToSiteData(rows){
+  if (!rows || !rows.length) return;
+  const byCategory = {};
+  rows.forEach(row => {
+    const catName = getCol(row, 'Category');
+    const projName = getCol(row, 'Project Name', 'Project', 'Name');
+    if (!catName || !projName) return;
+    const imagesRaw = getCol(row, 'Images', 'Image URLs', 'Image');
+    const proj = {
+      name: projName,
+      desc: getCol(row, 'Description', 'Desc'),
+      videoUrl: getCol(row, 'Video URL', 'Video') || null,
+      gallery: imagesRaw ? imagesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
+    };
+    (byCategory[catName.toLowerCase()] ||= []).push(proj);
+  });
+  siteData.categories.forEach(cat => {
+    const rows = byCategory[cat.name.toLowerCase()];
+    if (rows && rows.length) cat.projects = rows;
+  });
+}
+
 function saveSiteData(){
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
@@ -1126,7 +1282,8 @@ function saveSiteData(){
   }
 }
 
-let siteData = loadSiteData();
+// start with defaults immediately so nothing crashes while the real data loads
+let siteData = cloneDefaults();
 
 /* ================= state ================= */
 let introIndex = 0;
@@ -1328,15 +1485,22 @@ function closeCategory(){
   closeProject();
   $('screen-category').classList.remove('open');
 }
+// narrow screens show one project page at a time instead of a two-page spread
+function isMobileSpread(){
+  return window.matchMedia('(max-width: 700px)').matches;
+}
 function renderSpread(){
   const cat = siteData.categories[currentCat];
-  $('catTitle').textContent = cat.name;
+  $('catTitleLeft').textContent = cat.name;
+  $('catTitleRight').textContent = cat.name;
+  const mobile = isMobileSpread();
+  const step = mobile ? 1 : 2;
   const left = cat.projects[spreadStart];
-  const right = cat.projects[spreadStart + 1];
+  const right = mobile ? null : cat.projects[spreadStart + 1];
   $('pageLeft').innerHTML = pageHTML(left);
   $('pageRight').innerHTML = right ? pageHTML(right) : '';
   $('spreadPrev').disabled = spreadStart === 0;
-  $('spreadNext').disabled = spreadStart + 2 >= cat.projects.length;
+  $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
 
   document.querySelectorAll('.proj-thumb').forEach(el => {
     el.addEventListener('click', () => {
@@ -1368,7 +1532,10 @@ function pageHTML(proj){
 function flipSpread(direction){
   const spreadEl = document.querySelector('.book-spread');
   const isNext = direction === 'next';
-  const sourceEl = isNext ? $('pageRight') : $('pageLeft');
+  const mobile = isMobileSpread();
+  // on mobile only pageLeft is ever shown (single page at a time), so that's
+  // always the page being flipped away, regardless of direction
+  const sourceEl = mobile ? $('pageLeft') : (isNext ? $('pageRight') : $('pageLeft'));
   if (!sourceEl.innerHTML.trim()) return; // nothing on that page to flip
 
   // snapshot the current page as a floating clone, then swap the real
@@ -1379,7 +1546,7 @@ function flipSpread(direction){
   spreadEl.appendChild(clone);
   clone.addEventListener('animationend', () => clone.remove(), { once:true });
 
-  spreadStart += isNext ? 2 : -2;
+  spreadStart += isNext ? (mobile ? 1 : 2) : (mobile ? -1 : -2);
   renderSpread();
 }
 $('spreadPrev').addEventListener('click', () => flipSpread('prev'));
@@ -1471,7 +1638,18 @@ function renderProject(){
   const multi = projects.length > 1;
   $('projectPrev').style.display = multi ? 'flex' : 'none';
   $('projectNext').style.display = multi ? 'flex' : 'none';
+  const mediaMulti = items.length > 1;
+  $('mediaPrev').style.display = mediaMulti ? 'flex' : 'none';
+  $('mediaNext').style.display = mediaMulti ? 'flex' : 'none';
   renderGalleryStrip(items);
+}
+function goToMedia(delta){
+  const { catIdx, projIdx } = currentProjectRef;
+  const proj = siteData.categories[catIdx].projects[projIdx];
+  const items = getMediaItems(proj);
+  if (items.length < 2) return;
+  galleryIndex = (galleryIndex + delta + items.length) % items.length;
+  renderProject();
 }
 function renderGalleryStrip(items){
   const strip = $('galleryStrip');
@@ -1513,6 +1691,8 @@ $('projectClose').addEventListener('click', closeProject);
 $('projectBackdrop').addEventListener('click', closeProject);
 $('projectPrev').addEventListener('click', () => goToProject(-1));
 $('projectNext').addEventListener('click', () => goToProject(1));
+$('mediaPrev').addEventListener('click', () => goToMedia(-1));
+$('mediaNext').addEventListener('click', () => goToMedia(1));
 document.addEventListener('keydown', (e) => {
   if ($('devPanel').classList.contains('open')) return;
   if ($('screen-project').classList.contains('open')){
@@ -1523,6 +1703,28 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'Escape' && $('screen-category').classList.contains('open')) closeCategory();
 });
+
+// swipe to switch between previews (image/video) on touch devices — works
+// for image previews; video iframes capture their own touch events, so on
+// videos the on-screen arrows (visible via the @media(hover:none) rule
+// above) are the reliable way to switch on mobile
+(() => {
+  const screenEl = $('projectScreen');
+  let touchStartX = 0, touchStartY = 0;
+  screenEl.addEventListener('touchstart', (e) => {
+    if (!e.touches.length) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  screenEl.addEventListener('touchend', (e) => {
+    if (!e.changedTouches.length) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      goToMedia(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+})();
 
 /* ---------------- video link helpers (YouTube / Vimeo) ---------------- */
 function parseYouTubeId(url){
@@ -1660,7 +1862,10 @@ function renderDevPanel(){
             </div>
             ${cat.projects.map((proj, pi) => `
               <div class="dev-proj">
-                <div class="dev-proj-label">Project ${pi + 1}</div>
+                <div class="dev-proj-label">
+                  <span>Project ${pi + 1}</span>
+                  <button class="dev-mini-btn dev-danger devRemoveProjectBtn" data-cat="${ci}" data-proj="${pi}" ${cat.projects.length <= 1 ? 'disabled' : ''}>Remove</button>
+                </div>
                 <div class="dev-field">
                   <label>Name</label>
                   <input type="text" class="devProjName" data-cat="${ci}" data-proj="${pi}" value="${escapeAttr(proj.name)}">
@@ -1680,17 +1885,22 @@ function renderDevPanel(){
                 </div>
               </div>
             `).join('')}
+            <button class="dev-mini-btn devAddProjectBtn" data-cat="${ci}" style="margin-top:6px;">+ Add project</button>
           </div>
         </div>
       `).join('')}
     </div>
 
     <div class="dev-note">
-      Images are resized and saved in this browser only (localStorage). To make
-      changes visible to everyone on the live site, click "Export JSON" and send
-      the file back so it can be built into the actual page — or place image
-      files in an "images" folder next to index.html and reference them by
-      filename instead of uploading here.
+      Changes here are saved in this browser only, so other devices won't see them yet.
+      To publish for everyone: click "Export data.json" to download the file, then in your
+      GitHub repo upload it next to index.html (use "Add file → Upload files", same folder,
+      same name — it will ask to replace the old one, confirm). Every visitor's browser will
+      then automatically load your latest content, even on a different device.
+      <br><br>
+      Tip: project name, description, video link and screenshots can also be filled in from a
+      spreadsheet instead of typed here — see the "projects.xlsx" template. If that file exists
+      next to index.html, it overrides the project text/preview for any category it lists.
     </div>
   `;
 
@@ -1808,7 +2018,40 @@ function wireDevPanel(){
       e.target.value = '';
     });
   });
+  document.querySelectorAll('.devAddProjectBtn').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const ci = parseInt(e.target.dataset.cat, 10);
+      siteData.categories[ci].projects.push({
+        name: `${siteData.categories[ci].name} — New Project`,
+        desc: '',
+        videoUrl: null,
+        gallery: []
+      });
+      rerenderDevPanelKeepingOpenCats();
+    });
+  });
+  document.querySelectorAll('.devRemoveProjectBtn').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      if (siteData.categories[ci].projects.length <= 1) return; // keep at least one project
+      if (!confirm('Remove this project? This cannot be undone until you reload without saving.')) return;
+      siteData.categories[ci].projects.splice(pi, 1);
+      rerenderDevPanelKeepingOpenCats();
+    });
+  });
+
   wireGalleryRemoveButtons();
+}
+
+// re-render the dev panel body after the project list changes, without
+// collapsing whichever category the user currently has open
+function rerenderDevPanelKeepingOpenCats(){
+  const openCats = Array.from(document.querySelectorAll('.dev-cat.open')).map(el => el.dataset.cat);
+  renderDevPanel();
+  openCats.forEach(ci => {
+    const el = document.querySelector(`.dev-cat[data-cat="${ci}"]`);
+    if (el) el.classList.add('open');
+  });
 }
 
 function galleryListHTML(ci, pi){
@@ -1858,7 +2101,7 @@ $('devExportBtn').addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'dmt-showcase-data.json';
+  a.download = 'data.json';
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -1887,7 +2130,14 @@ $('devResetBtn').addEventListener('click', () => {
 });
 
 /* ================= init ================= */
-applyBasics();
+(async () => {
+  siteData = await loadSiteData();
+  try {
+    const rows = await loadProjectsFromExcel();
+    if (rows) applyExcelRowsToSiteData(rows);
+  } catch(e){ console.warn('Could not apply projects.xlsx', e); }
+  applyBasics();
+})();
 </script>
 </body>
 </html>
