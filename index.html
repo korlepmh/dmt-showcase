@@ -79,17 +79,12 @@
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    /* To use a real background photo/art: drop the image next to index.html
-       (e.g. an "images" folder) and uncomment the url(...) line below,
-       pointing it at your file. The gradients on top keep the text readable
-       over any image. */
     background:
       linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)),
       radial-gradient(ellipse at 50% 20%, rgba(255,225,150,.25), transparent 55%),
-      linear-gradient(180deg,#1c2b17 0%, #172318 40%, #0e160f 100%)
-      /* , url('images/landing-bg.jpg') center/cover no-repeat */
-      ;
-    background-blend-mode:normal;
+      linear-gradient(180deg,#1c2b17 0%, #172318 40%, #0e160f 100%);
+    background-size:cover;
+    background-position:center;
     text-align:center;
   }
   .landing-glow{
@@ -138,6 +133,10 @@
     flex-shrink:0;
     position:relative;
     animation:bob 2.4s ease-in-out infinite;
+  }
+  .mascot img{
+    width:100%;height:100%;
+    object-fit:contain;
   }
   @keyframes bob{
     0%,100%{ transform:translateY(0); }
@@ -301,7 +300,11 @@
     writing-mode:vertical-rl;
     text-orientation:mixed;
     font-size:13px;
-    box-shadow:0 3px 4px rgba(0,0,0,.35);
+    /* side shadows fake a rounded/curved spine surface */
+    box-shadow:
+      0 3px 4px rgba(0,0,0,.35),
+      inset 16px 0 18px -8px rgba(0,0,0,.65),
+      inset -16px 0 18px -8px rgba(0,0,0,.65);
     letter-spacing:1px;
     color:#fff;
     text-shadow:0 1px 2px rgba(0,0,0,.4);
@@ -314,58 +317,11 @@
   }
   .book:hover{
     transform:rotate(var(--tilt)) translateY(-16px);
-    box-shadow:0 20px 20px -10px rgba(0,0,0,.5);
+    box-shadow:
+      0 20px 20px -10px rgba(0,0,0,.5),
+      inset 16px 0 18px -8px rgba(0,0,0,.65),
+      inset -16px 0 18px -8px rgba(0,0,0,.65);
   }
-  .vslider-wrap{
-    width:34px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    gap:6px;
-    flex-shrink:0;
-  }
-  .vslider-wrap span{
-    color:#c9a86a;
-    font-size:16px;
-    user-select:none;
-  }
-  .vslider-track{
-    width:30px;
-    height:400px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-  }
-  #shelfSlider{
-    width:396px;
-    -webkit-appearance:none;
-    appearance:none;
-    height:6px;
-    border-radius:3px;
-    background:linear-gradient(90deg,#4a2f1c,#6b4326);
-    outline:none;
-    transform:rotate(90deg);
-  }
-  #shelfSlider::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:20px;height:20px;
-    border-radius:50%;
-    background:var(--gold);
-    border:2px solid #2b1c10;
-    cursor:pointer;
-    box-shadow:0 2px 6px rgba(0,0,0,.5);
-  }
-  #shelfSlider::-moz-range-thumb{
-    width:20px;height:20px;
-    border-radius:50%;
-    background:var(--gold);
-    border:2px solid #2b1c10;
-    cursor:pointer;
-  }
-
   /* ---------- CATEGORY SPREAD (overlay window on top of the shelf) ---------- */
   #screen-category{
     position:fixed;
@@ -387,8 +343,8 @@
     background:var(--parchment);
     border-radius:6px;
     box-shadow:0 30px 70px rgba(0,0,0,.6);
-    width:min(920px,92vw);
-    min-height:520px;
+    width:min(1180px,96vw);
+    height:min(820px,92vh);
     position:relative;
     overflow:hidden;
     transform:scale(.92) translateY(16px);
@@ -409,11 +365,13 @@
   }
   .page{
     flex:1;
-    padding:38px 30px;
+    padding:48px 44px;
     display:flex;
     flex-direction:column;
     align-items:center;
+    justify-content:center;
     text-align:center;
+    min-width:0;
   }
   .cat-title{
     position:absolute;
@@ -431,10 +389,11 @@
     position:absolute;
     top:0;bottom:0;
     width:50%;
-    padding:38px 30px;
+    padding:48px 44px;
     display:flex;
     flex-direction:column;
     align-items:center;
+    justify-content:center;
     text-align:center;
     background:var(--parchment);
     backface-visibility:hidden;
@@ -465,9 +424,10 @@
     aspect-ratio:16/10;
     border-radius:4px;
     border:2px solid var(--ink);
-    background:
-      linear-gradient(135deg, rgba(255,255,255,.15), transparent),
-      var(--thumb-color, #567);
+    background-color:#567;
+    background-image:linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+    background-size:cover;
+    background-position:center;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -485,15 +445,16 @@
     box-shadow:0 10px 20px rgba(0,0,0,.3);
   }
   .proj-name{
-    font-size:15px;
+    font-size:18px;
     font-weight:bold;
-    margin-bottom:8px;
+    margin-bottom:10px;
     color:var(--ink);
   }
   .proj-desc{
-    font-size:12.5px;
-    line-height:1.6;
+    font-size:14px;
+    line-height:1.65;
     color:#5a4f3c;
+    max-width:440px;
   }
   .spread-nav{
     position:absolute;
@@ -625,10 +586,15 @@
   .monitor-screen{
     aspect-ratio:16/9;
     border-radius:4px;
-    background:linear-gradient(135deg, rgba(255,255,255,.12), transparent), var(--thumb-color,#456);
+    overflow:hidden;
+    background-color:#456;
+    background-image:linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+    background-size:cover;
+    background-position:center;
     display:flex;
     align-items:center;
     justify-content:center;
+    position:relative;
   }
   .play-icon{
     width:0;height:0;
@@ -637,6 +603,61 @@
     border-left:32px solid rgba(255,255,255,.9);
     filter:drop-shadow(0 0 8px rgba(0,0,0,.4));
   }
+  .gallery-strip{
+    display:none;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+    max-width:min(680px,80vw);
+  }
+  .gallery-thumb{
+    width:64px;height:40px;
+    border-radius:4px;
+    border:2px solid rgba(43,33,24,.4);
+    background-size:cover;
+    background-position:center;
+    background-color:#8a7a5c;
+    cursor:pointer;
+    opacity:.75;
+    transition:opacity .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .gallery-thumb:hover{ opacity:1; transform:translateY(-2px); }
+  .gallery-thumb.active{
+    opacity:1;
+    border-color:var(--accent);
+  }
+  .video-thumb{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .gallery-play{
+    color:#fff;
+    font-size:11px;
+    text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  .video-fallback{
+    color:#f0e6c8;
+    font-size:14px;
+    text-align:center;
+    text-decoration:underline;
+    padding:0 20px;
+  }
+  .watch-link{
+    position:absolute;
+    left:50%;
+    bottom:10px;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.65);
+    color:#fff;
+    font-size:11px;
+    padding:5px 10px;
+    border-radius:999px;
+    text-decoration:none;
+    z-index:2;
+  }
+  .watch-link:hover{ background:rgba(0,0,0,.85); }
   .project-info{
     text-align:center;
     max-width:640px;
@@ -654,6 +675,296 @@
     display:flex;
     gap:14px;
   }
+
+  /* ---------- DEVELOPER MODE ---------- */
+  #devToggleBtn{
+    position:fixed;
+    right:18px;bottom:18px;
+    z-index:2000;
+    width:46px;height:46px;
+    border-radius:50%;
+    background:#222;
+    color:#eee;
+    border:2px solid #555;
+    font-size:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.5);
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  #devToggleBtn:hover{ background:#333; }
+  #devPanel{
+    position:fixed;
+    top:0;right:0;bottom:0;
+    width:min(420px,92vw);
+    background:#1c1c1e;
+    color:#e8e8e8;
+    z-index:1999;
+    box-shadow:-8px 0 24px rgba(0,0,0,.5);
+    transform:translateX(100%);
+    transition:transform .28s ease;
+    display:flex;
+    flex-direction:column;
+    font-family:'Segoe UI',Arial,sans-serif;
+  }
+  #devPanel.open{ transform:translateX(0); }
+  .dev-header{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px;
+    border-bottom:1px solid #333;
+  }
+  .dev-header h2{
+    font-size:15px;
+    margin:0;
+    letter-spacing:.5px;
+  }
+  .dev-header button{
+    background:none;
+    border:none;
+    color:#aaa;
+    font-size:20px;
+    cursor:pointer;
+  }
+  .dev-body{
+    flex:1;
+    overflow-y:auto;
+    padding:14px 18px 100px;
+  }
+  .dev-section{
+    margin-bottom:22px;
+    padding-bottom:18px;
+    border-bottom:1px solid #2c2c2e;
+  }
+  .dev-section h3{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:#9a9a9a;
+    margin:0 0 10px;
+  }
+  .dev-field{
+    margin-bottom:10px;
+  }
+  .dev-field label{
+    display:block;
+    font-size:11.5px;
+    color:#aaa;
+    margin-bottom:4px;
+  }
+  .dev-field input[type=text],
+  .dev-field textarea{
+    width:100%;
+    background:#2a2a2c;
+    border:1px solid #444;
+    color:#eee;
+    border-radius:5px;
+    padding:7px 9px;
+    font-size:13px;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .dev-field textarea{ min-height:52px; }
+  .dev-field input[type=file]{
+    font-size:12px;
+    color:#ccc;
+    width:100%;
+  }
+  .dev-field input[type=color]{
+    width:44px;height:28px;
+    border:1px solid #444;
+    border-radius:4px;
+    background:none;
+    padding:0;
+    vertical-align:middle;
+  }
+  .dev-img-preview{
+    width:100%;
+    height:70px;
+    border-radius:5px;
+    border:1px solid #444;
+    background-size:cover;
+    background-position:center;
+    background-color:#2a2a2c;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#666;
+    font-size:11px;
+  }
+  .dev-gallery-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:6px;
+  }
+  .dev-gallery-empty{
+    font-size:11px;
+    color:#666;
+    padding:6px 0;
+  }
+  .dev-gallery-item{
+    position:relative;
+    width:56px;height:40px;
+    border-radius:4px;
+    border:1px solid #444;
+    background-size:cover;
+    background-position:center;
+    background-color:#2a2a2c;
+  }
+  .dev-gallery-remove{
+    position:absolute;
+    top:-6px;right:-6px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:#6e2c2c;
+    color:#fff;
+    border:none;
+    font-size:11px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .dev-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .dev-mini-btn{
+    background:#333;
+    color:#ddd;
+    border:1px solid #4a4a4a;
+    border-radius:4px;
+    padding:5px 10px;
+    font-size:11.5px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .dev-mini-btn:hover{ background:#3d3d3d; }
+  .dev-cat{
+    background:#232325;
+    border-radius:6px;
+    padding:10px 12px;
+    margin-bottom:10px;
+  }
+  .dev-cat-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .dev-cat-head .dev-chevron{
+    transition:transform .15s ease;
+    color:#888;
+    font-size:11px;
+  }
+  .dev-cat.open .dev-chevron{ transform:rotate(90deg); }
+  .dev-cat-body{
+    display:none;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid #333;
+  }
+  .dev-cat.open .dev-cat-body{ display:block; }
+  .dev-proj{
+    background:#1c1c1e;
+    border-radius:5px;
+    padding:9px 10px;
+    margin-top:8px;
+  }
+  .dev-proj-label{
+    font-size:11px;
+    color:#8a8a8a;
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .dev-footer{
+    flex-shrink:0;
+    padding:12px 18px;
+    border-top:1px solid #333;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    background:#1c1c1e;
+  }
+  .dev-footer button, .dev-footer label{
+    flex:1 1 auto;
+    text-align:center;
+    background:#2f6f4f;
+    color:#fff;
+    border:none;
+    border-radius:5px;
+    padding:9px 8px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .dev-footer .secondary{ background:#333; }
+  .dev-footer .danger{ background:#6e2c2c; }
+  .dev-note{
+    font-size:11px;
+    color:#888;
+    line-height:1.5;
+    margin-top:10px;
+  }
+
+  /* ---------- MOBILE / NARROW SCREENS ---------- */
+  @media (max-width: 700px){
+    .landing-title{
+      letter-spacing:3px;
+    }
+    .landing-slogan{
+      letter-spacing:3px;
+      padding:0 24px;
+    }
+    .intro-wrap{
+      flex-direction:column;
+      text-align:center;
+      gap:26px;
+    }
+    .intro-body{
+      min-height:0;
+    }
+    .book{
+      width:42px;
+    }
+    .book-spread{
+      flex-direction:column;
+      width:94vw;
+      height:auto;
+      max-height:90vh;
+      overflow-y:auto;
+    }
+    .book-spread::before{
+      display:none;
+    }
+    .page{
+      width:100%;
+      padding:34px 22px;
+    }
+    .flip-page{
+      width:100%;
+    }
+    .proj-desc{
+      max-width:none;
+    }
+    .project-window{
+      padding:56px 18px 24px;
+    }
+    .monitor{
+      width:100%;
+    }
+    .gallery-thumb{
+      width:52px;height:34px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -662,8 +973,8 @@
   <!-- LANDING -->
   <section id="screen-landing" class="screen active">
     <div class="landing-glow"></div>
-    <div class="landing-slogan">Your Slogan Here</div>
-    <h1 class="landing-title">DMT SHOWCASE</h1>
+    <div class="landing-slogan" id="landingSlogan">Decades Imagination, Magic Unfolded</div>
+    <h1 class="landing-title" id="landingTitle">DMT SHOWCASE</h1>
     <button class="btn" id="enterBtn">ENTER</button>
   </section>
 
@@ -671,7 +982,7 @@
   <section id="screen-intro" class="screen">
     <button class="btn back-btn" id="introBack">BACK</button>
     <div class="intro-wrap">
-      <div class="mascot">
+      <div class="mascot" id="mascotBox">
         <div class="hat"></div>
         <div class="head">
           <div class="ear l"></div>
@@ -700,13 +1011,6 @@
     <div class="bookcase-wrap">
       <div class="bookcase-viewport">
         <div class="bookcase-stack" id="bookcaseStack"></div>
-      </div>
-      <div class="vslider-wrap">
-        <span>&#9650;</span>
-        <div class="vslider-track">
-          <input type="range" id="shelfSlider" min="0" max="1000" value="0">
-        </div>
-        <span>&#9660;</span>
       </div>
     </div>
   </section>
@@ -740,6 +1044,7 @@
           <div class="play-icon"></div>
         </div>
       </div>
+      <div class="gallery-strip" id="galleryStrip"></div>
       <div class="project-info">
         <h2 id="projectTitle"></h2>
         <p id="projectDesc"></p>
@@ -749,37 +1054,81 @@
 
 </div>
 
+<!-- DEVELOPER MODE: add images / edit text without touching code -->
+<button id="devToggleBtn" title="Developer mode">&#9881;</button>
+<div id="devPanel">
+  <div class="dev-header">
+    <h2>Developer mode</h2>
+    <button id="devCloseBtn">&times;</button>
+  </div>
+  <div class="dev-body" id="devBody"></div>
+  <div class="dev-footer">
+    <button id="devSaveBtn">Save &amp; apply</button>
+    <button id="devExportBtn" class="secondary">Export JSON</button>
+    <label class="secondary" for="devImportInput">Import JSON</label>
+    <input type="file" id="devImportInput" accept="application/json" style="display:none">
+    <button id="devResetBtn" class="danger">Reset all</button>
+  </div>
+</div>
+
 <script>
-/* ---------------- placeholder data ---------------- */
-const introSlides = [
-  "Welcome to the DMT Showcase — a collection of projects built by Digital Media Technology students across game development, animation, VR, and more.",
-  "Every book on the shelf ahead represents a category of work. Pick one up to browse the projects inside.",
-  "Ready to explore? Head to the library and click a spine to begin."
-];
-
-// To use a real image for a book spine, add an "image" field pointing at your
-// file, e.g. { name:"Board Games", color:"#3c6e5c", image:"images/board-games-spine.jpg" }.
-// "color" is still used as a fallback/tint while the image loads or if it's missing.
-const categories = [
-  { name: "Final Year Project", color: "#8a3b2e" },
-  { name: "Board Games", color: "#3c6e5c" },
-  { name: "Game Environment", color: "#3a5a8c" },
-  { name: "Game Development", color: "#8c6b3a" },
-  { name: "Embedded Game Dev", color: "#6b3a8c" },
-  { name: "Online Game Dev", color: "#3a8c7a" },
-  { name: "Game Engine Design", color: "#8c3a5e" },
-  { name: "VR Experience", color: "#4a4a4a" },
-  { name: "Mobile Application", color: "#2e5f8a" }
-].map((cat, ci) => ({
-  ...cat,
-  projects: [1,2,3].map(n => ({
-    name: `${cat.name} — Project ${n}`,
-    desc: "Placeholder description of this student project. Replace with the real summary, tools used, and team credits.",
-    color: cat.color
+/* ================= default content ================= */
+const DEFAULTS = {
+  slogan: "Decades Imagination, Magic Unfolded",
+  title: "DMT SHOWCASE",
+  landingBg: null,
+  mascotImg: null,
+  introSlides: [
+    "Welcome to the DMT Showcase — a collection of projects built by Digital Media Technology students across game development, animation, VR, and more.",
+    "Every book on the shelf ahead represents a category of work. Pick one up to browse the projects inside.",
+    "Ready to explore? Head to the library and click a spine to begin."
+  ],
+  categories: [
+    { name: "Board Game", color: "#60241e", big: false, image: null },
+    { name: "Audio Visual Language", color: "#95271d", big: false, image: null },
+    { name: "2D Animation", color: "#b34a44", big: false, image: null },
+    { name: "Game Development", color: "#2f2fe4", big: false, image: null },
+    { name: "3D Modelling", color: "#e77b49", big: false, image: null },
+    { name: "Virtual Reality (VR)", color: "#162e93", big: false, image: null },
+    { name: "Embedded Game Development", color: "#1a1953", big: false, image: null },
+    { name: "Non-Linear Editing (NLE)", color: "#60241e", big: false, image: null },
+    { name: "3D Animation", color: "#95271d", big: false, image: null },
+    { name: "Online Game Development", color: "#2f2fe4", big: false, image: null },
+    { name: "Augmented Reality (AR)", color: "#162e93", big: false, image: null },
+    { name: "Game Engine Design", color: "#1a1953", big: false, image: null },
+    { name: "Final Year Project (FYP)", color: "#ffc349", big: true, image: null }
+  ].map(cat => ({
+    ...cat,
+    projects: [1,2,3].map(n => ({
+      name: `${cat.name} — Project ${n}`,
+      desc: "Placeholder description of this student project. Replace with the real summary, tools used, and team credits.",
+      videoUrl: null,
+      gallery: []
+    }))
   }))
-}));
+};
 
-/* ---------------- state ---------------- */
+/* ================= storage ================= */
+const STORAGE_KEY = 'dmtShowcaseSiteData';
+function cloneDefaults(){ return JSON.parse(JSON.stringify(DEFAULTS)); }
+function loadSiteData(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){ console.warn('Could not load saved data, using defaults', e); }
+  return cloneDefaults();
+}
+function saveSiteData(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+  } catch(e){
+    alert('Could not save — your browser storage may be full. Try smaller images.');
+  }
+}
+
+let siteData = loadSiteData();
+
+/* ================= state ================= */
 let introIndex = 0;
 let currentCat = null;
 let spreadStart = 0;
@@ -792,6 +1141,36 @@ function showScreen(id){
   $(id).classList.add('active');
 }
 
+/* ================= apply site-wide basics ================= */
+function applyBasics(){
+  $('landingSlogan').textContent = siteData.slogan;
+  $('landingTitle').textContent = siteData.title;
+  const landing = $('screen-landing');
+  if (siteData.landingBg){
+    landing.style.backgroundImage =
+      `linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)), url('${siteData.landingBg}')`;
+  } else {
+    landing.style.backgroundImage = '';
+  }
+  const mascotBox = $('mascotBox');
+  if (siteData.mascotImg){
+    mascotBox.innerHTML = `<img src="${siteData.mascotImg}" alt="mascot">`;
+  } else if (!mascotBox.querySelector('.hat')){
+    mascotBox.innerHTML = `
+      <div class="hat"></div>
+      <div class="head">
+        <div class="ear l"></div>
+        <div class="ear r"></div>
+        <div class="visor"></div>
+      </div>
+      <div class="body">
+        <div class="arm l"></div>
+        <div class="arm r"></div>
+        <div class="core"></div>
+      </div>`;
+  }
+}
+
 /* ---------------- landing ---------------- */
 $('enterBtn').addEventListener('click', () => {
   introIndex = 0;
@@ -801,21 +1180,21 @@ $('enterBtn').addEventListener('click', () => {
 
 /* ---------------- intro ---------------- */
 function renderIntro(){
-  $('introBody').textContent = introSlides[introIndex];
+  $('introBody').textContent = siteData.introSlides[introIndex];
   const dots = $('introDots');
   dots.innerHTML = '';
-  introSlides.forEach((_, i) => {
+  siteData.introSlides.forEach((_, i) => {
     const d = document.createElement('span');
     if (i === introIndex) d.classList.add('active');
     dots.appendChild(d);
   });
-  $('nextBtn').textContent = introIndex === introSlides.length - 1 ? 'ENTER LIBRARY' : 'NEXT';
+  $('nextBtn').textContent = introIndex === siteData.introSlides.length - 1 ? 'ENTER LIBRARY' : 'NEXT';
 }
 $('introBack').addEventListener('click', () => {
   showScreen('screen-landing');
 });
 $('nextBtn').addEventListener('click', () => {
-  if (introIndex < introSlides.length - 1){
+  if (introIndex < siteData.introSlides.length - 1){
     introIndex++;
     renderIntro();
   } else {
@@ -853,13 +1232,27 @@ function buildPlatform(group){
     } else {
       b.style.background = cat.color;
     }
-    // vary height so tops look uneven, like real books on a shelf
-    b.style.height = (170 + Math.round(Math.random() * 40)) + 'px';
-    // slight random lean, like a book left slightly askew
-    b.style.setProperty('--tilt', (Math.random() * 8 - 4).toFixed(1) + 'deg');
-    // random gap around each book for uneven spacing
-    b.style.marginLeft = (6 + Math.round(Math.random() * 22)) + 'px';
-    b.style.marginRight = (6 + Math.round(Math.random() * 22)) + 'px';
+    if (cat.big){
+      // Final Year Project stands out: taller, wider, upright
+      b.style.width = '82px';
+      b.style.height = '260px';
+      b.style.fontSize = '15px';
+      b.style.color = '#4a3410';
+      b.style.textShadow = 'none';
+      b.style.setProperty('--tilt', '0deg');
+    } else {
+      // vary height so tops look uneven, like real books on a shelf
+      b.style.height = (170 + Math.round(Math.random() * 40)) + 'px';
+      // slight random lean, like a book left slightly askew
+      b.style.setProperty('--tilt', (Math.random() * 8 - 4).toFixed(1) + 'deg');
+    }
+    // random gap around each book for uneven spacing (tighter on narrow phones
+    // so a platform's books don't overflow the viewport width)
+    const narrow = window.innerWidth < 480;
+    const gapMax = narrow ? 10 : 28;
+    const gapBase = narrow ? 2 : 4;
+    b.style.marginLeft = (gapBase + Math.round(Math.random() * gapMax)) + 'px';
+    b.style.marginRight = (gapBase + Math.round(Math.random() * gapMax)) + 'px';
     platform.appendChild(b);
   });
   return platform;
@@ -875,7 +1268,7 @@ function renderShelf(){
   const stack = $('bookcaseStack');
   stack.innerHTML = '';
   let globalIndex = 0;
-  const platforms = chunkIntoPlatforms(categories).map(group =>
+  const platforms = chunkIntoPlatforms(siteData.categories).map(group =>
     group.map(cat => ({ cat, index: globalIndex++ }))
   );
 
@@ -900,36 +1293,23 @@ function renderShelf(){
 function setupShelfSlider(){
   const viewport = document.querySelector('.bookcase-viewport');
   const stack = $('bookcaseStack');
-  const slider = $('shelfSlider');
-  const sliderWrap = document.querySelector('.vslider-wrap');
-  const sliderTrack = document.querySelector('.vslider-track');
   // wait a frame so layout/heights are settled
   requestAnimationFrame(() => {
-    // match the vertical slider's length to the (now dynamic) viewport height
-    const vh = viewport.clientHeight;
-    sliderWrap.style.height = vh + 'px';
-    const trackLen = vh - 40; // leave room for the arrow glyphs above/below
-    sliderTrack.style.height = trackLen + 'px';
-    slider.style.width = trackLen + 'px';
-
     const loopHeight = stack.scrollHeight / 2;
-    slider.max = loopHeight;
-    slider.value = 0;
+    let offset = 0;
     stack.style.transform = 'translateY(0px)';
 
     const moveTo = (value) => {
       // wrap around the loop point so scrolling past the bottom
       // seamlessly continues from the (identical) top copy
-      const wrapped = ((value % loopHeight) + loopHeight) % loopHeight;
-      slider.value = wrapped;
-      stack.style.transform = `translateY(-${wrapped}px)`;
+      offset = ((value % loopHeight) + loopHeight) % loopHeight;
+      stack.style.transform = `translateY(-${offset}px)`;
     };
-    slider.oninput = () => moveTo(Number(slider.value));
 
-    // let mouse wheel / trackpad scroll the shelf too, not just the slider
+    // mouse wheel / trackpad scrolls the shelf
     viewport.onwheel = (e) => {
       e.preventDefault();
-      moveTo(Number(slider.value) + e.deltaY);
+      moveTo(offset + e.deltaY);
     };
   });
 }
@@ -949,7 +1329,7 @@ function closeCategory(){
   $('screen-category').classList.remove('open');
 }
 function renderSpread(){
-  const cat = categories[currentCat];
+  const cat = siteData.categories[currentCat];
   $('catTitle').textContent = cat.name;
   const left = cat.projects[spreadStart];
   const right = cat.projects[spreadStart + 1];
@@ -967,10 +1347,19 @@ function renderSpread(){
 }
 function pageHTML(proj){
   if (!proj) return '';
-  const idx = categories[currentCat].projects.indexOf(proj);
+  const cat = siteData.categories[currentCat];
+  const idx = cat.projects.indexOf(proj);
+  const cover = (proj.gallery && proj.gallery.length ? proj.gallery[0] : null)
+    || (proj.videoUrl ? videoThumbUrl(proj.videoUrl) : null);
+  // data URLs / remote thumbnail URLs need url(...) wrapping in CSS; plain
+  // hex colors don't — build the right background style for whichever we have
+  const style = cover
+    ? `background-image:linear-gradient(135deg, rgba(255,255,255,.15), transparent), url('${cover}')`
+    : `background-color:${cat.color}`;
+  const showPlay = !cover || proj.videoUrl;
   return `
-    <div class="proj-thumb" style="--thumb-color:${proj.color}" data-idx="${idx}">
-      <div class="play-icon"></div>
+    <div class="proj-thumb" style="${style}" data-idx="${idx}">
+      ${showPlay ? '<div class="play-icon"></div>' : ''}
     </div>
     <div class="proj-name">${proj.name}</div>
     <div class="proj-desc">${proj.desc}</div>
@@ -999,28 +1388,122 @@ $('categoryClose').addEventListener('click', closeCategory);
 $('categoryBackdrop').addEventListener('click', closeCategory);
 
 /* ---------------- project detail (overlay window) ---------------- */
+let galleryIndex = 0;
 function openProject(catIdx, projIdx){
   currentProjectRef = { catIdx, projIdx };
+  galleryIndex = 0;
   renderProject();
   $('screen-project').classList.add('open');
 }
 function renderProject(){
   const { catIdx, projIdx } = currentProjectRef;
-  const projects = categories[catIdx].projects;
+  const cat = siteData.categories[catIdx];
+  const projects = cat.projects;
   const proj = projects[projIdx];
-  $('projectScreen').style.setProperty('--thumb-color', proj.color);
+  const items = getMediaItems(proj);
+  if (galleryIndex >= items.length) galleryIndex = 0;
+  const current = items[galleryIndex] || null;
+  const screenEl = $('projectScreen');
+
+  // clear anything injected on a previous render (iframe or fallback link)
+  const oldFrame = screenEl.querySelector('iframe');
+  if (oldFrame) oldFrame.remove();
+  const oldFallback = screenEl.querySelector('.video-fallback');
+  if (oldFallback) oldFallback.remove();
+  const oldWatchLink = screenEl.querySelector('.watch-link');
+  if (oldWatchLink) oldWatchLink.remove();
+
+  if (current && current.type === 'video'){
+    // show the video's own thumbnail behind everything first, so there's
+    // always something visible even if the embed itself fails to render
+    // (e.g. blocked when opened via a local file:// page instead of a server)
+    const thumb = videoThumbUrl(current.url);
+    if (thumb){
+      screenEl.style.backgroundImage = `url('${thumb}')`;
+      screenEl.style.backgroundColor = '#000';
+    } else {
+      screenEl.style.backgroundImage = 'none';
+      screenEl.style.backgroundColor = '#000';
+    }
+    screenEl.querySelector('.play-icon').style.display = 'none';
+    const embed = videoEmbedUrl(current.url);
+    if (embed){
+      const iframe = document.createElement('iframe');
+      iframe.src = embed;
+      iframe.style.cssText = 'width:100%;height:100%;border:0;border-radius:4px;';
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+      iframe.allowFullscreen = true;
+      screenEl.appendChild(iframe);
+      // always-visible fallback link too — if the embed is blocked (common
+      // when the page is opened via file:// instead of a real server) this
+      // is the guaranteed way to actually watch it
+      const watchLink = document.createElement('a');
+      watchLink.className = 'watch-link';
+      watchLink.href = current.url;
+      watchLink.target = '_blank';
+      watchLink.rel = 'noopener';
+      watchLink.textContent = 'Watch on YouTube/Vimeo ↗';
+      screenEl.appendChild(watchLink);
+    } else {
+      // couldn't recognize the link as a YouTube/Vimeo video — embedding the
+      // raw page would just fail (YouTube/Vimeo block framing non-embed
+      // pages), so link out instead of showing a broken blank frame
+      const fallback = document.createElement('a');
+      fallback.className = 'video-fallback';
+      fallback.href = current.url;
+      fallback.target = '_blank';
+      fallback.rel = 'noopener';
+      fallback.textContent = 'Link not recognized as YouTube/Vimeo — open video ↗';
+      screenEl.appendChild(fallback);
+    }
+  } else if (current && current.type === 'image'){
+    screenEl.style.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,.12), transparent), url('${current.src}')`;
+    screenEl.style.backgroundColor = '';
+    screenEl.querySelector('.play-icon').style.display = 'none';
+  } else {
+    screenEl.style.backgroundImage = 'linear-gradient(135deg, rgba(255,255,255,.12), transparent)';
+    screenEl.style.backgroundColor = cat.color;
+    screenEl.querySelector('.play-icon').style.display = 'block';
+  }
+
   $('projectTitle').textContent = proj.name;
   $('projectDesc').textContent = proj.desc + " (Full write-up, credits, and media go here.)";
   const multi = projects.length > 1;
   $('projectPrev').style.display = multi ? 'flex' : 'none';
   $('projectNext').style.display = multi ? 'flex' : 'none';
+  renderGalleryStrip(items);
+}
+function renderGalleryStrip(items){
+  const strip = $('galleryStrip');
+  if (!items || items.length < 2){
+    strip.innerHTML = '';
+    strip.style.display = 'none';
+    return;
+  }
+  strip.style.display = 'flex';
+  strip.innerHTML = items.map((item, i) => {
+    const active = i === galleryIndex ? ' active' : '';
+    if (item.type === 'video'){
+      const thumb = videoThumbUrl(item.url);
+      const style = thumb ? `background-image:url('${thumb}')` : 'background-color:#222';
+      return `<div class="gallery-thumb video-thumb${active}" data-i="${i}" style="${style}"><span class="gallery-play">&#9654;</span></div>`;
+    }
+    return `<div class="gallery-thumb${active}" data-i="${i}" style="background-image:url('${item.src}')"></div>`;
+  }).join('');
+  strip.querySelectorAll('.gallery-thumb').forEach(el => {
+    el.addEventListener('click', () => {
+      galleryIndex = parseInt(el.dataset.i, 10);
+      renderProject();
+    });
+  });
 }
 function goToProject(delta){
   const { catIdx, projIdx } = currentProjectRef;
-  const projects = categories[catIdx].projects;
+  const projects = siteData.categories[catIdx].projects;
   // wraps around so you can keep browsing without going back to the book
   const nextIdx = (projIdx + delta + projects.length) % projects.length;
   currentProjectRef = { catIdx, projIdx: nextIdx };
+  galleryIndex = 0;
   renderProject();
 }
 function closeProject(){
@@ -1031,6 +1514,7 @@ $('projectBackdrop').addEventListener('click', closeProject);
 $('projectPrev').addEventListener('click', () => goToProject(-1));
 $('projectNext').addEventListener('click', () => goToProject(1));
 document.addEventListener('keydown', (e) => {
+  if ($('devPanel').classList.contains('open')) return;
   if ($('screen-project').classList.contains('open')){
     if (e.key === 'Escape') closeProject();
     else if (e.key === 'ArrowRight') goToProject(1);
@@ -1039,6 +1523,368 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.key === 'Escape' && $('screen-category').classList.contains('open')) closeCategory();
 });
+
+/* ---------------- video link helpers (YouTube / Vimeo) ---------------- */
+function parseYouTubeId(url){
+  if (!url) return null;
+  // handles watch?v=, youtu.be/, embed/, shorts/, live/, and m./music. subdomains,
+  // regardless of where "v=ID" or the path segment falls in the URL
+  let m = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (m) return m[1];
+  m = url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+function parseVimeoId(url){
+  if (!url) return null;
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : null;
+}
+function videoEmbedUrl(url){
+  const yt = parseYouTubeId(url);
+  if (yt) return `https://www.youtube.com/embed/${yt}`;
+  const vm = parseVimeoId(url);
+  if (vm) return `https://player.vimeo.com/video/${vm}`;
+  return null;
+}
+function videoThumbUrl(url){
+  const yt = parseYouTubeId(url);
+  if (yt) return `https://img.youtube.com/vi/${yt}/hqdefault.jpg`;
+  return null; // Vimeo thumbnails need an API call — falls back to a generic tile
+}
+function getMediaItems(proj){
+  const items = [];
+  if (proj.videoUrl) items.push({ type: 'video', url: proj.videoUrl });
+  (proj.gallery || []).forEach(src => items.push({ type: 'image', src }));
+  return items;
+}
+
+/* ================= developer mode ================= */
+function fileToDataURL(file, maxDim, quality){
+  maxDim = maxDim || 900;
+  quality = quality || 0.82;
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim){
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderDevPanel(){
+  const body = $('devBody');
+  body.innerHTML = `
+    <div class="dev-section">
+      <h3>Site basics</h3>
+      <div class="dev-field">
+        <label>Slogan</label>
+        <input type="text" id="devSlogan" value="${escapeAttr(siteData.slogan)}">
+      </div>
+      <div class="dev-field">
+        <label>Title</label>
+        <input type="text" id="devTitle" value="${escapeAttr(siteData.title)}">
+      </div>
+      <div class="dev-field">
+        <label>Landing background image</label>
+        <div class="dev-img-preview" id="devLandingPreview" style="${siteData.landingBg ? `background-image:url('${siteData.landingBg}')` : ''}">${siteData.landingBg ? '' : 'No image set'}</div>
+        <div class="dev-row">
+          <input type="file" id="devLandingFile" accept="image/*">
+          <button class="dev-mini-btn" id="devLandingClear">Clear</button>
+        </div>
+      </div>
+      <div class="dev-field">
+        <label>Mascot image (leave empty to keep the drawn robot)</label>
+        <div class="dev-img-preview" id="devMascotPreview" style="${siteData.mascotImg ? `background-image:url('${siteData.mascotImg}')` : ''}">${siteData.mascotImg ? '' : 'No image set'}</div>
+        <div class="dev-row">
+          <input type="file" id="devMascotFile" accept="image/*">
+          <button class="dev-mini-btn" id="devMascotClear">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dev-section">
+      <h3>Introduction slides</h3>
+      ${siteData.introSlides.map((s, i) => `
+        <div class="dev-field">
+          <label>Slide ${i + 1}</label>
+          <textarea data-slide="${i}" class="devSlideText">${escapeHTML(s)}</textarea>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="dev-section">
+      <h3>Categories &amp; projects (${siteData.categories.length})</h3>
+      ${siteData.categories.map((cat, ci) => `
+        <div class="dev-cat" data-cat="${ci}">
+          <div class="dev-cat-head">
+            <span class="dev-chevron">&#9656;</span>
+            <strong style="font-size:12.5px;">${escapeHTML(cat.name)}</strong>
+          </div>
+          <div class="dev-cat-body">
+            <div class="dev-field">
+              <label>Category name</label>
+              <input type="text" class="devCatName" data-cat="${ci}" value="${escapeAttr(cat.name)}">
+            </div>
+            <div class="dev-field dev-row">
+              <div style="flex:1">
+                <label>Spine color</label>
+                <input type="color" class="devCatColor" data-cat="${ci}" value="${cat.color}">
+              </div>
+            </div>
+            <div class="dev-field">
+              <label>Spine image (optional, overrides color)</label>
+              <div class="dev-img-preview" data-cat-preview="${ci}" style="${cat.image ? `background-image:url('${cat.image}')` : ''}">${cat.image ? '' : 'No image set'}</div>
+              <div class="dev-row">
+                <input type="file" class="devCatFile" data-cat="${ci}" accept="image/*">
+                <button class="dev-mini-btn devCatClear" data-cat="${ci}">Clear</button>
+              </div>
+            </div>
+            ${cat.projects.map((proj, pi) => `
+              <div class="dev-proj">
+                <div class="dev-proj-label">Project ${pi + 1}</div>
+                <div class="dev-field">
+                  <label>Name</label>
+                  <input type="text" class="devProjName" data-cat="${ci}" data-proj="${pi}" value="${escapeAttr(proj.name)}">
+                </div>
+                <div class="dev-field">
+                  <label>Description</label>
+                  <textarea class="devProjDesc" data-cat="${ci}" data-proj="${pi}">${escapeHTML(proj.desc)}</textarea>
+                </div>
+                <div class="dev-field">
+                  <label>Video link (YouTube or Vimeo, optional)</label>
+                  <input type="text" class="devProjVideo" data-cat="${ci}" data-proj="${pi}" placeholder="https://youtube.com/watch?v=..." value="${escapeAttr(proj.videoUrl || '')}">
+                </div>
+                <div class="dev-field">
+                  <label>Screenshots / previews (add as many as you like)</label>
+                  <div class="dev-gallery-list" data-gallery-list="${ci}-${pi}">${galleryListHTML(ci, pi)}</div>
+                  <input type="file" class="devProjFiles" data-cat="${ci}" data-proj="${pi}" accept="image/*" multiple>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="dev-note">
+      Images are resized and saved in this browser only (localStorage). To make
+      changes visible to everyone on the live site, click "Export JSON" and send
+      the file back so it can be built into the actual page — or place image
+      files in an "images" folder next to index.html and reference them by
+      filename instead of uploading here.
+    </div>
+  `;
+
+  wireDevPanel();
+}
+
+function escapeHTML(s){
+  return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+function escapeAttr(s){
+  return String(s).replace(/"/g, '&quot;');
+}
+
+function wireDevPanel(){
+  // collapsible category blocks
+  document.querySelectorAll('.dev-cat-head').forEach(head => {
+    head.addEventListener('click', () => head.closest('.dev-cat').classList.toggle('open'));
+  });
+
+  $('devSlogan').addEventListener('input', e => { siteData.slogan = e.target.value; });
+  $('devTitle').addEventListener('input', e => { siteData.title = e.target.value; });
+
+  document.querySelectorAll('.devSlideText').forEach(el => {
+    el.addEventListener('input', e => {
+      siteData.introSlides[parseInt(e.target.dataset.slide, 10)] = e.target.value;
+    });
+  });
+
+  $('devLandingFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
+    $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
+    $('devLandingPreview').textContent = '';
+  });
+  $('devLandingClear').addEventListener('click', () => {
+    siteData.landingBg = null;
+    $('devLandingPreview').style.backgroundImage = '';
+    $('devLandingPreview').textContent = 'No image set';
+  });
+
+  $('devMascotFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
+    $('devMascotPreview').style.backgroundImage = `url('${siteData.mascotImg}')`;
+    $('devMascotPreview').textContent = '';
+  });
+  $('devMascotClear').addEventListener('click', () => {
+    siteData.mascotImg = null;
+    $('devMascotPreview').style.backgroundImage = '';
+    $('devMascotPreview').textContent = 'No image set';
+  });
+
+  document.querySelectorAll('.devCatName').forEach(el => {
+    el.addEventListener('input', e => {
+      siteData.categories[parseInt(e.target.dataset.cat, 10)].name = e.target.value;
+    });
+  });
+  document.querySelectorAll('.devCatColor').forEach(el => {
+    el.addEventListener('input', e => {
+      siteData.categories[parseInt(e.target.dataset.cat, 10)].color = e.target.value;
+    });
+  });
+  document.querySelectorAll('.devCatFile').forEach(el => {
+    el.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const ci = parseInt(e.target.dataset.cat, 10);
+      const dataUrl = await fileToDataURL(file, 400, 0.85);
+      siteData.categories[ci].image = dataUrl;
+      const preview = document.querySelector(`[data-cat-preview="${ci}"]`);
+      preview.style.backgroundImage = `url('${dataUrl}')`;
+      preview.textContent = '';
+    });
+  });
+  document.querySelectorAll('.devCatClear').forEach(el => {
+    el.addEventListener('click', (e) => {
+      const ci = parseInt(e.target.dataset.cat, 10);
+      siteData.categories[ci].image = null;
+      const preview = document.querySelector(`[data-cat-preview="${ci}"]`);
+      preview.style.backgroundImage = '';
+      preview.textContent = 'No image set';
+    });
+  });
+
+  document.querySelectorAll('.devProjName').forEach(el => {
+    el.addEventListener('input', e => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      siteData.categories[ci].projects[pi].name = e.target.value;
+    });
+  });
+  document.querySelectorAll('.devProjDesc').forEach(el => {
+    el.addEventListener('input', e => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      siteData.categories[ci].projects[pi].desc = e.target.value;
+    });
+  });
+  document.querySelectorAll('.devProjVideo').forEach(el => {
+    el.addEventListener('input', e => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      siteData.categories[ci].projects[pi].videoUrl = e.target.value.trim() || null;
+    });
+  });
+  document.querySelectorAll('.devProjFiles').forEach(el => {
+    el.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      for (const file of files){
+        const dataUrl = await fileToDataURL(file, 1000, 0.8);
+        siteData.categories[ci].projects[pi].gallery.push(dataUrl);
+      }
+      refreshGalleryList(ci, pi);
+      e.target.value = '';
+    });
+  });
+  wireGalleryRemoveButtons();
+}
+
+function galleryListHTML(ci, pi){
+  const gallery = siteData.categories[ci].projects[pi].gallery;
+  if (!gallery.length) return '<div class="dev-gallery-empty">No screenshots added yet</div>';
+  return gallery.map((src, gi) => `
+    <div class="dev-gallery-item" style="background-image:url('${src}')">
+      <button class="dev-gallery-remove" data-cat="${ci}" data-proj="${pi}" data-g="${gi}">&times;</button>
+    </div>
+  `).join('');
+}
+function refreshGalleryList(ci, pi){
+  const listEl = document.querySelector(`[data-gallery-list="${ci}-${pi}"]`);
+  if (listEl) listEl.innerHTML = galleryListHTML(ci, pi);
+  wireGalleryRemoveButtons();
+}
+function wireGalleryRemoveButtons(){
+  document.querySelectorAll('.dev-gallery-remove').forEach(btn => {
+    btn.onclick = (e) => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10), gi = parseInt(e.target.dataset.g, 10);
+      siteData.categories[ci].projects[pi].gallery.splice(gi, 1);
+      refreshGalleryList(ci, pi);
+    };
+  });
+}
+
+function applyAndRerenderEverything(){
+  applyBasics();
+  renderShelf();
+  if (currentCat !== null) renderSpread();
+  if (currentProjectRef) renderProject();
+}
+
+$('devToggleBtn').addEventListener('click', () => {
+  renderDevPanel();
+  $('devPanel').classList.add('open');
+});
+$('devCloseBtn').addEventListener('click', () => $('devPanel').classList.remove('open'));
+$('devSaveBtn').addEventListener('click', () => {
+  saveSiteData();
+  applyAndRerenderEverything();
+  $('devSaveBtn').textContent = 'Saved!';
+  setTimeout(() => { $('devSaveBtn').textContent = 'Save & apply'; }, 1200);
+});
+$('devExportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(siteData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dmt-showcase-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+$('devImportInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    siteData = parsed;
+    saveSiteData();
+    renderDevPanel();
+    applyAndRerenderEverything();
+    alert('Imported! Changes are applied.');
+  } catch(err){
+    alert('That file could not be read as valid site data JSON.');
+  }
+  e.target.value = '';
+});
+$('devResetBtn').addEventListener('click', () => {
+  if (!confirm('Reset everything back to the default placeholder content? This clears all your saved edits in this browser.')) return;
+  siteData = cloneDefaults();
+  localStorage.removeItem(STORAGE_KEY);
+  renderDevPanel();
+  applyAndRerenderEverything();
+});
+
+/* ================= init ================= */
+applyBasics();
 </script>
 </body>
 </html>
