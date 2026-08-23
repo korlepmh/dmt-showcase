@@ -469,7 +469,6 @@
     color:var(--spread-author-color);
     border-bottom:1px solid color-mix(in srgb, var(--spread-author-color) 60%, transparent);
     padding-bottom:2px;
-    transform:rotate(-2deg);
     pointer-events:none;
   }
   .proj-author::before{ content:"— "; }
@@ -770,6 +769,9 @@
     border-left:32px solid rgba(255,255,255,.9);
     filter:drop-shadow(0 0 8px rgba(0,0,0,.4));
   }
+  /* removed from the project detail preview screen specifically — the
+     book-spread thumbnails keep theirs as a "this has a video" hint */
+  #projectScreen .play-icon{ display:none !important; }
   .gallery-strip{
     display:none;
     flex-wrap:wrap;
