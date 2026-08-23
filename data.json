@@ -265,7 +265,7 @@
     "--intro-text-size": "16px",
     "--intro-label-color": "#c1442e",
     "--shelf-bg": "#1c120b",
-    "--spine-text-scale": "1",
+    "--spine-text-scale": "1.5",
     "--spread-cover-color": "#451721",
     "--spread-page-color": "#e9d7ac",
     "--spread-title-color": "#7a6a4a",
