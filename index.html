@@ -19,11 +19,48 @@
     --accent:#c1442e;
     --gold:#b8933f;
     --shadow: 0 12px 30px rgba(0,0,0,.45);
+
+    /* ---- theme (editable per-section in Developer Mode) ---- */
+    --font-title:'Berkshire Swash',Georgia,serif;
+    --font-body:'IM Fell English','Georgia','Times New Roman',serif;
+
+    --btn-bg:#f3e9d8;
+    --btn-text:#2b2118;
+    --btn-border:#2b2118;
+
+    --landing-bg:#172318;
+    --landing-title-color:#fffaf0;
+    --landing-title-size:88px;
+    --landing-slogan-color:#f0e6c8;
+    --landing-slogan-size:14px;
+
+    --intro-bg:#f2e9d8;
+    --intro-text-color:#3a3226;
+    --intro-text-size:16px;
+    --intro-label-color:#c1442e;
+
+    --shelf-bg:#1c120b;
+    --spine-text-scale:1;
+
+    --spread-cover-color:#451721;
+    --spread-page-color:#e9d7ac;
+    --spread-title-color:#7a6a4a;
+    --spread-title-size:20px;
+    --spread-name-color:#2b2118;
+    --spread-name-size:22px;
+    --spread-desc-color:#5a4f3c;
+    --spread-desc-size:14px;
+
+    --project-paper-color:#e6d2a2;
+    --project-title-color:#2b2118;
+    --project-title-size:26px;
+    --project-desc-color:#4a4030;
+    --project-desc-size:14px;
   }
   *{box-sizing:border-box;}
   html,body{
     margin:0;padding:0;height:100%;
-    font-family:'IM Fell English','Georgia','Times New Roman',serif;
+    font-family:var(--font-body);
     color:var(--ink);
     background:#111;
     overflow:hidden;
@@ -53,9 +90,9 @@
     outline:none;
   }
   .btn{
-    background:var(--cream);
-    border:2px solid var(--ink);
-    color:var(--ink);
+    background:var(--btn-bg);
+    border:2px solid var(--btn-border);
+    color:var(--btn-text);
     padding:14px 42px;
     font-size:18px;
     letter-spacing:2px;
@@ -87,7 +124,7 @@
     background:
       linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)),
       radial-gradient(ellipse at 50% 20%, rgba(255,225,150,.25), transparent 55%),
-      linear-gradient(180deg,#1c2b17 0%, #172318 40%, #0e160f 100%);
+      var(--landing-bg);
     background-size:cover;
     background-position:center;
     text-align:center;
@@ -96,18 +133,18 @@
     display:none;
   }
   .landing-slogan{
-    color:#f0e6c8;
+    color:var(--landing-slogan-color);
     letter-spacing:6px;
-    font-size:14px;
+    font-size:var(--landing-slogan-size);
     text-transform:uppercase;
     margin-bottom:10px;
     opacity:.85;
     z-index:2;
   }
   .landing-title{
-    color:#fffaf0;
-    font-family:'Berkshire Swash',Georgia,serif;
-    font-size:clamp(42px,8vw,88px);
+    color:var(--landing-title-color);
+    font-family:var(--font-title);
+    font-size:clamp(42px, 8vw, var(--landing-title-size));
     letter-spacing:4px;
     text-shadow:0 4px 24px rgba(0,0,0,.6), 0 0 40px rgba(255,220,150,.25);
     margin:0 0 46px 0;
@@ -119,7 +156,7 @@
   #screen-intro{
     align-items:center;
     justify-content:center;
-    background:linear-gradient(180deg,#fdfaf3,#f2e9d8);
+    background:var(--intro-bg);
   }
   .intro-wrap{
     display:flex;
@@ -218,15 +255,15 @@
   .intro-label{
     letter-spacing:4px;
     font-size:13px;
-    color:var(--accent);
+    color:var(--intro-label-color);
     margin-bottom:10px;
     text-transform:uppercase;
     font-weight:bold;
   }
   .intro-body{
-    font-size:16px;
+    font-size:var(--intro-text-size);
     line-height:1.7;
-    color:#3a3226;
+    color:var(--intro-text-color);
     margin-bottom:26px;
     min-height:120px;
   }
@@ -245,17 +282,8 @@
   #screen-shelf{
     flex-direction:column;
     align-items:center;
-    background:linear-gradient(180deg,#2a1c12,#1c120b);
-    padding:20px 20px;
-  }
-  .shelf-title{
-    flex-shrink:0;
-    color:#f3e6c8;
-    font-family:'Berkshire Swash',Georgia,serif;
-    letter-spacing:1px;
-    font-size:26px;
-    margin-bottom:16px;
-    text-align:center;
+    background:var(--shelf-bg);
+    padding:64px 32px 24px;
   }
   .bookcase-wrap{
     display:flex;
@@ -267,10 +295,16 @@
     justify-content:center;
   }
   .bookcase-viewport{
-    width:min(700px,85vw);
+    width:100%;
     height:100%;
     overflow:hidden;
     position:relative;
+    /* fade the very top/bottom of the shelf instead of a hard clip, so
+       books scroll in/out smoothly rather than cutting off abruptly */
+    mask-image:linear-gradient(to bottom,
+      transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
+    -webkit-mask-image:linear-gradient(to bottom,
+      transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
   }
   .bookcase-stack{
     display:flex;
@@ -282,20 +316,20 @@
     align-items:flex-end;
     justify-content:center;
     gap:0;
-    min-height:290px;
+    min-height:400px;
     padding:0 10px 0;
-    border-bottom:14px solid var(--wood);
-    box-shadow:0 18px 20px -12px rgba(0,0,0,.6);
-    margin-bottom:36px;
+    border-bottom:30px solid var(--wood);
+    box-shadow:
+      0 4px 0 rgba(0,0,0,.25),
+      0 26px 24px -14px rgba(0,0,0,.65);
+    margin-bottom:44px;
   }
   .book{
     --tilt:0deg;
-    width:76px;
+    width:104px;
+    position:relative;
     border:3px solid var(--ink);
     border-radius:5px 5px 0 0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     padding:14px 8px;
     writing-mode:vertical-rl;
     text-orientation:mixed;
@@ -322,6 +356,18 @@
       inset 16px 0 18px -8px rgba(0,0,0,.65),
       inset -16px 0 18px -8px rgba(0,0,0,.65);
   }
+  /* long spine titles wrap into a second column instead of shrinking. This
+     span is centered via absolute-position + transform (not flexbox) so
+     centering is exact and consistent regardless of how many columns the
+     text wraps into — flex's shrink-to-fit sizing under a vertical writing
+     mode was unreliable across engines once text actually wrapped. */
+  .book .spine-text{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    white-space:normal;
+  }
   /* ---------- CATEGORY SPREAD (overlay window on top of the shelf) ---------- */
   #screen-category{
     position:fixed;
@@ -345,7 +391,7 @@
     display:flex;
     background:
       radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.08), transparent 60%),
-      linear-gradient(180deg, #5c2029 0%, #451721 55%, #2c0e15 100%);
+      var(--spread-cover-color);
     border-radius:8px;
     box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4);
     width:min(1180px,96vw);
@@ -381,7 +427,7 @@
     align-items:center;
     justify-content:center;
     text-align:center;
-    background:linear-gradient(180deg,#f5ead0,#e9d7ac 55%,#ddc48f);
+    background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     box-shadow:inset 0 0 30px rgba(120,85,35,.15), 0 2px 10px rgba(0,0,0,.35);
   }
   .cat-title{
@@ -389,10 +435,10 @@
     top:38px;
     width:50%;
     text-align:center;
-    font-family:'Berkshire Swash',Georgia,serif;
+    font-family:var(--font-title);
     letter-spacing:1px;
-    font-size:20px;
-    color:#7a6a4a;
+    font-size:var(--spread-title-size);
+    color:var(--spread-title-color);
     z-index:6;
     pointer-events:none;
   }
@@ -410,7 +456,7 @@
     align-items:center;
     justify-content:center;
     text-align:center;
-    background:linear-gradient(180deg,#f5ead0,#e9d7ac 55%,#ddc48f);
+    background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     backface-visibility:hidden;
     box-shadow:0 0 26px rgba(0,0,0,.3);
     z-index:5;
@@ -460,15 +506,15 @@
     box-shadow:0 10px 20px rgba(0,0,0,.3);
   }
   .proj-name{
-    font-family:'Berkshire Swash',Georgia,serif;
-    font-size:22px;
+    font-family:var(--font-title);
+    font-size:var(--spread-name-size);
     margin-bottom:10px;
-    color:var(--ink);
+    color:var(--spread-name-color);
   }
   .proj-desc{
-    font-size:14px;
+    font-size:var(--spread-desc-size);
     line-height:1.65;
-    color:#5a4f3c;
+    color:var(--spread-desc-color);
     max-width:440px;
   }
   .spread-nav{
@@ -524,7 +570,7 @@
       radial-gradient(circle at 75% 85%, rgba(110,75,30,.10), transparent 45%),
       radial-gradient(circle at 25% 90%, rgba(110,75,30,.07), transparent 40%),
       repeating-linear-gradient(0deg, rgba(90,60,20,.03) 0 1px, transparent 1px 3px),
-      linear-gradient(180deg,#f2e5c4,#e6d2a2 55%,#dcc48f);
+      linear-gradient(180deg, color-mix(in srgb, var(--project-paper-color) 70%, white), var(--project-paper-color) 55%, color-mix(in srgb, var(--project-paper-color) 82%, black));
     border-radius:4px;
     padding:40px 38px 34px;
     width:min(760px,90vw);
@@ -711,15 +757,16 @@
     max-width:640px;
   }
   .project-info h2{
-    font-family:'Berkshire Swash',Georgia,serif;
-    font-size:26px;
+    font-family:var(--font-title);
+    font-size:var(--project-title-size);
+    color:var(--project-title-color);
     margin:0 0 10px;
     letter-spacing:1px;
   }
   .project-info p{
-    font-size:14px;
+    font-size:var(--project-desc-size);
     line-height:1.7;
-    color:#4a4030;
+    color:var(--project-desc-color);
   }
   .project-switch{
     display:flex;
@@ -830,6 +877,38 @@
     background:none;
     padding:0;
     vertical-align:middle;
+  }
+  .dev-field input[type=number],
+  .dev-field select{
+    width:100%;
+    background:#2a2a2c;
+    border:1px solid #444;
+    color:#eee;
+    border-radius:5px;
+    padding:6px 8px;
+    font-size:12.5px;
+    font-family:inherit;
+  }
+  .dev-theme-group{
+    background:#1c1c1e;
+    border-radius:6px;
+    padding:10px 12px;
+    margin-bottom:10px;
+  }
+  .dev-theme-group-title{
+    font-size:11.5px;
+    color:#c9a463;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    margin-bottom:8px;
+  }
+  .dev-theme-fields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px 10px;
+  }
+  .dev-theme-fields .dev-field{
+    margin-bottom:0;
   }
   .dev-img-preview{
     width:100%;
@@ -998,8 +1077,12 @@
     .intro-dots{
       justify-content:center;
     }
-    .book{
-      width:58px;
+    .shelf-platform{
+      min-height:190px;
+      margin-bottom:30px;
+    }
+    #screen-shelf{
+      padding:52px 22px 20px;
     }
     .book-spread{
       flex-direction:column;
@@ -1098,7 +1181,6 @@
   <!-- SHELF -->
   <section id="screen-shelf" class="screen">
     <button class="btn back-btn" id="shelfBack">BACK</button>
-    <div class="shelf-title">Choose a Category</div>
     <div class="bookcase-wrap">
       <div class="bookcase-viewport">
         <div class="bookcase-stack" id="bookcaseStack"></div>
@@ -1167,12 +1249,64 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+// Set this to false before publishing the site so the gear icon and the
+// whole Developer Mode panel are hidden from visitors. Set it back to true
+// whenever you want to keep editing content — nothing else needs to change.
+const DEV_MODE_ENABLED = true;
+// Change this to whatever you want your password to be. Note: this only
+// keeps out casual visitors — since this is a plain HTML/JS file, anyone
+// who opens the browser's dev tools can read this password in the page
+// source. Don't rely on it to protect anything truly sensitive.
+const DEV_PASSWORD = 'changeme';
+
 /* ================= default content ================= */
+// every value here has a matching CSS custom property of the same name
+// (see :root in <style>) — applyTheme() below copies these onto the page,
+// so Developer Mode can override any of them live
+const DEFAULT_THEME = {
+  '--font-title': "'Berkshire Swash',Georgia,serif",
+  '--font-body': "'IM Fell English','Georgia','Times New Roman',serif",
+
+  '--btn-bg': '#f3e9d8',
+  '--btn-text': '#2b2118',
+  '--btn-border': '#2b2118',
+
+  '--landing-bg': '#172318',
+  '--landing-title-color': '#fffaf0',
+  '--landing-title-size': '88px',
+  '--landing-slogan-color': '#f0e6c8',
+  '--landing-slogan-size': '14px',
+
+  '--intro-bg': '#f2e9d8',
+  '--intro-text-color': '#3a3226',
+  '--intro-text-size': '16px',
+  '--intro-label-color': '#c1442e',
+
+  '--shelf-bg': '#1c120b',
+  '--spine-text-scale': '1',
+
+  '--spread-cover-color': '#451721',
+  '--spread-page-color': '#e9d7ac',
+  '--spread-title-color': '#7a6a4a',
+  '--spread-title-size': '20px',
+  '--spread-name-color': '#2b2118',
+  '--spread-name-size': '22px',
+  '--spread-desc-color': '#5a4f3c',
+  '--spread-desc-size': '14px',
+
+  '--project-paper-color': '#e6d2a2',
+  '--project-title-color': '#2b2118',
+  '--project-title-size': '26px',
+  '--project-desc-color': '#4a4030',
+  '--project-desc-size': '14px'
+};
+
 const DEFAULTS = {
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
   mascotImg: null,
+  theme: { ...DEFAULT_THEME },
   introSlides: [
     "Welcome to the DMT Showcase — a collection of projects built by Digital Media Technology students across game development, animation, VR, and more.",
     "Every book on the shelf ahead represents a category of work. Pick one up to browse the projects inside.",
@@ -1299,7 +1433,23 @@ function showScreen(id){
 }
 
 /* ================= apply site-wide basics ================= */
+// fills in any theme keys missing from saved/imported data (e.g. data saved
+// before the theme editor existed) with the defaults, so nothing breaks
+function normalizeTheme(){
+  siteData.theme = Object.assign({}, DEFAULT_THEME, siteData.theme || {});
+}
+// pushes every theme value onto the page as a CSS custom property — this is
+// what actually makes a Developer Mode color/font-size change take effect
+function applyTheme(){
+  normalizeTheme();
+  const root = document.documentElement.style;
+  Object.keys(DEFAULT_THEME).forEach(key => {
+    root.setProperty(key, siteData.theme[key]);
+  });
+}
+
 function applyBasics(){
+  applyTheme();
   $('landingSlogan').textContent = siteData.slogan;
   $('landingTitle').textContent = siteData.title;
   const landing = $('screen-landing');
@@ -1355,61 +1505,172 @@ $('nextBtn').addEventListener('click', () => {
     introIndex++;
     renderIntro();
   } else {
-    renderShelf();
+    // show the shelf screen first, THEN measure/build it — while the
+    // screen is still display:none its width reads as 0, which used to
+    // make the very first render of the shelf size everything for a
+    // much narrower "phantom" width
     showScreen('screen-shelf');
+    renderShelf();
   }
 });
 
+// rebuild the shelf (book size/spacing/count-per-row) whenever the window
+// is resized while it's the visible screen, so resizing/maximizing the
+// browser — or rotating a phone — doesn't leave books sized for whatever
+// width happened to be current the first time the shelf was opened
+let shelfResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(shelfResizeTimer);
+  shelfResizeTimer = setTimeout(() => {
+    if ($('screen-shelf').classList.contains('active')) renderShelf();
+  }, 200);
+});
+
 /* ---------------- shelf ---------------- */
-function chunkIntoPlatforms(list){
-  // groups of 4-5 books per shelf platform
+function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+// every size below is derived from the shelf's actual measured width, so
+// book size / spacing / books-per-shelf scale continuously with the real
+// screen ratio instead of jumping between two fixed breakpoints. Book width
+// caps out on very wide screens (so spines don't get absurdly huge), but the
+// gap between books is scaled from the width directly rather than from the
+// (capped) book width, so spacing keeps growing on bigger screens even after
+// the books themselves stop growing.
+function shelfMetrics(availW){
+  const bookW = clamp(availW / 8.5, 58, 130);
+  const gapUnit = clamp(availW / 40, 12, 50);
+  return { bookW, gapUnit };
+}
+
+// margin on each side of a book is randomized between 0.3x and 0.85x gapUnit
+// (see buildPlatform) — so the worst case total margin per book is 1.7x
+// gapUnit; the row-width math below must budget for that worst case, not
+// the average, or a run of maximum-margin books could still overflow
+function chunkIntoPlatforms(list, availW){
+  const { bookW, gapUnit } = shelfMetrics(availW);
+  const worstSlot = bookW + gapUnit * 1.7;
+  const maxPerRow = Math.max(2, Math.floor((availW * 0.96) / worstSlot));
+  const cap = Math.min(maxPerRow, 5);
   const platforms = [];
-  let i = 0;
-  while (i < list.length){
-    const remaining = list.length - i;
-    let size = remaining <= 5 ? remaining : (Math.random() < 0.5 ? 4 : 5);
-    if (remaining - size < 3 && remaining - size > 0) size = remaining; // avoid a tiny leftover platform
-    platforms.push(list.slice(i, i + size));
-    i += size;
-  }
+
+  // "big" (Final Year Project) spines are ~1.35x wider than a regular book,
+  // which the width-based cap below doesn't account for — so give any big
+  // spine its own platform rather than risk it overflowing a shared row
+  let run = [];
+  const flushRun = () => {
+    let i = 0;
+    while (i < run.length){
+      const remaining = run.length - i;
+      let size = remaining <= cap ? remaining : (cap >= 4 && Math.random() < 0.5 ? cap - 1 : cap);
+      size = Math.max(1, size);
+      // avoid a tiny leftover platform, but never merge past the safe cap —
+      // that was letting a leftover balloon a row past what actually fits
+      if (remaining <= cap && remaining - size < Math.min(3, cap) && remaining - size > 0) size = remaining;
+      platforms.push(run.slice(i, i + size));
+      i += size;
+    }
+    run = [];
+  };
+  list.forEach(cat => {
+    if (cat.big){
+      flushRun();
+      platforms.push([cat]);
+    } else {
+      run.push(cat);
+    }
+  });
+  flushRun();
+
   return platforms;
 }
 
-function buildPlatform(group){
+function buildPlatform(group, availW){
   const platform = document.createElement('div');
   platform.className = 'shelf-platform';
+  const { bookW, gapUnit } = shelfMetrics(availW);
+  const textScale = parseFloat(siteData.theme && siteData.theme['--spine-text-scale']) || 1;
   group.forEach(({ cat, index }) => {
     const b = document.createElement('div');
     b.className = 'book';
-    b.textContent = cat.name;
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'spine-text';
+    nameSpan.textContent = cat.name;
+    b.appendChild(nameSpan);
     b.dataset.catIndex = index;
     if (cat.image){
-      // image spine, with color as a tinted backdrop while it loads
-      b.style.background = `linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)), ${cat.color} url('${cat.image}') center/cover no-repeat`;
+      // tint a black & white spine image with the category's own color:
+      // a solid color layer multiplied over the (grayscale) image lets the
+      // image's light/dark texture show through as shades of that color,
+      // so every category can share the same photo/pattern but keep its
+      // own distinct spine color
+      b.style.backgroundColor = cat.color; // shows immediately while the image loads
+      b.style.backgroundImage = `linear-gradient(${cat.color}, ${cat.color}), url('${cat.image}')`;
+      b.style.backgroundSize = 'cover, cover';
+      b.style.backgroundPosition = 'center, center';
+      b.style.backgroundRepeat = 'no-repeat, no-repeat';
+      b.style.backgroundBlendMode = 'multiply';
     } else {
       b.style.background = cat.color;
+      b.style.backgroundBlendMode = '';
     }
+    let height, baseFontSize;
     if (cat.big){
-      // Final Year Project stands out: taller, wider, upright
-      b.style.width = '106px';
-      b.style.height = '340px';
-      b.style.fontSize = '16px';
+      // Final Year Project stands out: taller, wider, upright — same
+      // aspect ratio as the rest, just scaled up
+      const w = bookW * 1.35;
+      height = w * 3.05;
+      baseFontSize = clamp(w * 0.135, 13, 19);
+      b.style.width = w + 'px';
       b.style.color = '#4a3410';
       b.style.textShadow = 'none';
       b.style.setProperty('--tilt', '0deg');
     } else {
-      // vary height so tops look uneven, like real books on a shelf
-      b.style.height = (240 + Math.round(Math.random() * 70)) + 'px';
+      // vary height so tops look uneven, like real books on a shelf —
+      // height stays proportional to width so books never look short/fat
+      height = bookW * 2.9 + Math.random() * bookW * 0.85;
+      baseFontSize = clamp(bookW * 0.155, 11.5, 16.5);
+      b.style.width = bookW + 'px';
       // slight random lean, like a book left slightly askew
       b.style.setProperty('--tilt', (Math.random() * 8 - 4).toFixed(1) + 'deg');
     }
-    // random gap around each book for uneven spacing (tighter on narrow phones
-    // so a platform's books don't overflow the viewport width)
-    const narrow = window.innerWidth < 480;
-    const gapMax = narrow ? 8 : 20;
-    const gapBase = narrow ? 2 : 4;
-    b.style.marginLeft = (gapBase + Math.round(Math.random() * gapMax)) + 'px';
-    b.style.marginRight = (gapBase + Math.round(Math.random() * gapMax)) + 'px';
+    b.style.height = height + 'px';
+    // long category names wrap into a second column instead of shrinking
+    // to fit one — the span's exact height forces the wrap point, and
+    // since the span is still just one flex item, .book's centering keeps
+    // the whole (possibly two-column) block centered as a group
+    const usableHeight = height - 28; // minus the spine's own top/bottom padding
+    const singleColCapacity = usableHeight / (baseFontSize + 1); // chars per column, +1 for letter-spacing
+    const needsWrap = cat.name.length > singleColCapacity;
+    let fontSize = baseFontSize;
+    if (needsWrap && cat.name.length > singleColCapacity * 2){
+      // even two columns can't fit it at normal size — shrink just enough
+      // so the whole name fits across exactly two columns
+      fontSize = Math.max(8, (usableHeight * 2) / (cat.name.length * 1.05));
+    }
+    const scaledFontSize = fontSize * textScale;
+    b.style.fontSize = scaledFontSize + 'px';
+    // max-height (not a fixed height) is the key: short text is smaller
+    // than this cap so it just auto-sizes to its own content and the flex
+    // centering centers that shrink-to-fit box exactly like before: only
+    // text that actually exceeds the cap gets wrapped into a second column
+    // by the browser's own line-breaking, so there's no estimate to get
+    // wrong and nothing to mis-center
+    nameSpan.style.maxHeight = usableHeight + 'px';
+    if (needsWrap){
+      // widen the spine if two columns of text need more room than its
+      // default width gives them (rare — most spines are already wide
+      // enough for two columns at these font sizes)
+      const colThickness = scaledFontSize + 1;
+      const neededBoxWidth = colThickness * 2 + 22; // 2 columns + padding(16) + border(6)
+      const currentWidth = parseFloat(b.style.width);
+      if (neededBoxWidth > currentWidth){
+        b.style.width = Math.min(neededBoxWidth, currentWidth * 1.6) + 'px';
+      }
+    }
+    // random gap around each book, scaled to book size so spacing always
+    // reads the same relative to the books, on any screen ratio
+    b.style.marginLeft = (gapUnit * (0.3 + Math.random() * 0.55)) + 'px';
+    b.style.marginRight = (gapUnit * (0.3 + Math.random() * 0.55)) + 'px';
     platform.appendChild(b);
   });
   return platform;
@@ -1425,7 +1686,11 @@ function renderShelf(){
   const stack = $('bookcaseStack');
   stack.innerHTML = '';
   let globalIndex = 0;
-  const platforms = chunkIntoPlatforms(siteData.categories).map(group =>
+  // measure the real available width so book size/spacing/count-per-shelf
+  // scale with the actual screen ratio, not a fixed phone/desktop switch
+  const viewportEl = document.querySelector('.bookcase-viewport');
+  const availW = (viewportEl && viewportEl.clientWidth) || window.innerWidth;
+  const platforms = chunkIntoPlatforms(siteData.categories, availW).map(group =>
     group.map(cat => ({ cat, index: globalIndex++ }))
   );
 
@@ -1433,7 +1698,7 @@ function renderShelf(){
   // copy right after — scrolling past the end lands you back at a pixel-perfect
   // match for the start, so the loop feels endless
   const loopStart = document.createDocumentFragment();
-  platforms.forEach(group => loopStart.appendChild(buildPlatform(group)));
+  platforms.forEach(group => loopStart.appendChild(buildPlatform(group, availW)));
   stack.appendChild(loopStart);
   attachBookHandlers(stack);
 
@@ -1763,6 +2028,109 @@ function getMediaItems(proj){
   return items;
 }
 
+/* ================= theme editor (Developer Mode) ================= */
+// fonts already loaded via <link> tags in <head>, plus a couple of safe
+// web-safe fallbacks — kept to a short list so every choice is guaranteed
+// to actually load
+const FONT_PRESETS = [
+  { label: 'Berkshire Swash (storybook)', value: "'Berkshire Swash',Georgia,serif" },
+  { label: 'IM Fell English (old book)', value: "'IM Fell English','Georgia','Times New Roman',serif" },
+  { label: 'IM Fell English SC (small caps)', value: "'IM Fell English SC',Georgia,serif" },
+  { label: 'Georgia (classic serif)', value: "Georgia,'Times New Roman',serif" },
+  { label: 'Segoe UI (clean sans-serif)', value: "'Segoe UI',Arial,sans-serif" }
+];
+const THEME_GROUPS = [
+  { title: 'Fonts (used everywhere)', fields: [
+    { key: '--font-title', label: 'Title font (spines, project names, headings)', type: 'font' },
+    { key: '--font-body', label: 'Body font (everything else)', type: 'font' }
+  ]},
+  { title: 'Buttons', fields: [
+    { key: '--btn-bg', label: 'Background color', type: 'color' },
+    { key: '--btn-text', label: 'Text color', type: 'color' },
+    { key: '--btn-border', label: 'Border color', type: 'color' }
+  ]},
+  { title: 'Landing page', fields: [
+    { key: '--landing-bg', label: 'Background color', type: 'color' },
+    { key: '--landing-title-color', label: 'Title color', type: 'color' },
+    { key: '--landing-title-size', label: 'Title size (px)', type: 'size' },
+    { key: '--landing-slogan-color', label: 'Slogan color', type: 'color' },
+    { key: '--landing-slogan-size', label: 'Slogan size (px)', type: 'size' }
+  ]},
+  { title: 'Introduction page', fields: [
+    { key: '--intro-bg', label: 'Background color', type: 'color' },
+    { key: '--intro-text-color', label: 'Text color', type: 'color' },
+    { key: '--intro-text-size', label: 'Text size (px)', type: 'size' },
+    { key: '--intro-label-color', label: '"Introduction" label color', type: 'color' }
+  ]},
+  { title: 'Bookshelf page', fields: [
+    { key: '--shelf-bg', label: 'Background color', type: 'color' },
+    { key: '--spine-text-scale', label: 'Book spine text size (%)', type: 'scale' }
+  ]},
+  { title: 'Book pages (category spread)', fields: [
+    { key: '--spread-cover-color', label: 'Book cover color', type: 'color' },
+    { key: '--spread-page-color', label: 'Page color', type: 'color' },
+    { key: '--spread-title-color', label: 'Category title color', type: 'color' },
+    { key: '--spread-title-size', label: 'Category title size (px)', type: 'size' },
+    { key: '--spread-name-color', label: 'Project name color', type: 'color' },
+    { key: '--spread-name-size', label: 'Project name size (px)', type: 'size' },
+    { key: '--spread-desc-color', label: 'Description color', type: 'color' },
+    { key: '--spread-desc-size', label: 'Description size (px)', type: 'size' }
+  ]},
+  { title: 'Project detail page', fields: [
+    { key: '--project-paper-color', label: 'Paper color', type: 'color' },
+    { key: '--project-title-color', label: 'Title color', type: 'color' },
+    { key: '--project-title-size', label: 'Title size (px)', type: 'size' },
+    { key: '--project-desc-color', label: 'Description color', type: 'color' },
+    { key: '--project-desc-size', label: 'Description size (px)', type: 'size' }
+  ]}
+];
+function themeFieldHTML(f){
+  const val = siteData.theme[f.key];
+  if (f.type === 'color'){
+    return `
+      <div class="dev-field">
+        <label>${escapeHTML(f.label)}</label>
+        <input type="color" class="devThemeColor" data-key="${f.key}" value="${escapeAttr(val)}">
+      </div>`;
+  }
+  if (f.type === 'size'){
+    const num = parseFloat(val) || 0;
+    return `
+      <div class="dev-field">
+        <label>${escapeHTML(f.label)}</label>
+        <input type="number" class="devThemeSize" data-key="${f.key}" min="8" max="160" value="${num}">
+      </div>`;
+  }
+  if (f.type === 'font'){
+    return `
+      <div class="dev-field">
+        <label>${escapeHTML(f.label)}</label>
+        <select class="devThemeFont" data-key="${f.key}">
+          ${FONT_PRESETS.map(p => `<option value="${escapeAttr(p.value)}"${p.value === val ? ' selected' : ''}>${escapeHTML(p.label)}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+  if (f.type === 'scale'){
+    const pct = Math.round((parseFloat(val) || 1) * 100);
+    return `
+      <div class="dev-field">
+        <label>${escapeHTML(f.label)}</label>
+        <input type="number" class="devThemeScale" data-key="${f.key}" min="50" max="200" step="5" value="${pct}">
+      </div>`;
+  }
+  return '';
+}
+function themeGroupsHTML(){
+  return THEME_GROUPS.map(group => `
+    <div class="dev-theme-group">
+      <div class="dev-theme-group-title">${escapeHTML(group.title)}</div>
+      <div class="dev-theme-fields">
+        ${group.fields.map(themeFieldHTML).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
 /* ================= developer mode ================= */
 function fileToDataURL(file, maxDim, quality){
   maxDim = maxDim || 900;
@@ -1824,6 +2192,12 @@ function renderDevPanel(){
     </div>
 
     <div class="dev-section">
+      <h3>Theme — fonts, colors &amp; sizes</h3>
+      <button class="dev-mini-btn" id="devThemeResetBtn" style="margin-bottom:10px;">Reset theme only</button>
+      ${themeGroupsHTML()}
+    </div>
+
+    <div class="dev-section">
       <h3>Introduction slides</h3>
       ${siteData.introSlides.map((s, i) => `
         <div class="dev-field">
@@ -1853,7 +2227,7 @@ function renderDevPanel(){
               </div>
             </div>
             <div class="dev-field">
-              <label>Spine image (optional, overrides color)</label>
+              <label>Spine image (optional — a black &amp; white/grayscale image works best; the spine color above tints it)</label>
               <div class="dev-img-preview" data-cat-preview="${ci}" style="${cat.image ? `background-image:url('${cat.image}')` : ''}">${cat.image ? '' : 'No image set'}</div>
               <div class="dev-row">
                 <input type="file" class="devCatFile" data-cat="${ci}" accept="image/*">
@@ -1922,6 +2296,47 @@ function wireDevPanel(){
 
   $('devSlogan').addEventListener('input', e => { siteData.slogan = e.target.value; });
   $('devTitle').addEventListener('input', e => { siteData.title = e.target.value; });
+
+  // theme editor — every change applies live via CSS custom properties,
+  // so you see it update immediately without hitting Save
+  document.querySelectorAll('.devThemeColor').forEach(el => {
+    el.addEventListener('input', e => {
+      siteData.theme[e.target.dataset.key] = e.target.value;
+      applyTheme();
+    });
+  });
+  document.querySelectorAll('.devThemeSize').forEach(el => {
+    el.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (!isNaN(n)) {
+        siteData.theme[e.target.dataset.key] = n + 'px';
+        applyTheme();
+      }
+    });
+  });
+  document.querySelectorAll('.devThemeFont').forEach(el => {
+    el.addEventListener('change', e => {
+      siteData.theme[e.target.dataset.key] = e.target.value;
+      applyTheme();
+    });
+  });
+  document.querySelectorAll('.devThemeScale').forEach(el => {
+    el.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (isNaN(n)) return;
+      siteData.theme[e.target.dataset.key] = (n / 100).toString();
+      applyTheme();
+      // spine text size is computed when the shelf is built, not read live
+      // from CSS, so rebuild it now if it's the visible screen
+      if ($('screen-shelf').classList.contains('active')) renderShelf();
+    });
+  });
+  $('devThemeResetBtn').addEventListener('click', () => {
+    if (!confirm('Reset all theme colors/fonts/sizes back to default? This only affects the theme, not your text/images.')) return;
+    siteData.theme = { ...DEFAULT_THEME };
+    applyTheme();
+    renderDevPanel();
+  });
 
   document.querySelectorAll('.devSlideText').forEach(el => {
     el.addEventListener('input', e => {
@@ -2085,10 +2500,20 @@ function applyAndRerenderEverything(){
   if (currentProjectRef) renderProject();
 }
 
-$('devToggleBtn').addEventListener('click', () => {
-  renderDevPanel();
-  $('devPanel').classList.add('open');
-});
+if (!DEV_MODE_ENABLED){
+  $('devToggleBtn').style.display = 'none';
+} else {
+  $('devToggleBtn').addEventListener('click', () => {
+    const entered = prompt('Developer mode password:');
+    if (entered === null) return; // cancelled
+    if (entered !== DEV_PASSWORD){
+      alert('Wrong password.');
+      return;
+    }
+    renderDevPanel();
+    $('devPanel').classList.add('open');
+  });
+}
 $('devCloseBtn').addEventListener('click', () => $('devPanel').classList.remove('open'));
 $('devSaveBtn').addEventListener('click', () => {
   saveSiteData();
