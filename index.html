@@ -519,7 +519,7 @@
   }
   .spread-nav{
     position:absolute;
-    bottom:16px;left:0;right:0;
+    bottom:38px;left:0;right:0;
     display:flex;
     justify-content:center;
     gap:16px;
@@ -559,10 +559,6 @@
   }
   .project-window{
     position:relative;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:20px;
     /* aged paper look: stain blotches + faint fiber lines over a sepia base */
     background:
       radial-gradient(circle at 15% 20%, rgba(120,85,35,.10), transparent 35%),
@@ -572,41 +568,71 @@
       repeating-linear-gradient(0deg, rgba(90,60,20,.03) 0 1px, transparent 1px 3px),
       linear-gradient(180deg, color-mix(in srgb, var(--project-paper-color) 70%, white), var(--project-paper-color) 55%, color-mix(in srgb, var(--project-paper-color) 82%, black));
     border-radius:4px;
-    padding:40px 38px 34px;
     width:min(760px,90vw);
     max-height:88vh;
-    overflow:auto;
+    /* the torn-edge clip-path below doesn't clip a native scrollbar cleanly
+       across browsers — so this outer shape never scrolls itself; scrolling
+       happens in .project-window-inner instead, which stays safely inside
+       the clipped shape */
+    overflow:hidden;
     box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 50px rgba(110,75,25,.25), inset 0 0 3px rgba(70,45,15,.4);
-    clip-path:polygon(0.0% 0.52%, 12.5% 0.24%, 25.0% 1.04%, 37.5% 0.12%, 50.0% 0.86%, 62.5% 0.59%, 75.0% 0.09%, 87.5% 0.81%, 100.0% 0.06%, 99.31% 0.0%, 99.89% 12.5%, 99.85% 25.0%, 99.32% 37.5%, 98.68% 50.0%, 99.8% 62.5%, 99.64% 75.0%, 99.0% 87.5%, 98.48% 100.0%, 100.0% 99.08%, 87.5% 99.37%, 75.0% 98.44%, 62.5% 99.93%, 50.0% 98.63%, 37.5% 99.54%, 25.0% 99.77%, 12.5% 99.81%, 0.0% 99.51%, 1.31% 100.0%, 0.29% 87.5%, 0.93% 75.0%, 1.02% 62.5%, 0.6% 50.0%, 0.88% 37.5%, 0.1% 25.0%, 0.1% 12.5%, 0.33% 0.0%);
+    /* pinned exactly to the true 0%/100% corner at each of the 4 corners
+       (the old points were both slightly off-corner, which left a tiny
+       triangular gap at each corner showing the backdrop through) — the
+       wave in between is unchanged */
+    clip-path:polygon(0% 0%, 12.5% 0.24%, 25.0% 1.04%, 37.5% 0.12%, 50.0% 0.86%, 62.5% 0.59%, 75.0% 0.09%, 87.5% 0.81%, 100% 0%, 99.89% 12.5%, 99.85% 25.0%, 99.32% 37.5%, 98.68% 50.0%, 99.8% 62.5%, 99.64% 75.0%, 99.0% 87.5%, 100% 100%, 87.5% 99.37%, 75.0% 98.44%, 62.5% 99.93%, 50.0% 98.63%, 37.5% 99.54%, 25.0% 99.77%, 12.5% 99.81%, 0% 100%, 0.29% 87.5%, 0.93% 75.0%, 1.02% 62.5%, 0.6% 50.0%, 0.88% 37.5%, 0.1% 25.0%, 0.1% 12.5%);
     transform:scale(.92) translateY(16px);
     transition:transform .3s ease;
   }
   #screen-project.open .project-window{
     transform:scale(1) translateY(0);
   }
-  /* project switcher: flanks the whole TV set, kept well away from the
-     screen itself so it never reads as a "switch preview" control */
+  .project-window-inner{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    padding:40px 38px 34px;
+    max-height:88vh;
+    overflow-y:auto;
+    overflow-x:hidden; /* no horizontal scrollbar — content never needs it */
+    scrollbar-width:thin;
+    scrollbar-color:rgba(43,33,24,.35) transparent;
+  }
+  /* simple clean scrollbar: just a thin bar, no arrow buttons */
+  .project-window-inner::-webkit-scrollbar{ width:7px; }
+  .project-window-inner::-webkit-scrollbar-track{ background:transparent; }
+  .project-window-inner::-webkit-scrollbar-thumb{
+    background:rgba(43,33,24,.35);
+    border-radius:999px;
+  }
+  .project-window-inner::-webkit-scrollbar-thumb:hover{ background:rgba(43,33,24,.55); }
+  .project-window-inner::-webkit-scrollbar-button{ display:none; height:0; width:0; }
+  /* project switcher: sits below the TV set as its own row, kept well
+     away from the screen itself so it never reads as a "switch preview"
+     control */
   .monitor-row{
     display:flex;
+    flex-direction:column;
     align-items:center;
-    gap:18px;
+    gap:16px;
+  }
+  .project-nav-controls{
+    display:flex;
+    align-items:center;
+    gap:28px;
   }
   .project-navbtn{
     flex-shrink:0;
-    width:48px;height:48px;
-    border-radius:50%;
-    background:var(--cream);
-    border:3px solid var(--ink);
-    font-size:19px;
-    color:var(--ink);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 4px 10px rgba(0,0,0,.35);
-    transition:transform .15s ease, background .15s ease;
+    background:transparent;
+    border:none;
+    font-size:24px;
+    color:#7a6a4a;
+    padding:4px 14px;
     cursor:pointer;
+    transition:color .15s ease, transform .15s ease;
   }
-  .project-navbtn:hover{ background:#fff; transform:scale(1.1); }
+  .project-navbtn:hover{ color:var(--accent); transform:scale(1.15); }
 
   /* preview switcher: lives ON the screen, invisible until you hover/touch
      near the edge, so it reads as "this belongs to the video/image" */
@@ -1118,22 +1144,22 @@
     .proj-desc{
       max-width:none;
     }
-    .project-window{
-      padding:56px 18px 24px;
+    .project-window-inner{
+      padding:56px 14px 24px;
     }
     .monitor-row{
-      gap:8px;
+      gap:14px;
       width:100%;
     }
     .monitor{
-      flex:1;
-      min-width:0;
-      width:auto;
+      width:min(680px, 96vw);
+    }
+    .project-nav-controls{
+      gap:22px;
     }
     .project-navbtn{
-      width:34px;height:34px;
-      font-size:14px;
-      border-width:2px;
+      font-size:19px;
+      padding:2px 10px;
     }
     .gallery-thumb{
       width:52px;height:34px;
@@ -1209,21 +1235,25 @@
     <div class="overlay-backdrop" id="projectBackdrop"></div>
     <div class="project-window">
       <button class="overlay-close" id="projectClose">&times;</button>
-      <div class="monitor-row">
-        <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
-        <div class="monitor">
-          <div class="monitor-screen" id="projectScreen">
-            <div class="play-icon"></div>
-            <button class="media-nav media-nav-left" id="mediaPrev" title="Previous preview" aria-label="Previous preview">&#10094;</button>
-            <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
+      <div class="project-window-inner">
+        <div class="monitor-row">
+          <div class="monitor">
+            <div class="monitor-screen" id="projectScreen">
+              <div class="play-icon"></div>
+              <button class="media-nav media-nav-left" id="mediaPrev" title="Previous preview" aria-label="Previous preview">&#10094;</button>
+              <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
+            </div>
+          </div>
+          <div class="project-nav-controls">
+            <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
+            <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
           </div>
         </div>
-        <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
-      </div>
-      <div class="gallery-strip" id="galleryStrip"></div>
-      <div class="project-info">
-        <h2 id="projectTitle"></h2>
-        <p id="projectDesc"></p>
+        <div class="gallery-strip" id="galleryStrip"></div>
+        <div class="project-info">
+          <h2 id="projectTitle"></h2>
+          <p id="projectDesc"></p>
+        </div>
       </div>
     </div>
   </section>
