@@ -663,14 +663,20 @@
      control */
   .monitor-row{
     display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:16px;
+    justify-content:center;
   }
+  /* switching between projects is a distinct, less-frequent action than
+     browsing this one project's own previews/gallery — so it sits below
+     everything else, set apart with a thin divider */
   .project-nav-controls{
     display:flex;
     align-items:center;
     gap:28px;
+    margin-top:6px;
+    padding-top:16px;
+    border-top:1px solid rgba(43,33,24,.15);
+    width:100%;
+    justify-content:center;
   }
   .project-navbtn{
     flex-shrink:0;
@@ -1205,7 +1211,6 @@
       padding:56px 14px 24px;
     }
     .monitor-row{
-      gap:14px;
       width:100%;
     }
     .monitor{
@@ -1301,15 +1306,15 @@
               <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
             </div>
           </div>
-          <div class="project-nav-controls">
-            <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
-            <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
-          </div>
         </div>
         <div class="gallery-strip" id="galleryStrip"></div>
         <div class="project-info">
           <h2 id="projectTitle"></h2>
           <p id="projectDesc"></p>
+        </div>
+        <div class="project-nav-controls">
+          <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
+          <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
         </div>
       </div>
     </div>
