@@ -325,6 +325,9 @@
     height:100%;
     overflow:hidden;
     position:relative;
+    /* the shelf scrolls via its own JS touch handling, not native touch
+       scroll, so tell the browser not to handle panning gestures here */
+    touch-action:none;
     /* fade the very top/bottom of the shelf instead of a hard clip, so
        books scroll in/out smoothly rather than cutting off abruptly */
     mask-image:linear-gradient(to bottom,
@@ -1830,6 +1833,25 @@ function setupShelfSlider(){
       e.preventDefault();
       moveTo(offset + e.deltaY);
     };
+
+    // finger drag scrolls the shelf on touch devices — the shelf uses a
+    // custom transform (not native scroll) so it needs its own touch
+    // handling, there's no scrollbar underneath to fall back on
+    let touchStartY = 0, touchStartOffset = 0, dragging = false;
+    viewport.ontouchstart = (e) => {
+      if (!e.touches.length) return;
+      dragging = true;
+      touchStartY = e.touches[0].clientY;
+      touchStartOffset = offset;
+    };
+    viewport.ontouchmove = (e) => {
+      if (!dragging || !e.touches.length) return;
+      e.preventDefault();
+      const dy = touchStartY - e.touches[0].clientY;
+      moveTo(touchStartOffset + dy);
+    };
+    viewport.ontouchend = () => { dragging = false; };
+    viewport.ontouchcancel = () => { dragging = false; };
   });
 }
 $('shelfBack').addEventListener('click', () => {
