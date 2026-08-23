@@ -50,6 +50,8 @@
     --spread-name-size:22px;
     --spread-desc-color:#5a4f3c;
     --spread-desc-size:14px;
+    --spread-author-color:#8a6a3a;
+    --spread-author-size:15px;
 
     --project-paper-color:#e6d2a2;
     --project-title-color:#2b2118;
@@ -443,6 +445,7 @@
     z-index:1;
   }
   .page{
+    position:relative;
     flex:1;
     min-width:0;
     padding:40px 36px;
@@ -453,6 +456,30 @@
     text-align:center;
     background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     box-shadow:inset 0 0 30px rgba(120,85,35,.15), 0 2px 10px rgba(0,0,0,.35);
+  }
+  /* signed like a name written inside the front cover of a real book — a
+     small, slightly tilted, handwritten-feeling credit tucked in the
+     bottom corner of each page, near the outer edge (away from the spine) */
+  .proj-author{
+    position:absolute;
+    bottom:26px;
+    max-width:calc(100% - 56px);
+    font-family:var(--font-title);
+    font-size:var(--spread-author-size);
+    color:var(--spread-author-color);
+    border-bottom:1px solid color-mix(in srgb, var(--spread-author-color) 60%, transparent);
+    padding-bottom:2px;
+    transform:rotate(-2deg);
+    pointer-events:none;
+  }
+  .proj-author::before{ content:"— "; }
+  #pageLeft .proj-author, .flip-page.left .proj-author{
+    left:28px;
+    text-align:left;
+  }
+  #pageRight .proj-author, .flip-page.right .proj-author{
+    right:28px;
+    text-align:right;
   }
   .cat-title{
     position:absolute;
@@ -1351,6 +1378,8 @@ const DEFAULT_THEME = {
   '--spread-name-size': '22px',
   '--spread-desc-color': '#5a4f3c',
   '--spread-desc-size': '14px',
+  '--spread-author-color': '#8a6a3a',
+  '--spread-author-size': '15px',
 
   '--project-paper-color': '#e6d2a2',
   '--project-title-color': '#2b2118',
@@ -1389,6 +1418,7 @@ const DEFAULTS = {
     projects: [1,2,3].map(n => ({
       name: `${cat.name} — Project ${n}`,
       desc: "Placeholder description of this student project. Replace with the real summary, tools used, and team credits.",
+      author: '',
       videoUrl: null,
       gallery: []
     }))
@@ -1417,8 +1447,9 @@ async function loadSiteData(){
 
 // Optional: project name/description/video/preview can also come from a spreadsheet
 // called "projects.xlsx" placed next to index.html. Expected columns (any order):
-//   Category | Project Name | Description | Video URL | Images
+//   Category | Project Name | Description | Student Name | Video URL | Images
 // "Category" must match one of the existing category names (case-insensitive).
+// "Student Name" is optional — shows as a signature at the bottom of the book page.
 // "Images" is optional: comma-separated image filenames/URLs, e.g. images/proj1.jpg, images/proj1b.jpg
 // If projects.xlsx is present and readable, it replaces the projects list for any
 // category it mentions (overriding both defaults and Developer Mode edits for those rows).
@@ -1455,6 +1486,7 @@ function applyExcelRowsToSiteData(rows){
     const proj = {
       name: projName,
       desc: getCol(row, 'Description', 'Desc'),
+      author: getCol(row, 'Student Name', 'Student', 'Author'),
       videoUrl: getCol(row, 'Video URL', 'Video') || null,
       gallery: imagesRaw ? imagesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
     };
@@ -1850,6 +1882,7 @@ function pageHTML(proj){
     </div>
     <div class="proj-name">${proj.name}</div>
     <div class="proj-desc">${proj.desc}</div>
+    ${proj.author ? `<div class="proj-author">${proj.author}</div>` : ''}
   `;
 }
 function flipSpread(direction){
@@ -2131,7 +2164,9 @@ const THEME_GROUPS = [
     { key: '--spread-name-color', label: 'Project name color', type: 'color' },
     { key: '--spread-name-size', label: 'Project name size (px)', type: 'size' },
     { key: '--spread-desc-color', label: 'Description color', type: 'color' },
-    { key: '--spread-desc-size', label: 'Description size (px)', type: 'size' }
+    { key: '--spread-desc-size', label: 'Description size (px)', type: 'size' },
+    { key: '--spread-author-color', label: 'Student signature color', type: 'color' },
+    { key: '--spread-author-size', label: 'Student signature size (px)', type: 'size' }
   ]},
   { title: 'Project detail page', fields: [
     { key: '--project-paper-color', label: 'Paper color', type: 'color' },
@@ -2306,6 +2341,10 @@ function renderDevPanel(){
                   <textarea class="devProjDesc" data-cat="${ci}" data-proj="${pi}">${escapeHTML(proj.desc)}</textarea>
                 </div>
                 <div class="dev-field">
+                  <label>Student name (optional — shown as a signature on the book page)</label>
+                  <input type="text" class="devProjAuthor" data-cat="${ci}" data-proj="${pi}" placeholder="e.g. Alex Tan" value="${escapeAttr(proj.author || '')}">
+                </div>
+                <div class="dev-field">
                   <label>Video link (YouTube, optional)</label>
                   <input type="text" class="devProjVideo" data-cat="${ci}" data-proj="${pi}" placeholder="https://youtube.com/watch?v=..." value="${escapeAttr(proj.videoUrl || '')}">
                 </div>
@@ -2329,7 +2368,7 @@ function renderDevPanel(){
       same name — it will ask to replace the old one, confirm). Every visitor's browser will
       then automatically load your latest content, even on a different device.
       <br><br>
-      Tip: project name, description, video link and screenshots can also be filled in from a
+      Tip: project name, description, student name, video link and screenshots can also be filled in from a
       spreadsheet instead of typed here — see the "projects.xlsx" template. If that file exists
       next to index.html, it overrides the project text/preview for any category it lists.
     </div>
@@ -2471,6 +2510,12 @@ function wireDevPanel(){
       siteData.categories[ci].projects[pi].desc = e.target.value;
     });
   });
+  document.querySelectorAll('.devProjAuthor').forEach(el => {
+    el.addEventListener('input', e => {
+      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
+      siteData.categories[ci].projects[pi].author = e.target.value;
+    });
+  });
   document.querySelectorAll('.devProjVideo').forEach(el => {
     el.addEventListener('input', e => {
       const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
@@ -2496,6 +2541,7 @@ function wireDevPanel(){
       siteData.categories[ci].projects.push({
         name: `${siteData.categories[ci].name} — New Project`,
         desc: '',
+        author: '',
         videoUrl: null,
         gallery: []
       });
