@@ -89,23 +89,47 @@
     border:none;
     outline:none;
   }
+  /* no button "shape" — just bold, outlined text so it still reads clearly
+     over any background without a box around it */
   .btn{
-    background:var(--btn-bg);
-    border:2px solid var(--btn-border);
-    color:var(--btn-text);
-    padding:14px 42px;
-    font-size:18px;
+    background:none;
+    border:none;
+    box-shadow:none;
+    border-radius:0;
+    color:var(--btn-bg);
+    font-weight:800;
+    padding:10px 20px;
+    font-size:19px;
     letter-spacing:2px;
-    border-radius:4px;
-    box-shadow:var(--shadow);
-    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    -webkit-text-stroke:1.4px var(--btn-border);
+    text-stroke:1.4px var(--btn-border);
+    paint-order:stroke fill;
+    cursor:pointer;
+    outline:none;
+    transition:transform .15s ease, color .15s ease;
   }
   .btn:hover{
     transform:translateY(-3px);
-    background:#fff;
-    box-shadow:0 16px 34px rgba(0,0,0,.5);
+    color:var(--accent);
   }
   .btn:active{ transform:translateY(0); }
+  /* custom keyboard-focus indicator, since the default browser outline
+     (usually blue) has nothing to blend into now that there's no button
+     box behind the text */
+  .btn:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:4px;
+    border-radius:3px;
+  }
+  /* the introduction page has a light background, so the light fill/dark
+     outline pairing from the rest of the site would nearly vanish here —
+     swap it: dark fill, light outline, same bold look, readable on light */
+  #screen-intro .btn{
+    color:var(--btn-border);
+    -webkit-text-stroke-color:var(--btn-bg);
+    text-stroke-color:var(--btn-bg);
+  }
+  #screen-intro .btn:hover{ color:var(--accent); }
 
   .back-btn{
     position:absolute;
@@ -669,10 +693,13 @@
   @media (hover:none){
     .media-nav{ opacity:.5; }
   }
+  /* sits in the dark backdrop just outside the window itself (not inside
+     the book/paper), so it never lands on a color seam or gets crowded by
+     whatever's near the window's own corner */
   .overlay-close{
     position:absolute;
-    top:12px;right:12px;
-    width:32px;height:32px;
+    top:22px;right:26px;
+    width:34px;height:34px;
     border-radius:50%;
     background:var(--cream);
     border:2px solid var(--ink);
@@ -681,31 +708,28 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 4px 10px rgba(0,0,0,.3);
+    box-shadow:0 4px 12px rgba(0,0,0,.5);
     transition:transform .15s ease;
-    z-index:6;
+    z-index:45;
   }
   .overlay-close:hover{ transform:scale(1.08); }
+  /* framed like a small picture hung on the wall next to the paper, not a
+     flatscreen TV: a warm wood border (matching the shelf's wood tones)
+     with a thin brass inner lip around the screen — no bezel, no stand */
   .monitor{
     width:min(680px,80vw);
-    background:#151515;
-    border-radius:10px;
-    padding:16px 16px 26px;
-    box-shadow:var(--shadow);
+    background:linear-gradient(160deg, var(--wood), var(--wood-dark));
+    border-radius:6px;
+    border:1px solid rgba(0,0,0,.5);
+    padding:14px;
+    box-shadow:0 16px 34px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.06);
     position:relative;
-  }
-  .monitor::after{
-    content:"";
-    position:absolute;
-    left:50%;bottom:-14px;
-    transform:translateX(-50%);
-    width:110px;height:14px;
-    background:#0e0e0e;
-    border-radius:0 0 6px 6px;
   }
   .monitor-screen{
     aspect-ratio:16/9;
-    border-radius:4px;
+    border-radius:2px;
+    outline:3px solid var(--gold);
+    outline-offset:-3px;
     overflow:hidden;
     background-color:#456;
     background-image:linear-gradient(135deg, rgba(255,255,255,.12), transparent);
@@ -800,23 +824,31 @@
   }
 
   /* ---------- DEVELOPER MODE ---------- */
+  /* deliberately unobtrusive — this is a behind-the-scenes tool, not a
+     site feature, so it should fade into the corner rather than draw the
+     eye; it only becomes clearly visible on hover/focus */
   #devToggleBtn{
     position:fixed;
-    right:18px;bottom:18px;
+    right:16px;bottom:16px;
     z-index:2000;
-    width:46px;height:46px;
+    width:34px;height:34px;
     border-radius:50%;
-    background:#222;
-    color:#eee;
-    border:2px solid #555;
-    font-size:20px;
+    background:transparent;
+    color:#fff;
+    border:none;
+    font-size:16px;
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 6px 16px rgba(0,0,0,.5);
+    box-shadow:none;
     font-family:'Segoe UI',Arial,sans-serif;
+    opacity:.18;
+    transition:opacity .2s ease, background .2s ease;
   }
-  #devToggleBtn:hover{ background:#333; }
+  #devToggleBtn:hover, #devToggleBtn:focus-visible{
+    opacity:1;
+    background:rgba(0,0,0,.5);
+  }
   #devPanel{
     position:fixed;
     top:0;right:0;bottom:0;
@@ -1217,8 +1249,8 @@
   <!-- CATEGORY SPREAD (overlay window on top of the shelf) -->
   <section id="screen-category">
     <div class="overlay-backdrop" id="categoryBackdrop"></div>
+    <button class="overlay-close" id="categoryClose">&times;</button>
     <div class="book-spread">
-      <button class="overlay-close" id="categoryClose">&times;</button>
       <div class="cat-title cat-title-left" id="catTitleLeft"></div>
       <div class="cat-title cat-title-right" id="catTitleRight"></div>
       <div class="page" id="pageLeft"></div>
@@ -1233,8 +1265,8 @@
   <!-- PROJECT DETAIL (overlay window on top of the rack) -->
   <section id="screen-project">
     <div class="overlay-backdrop" id="projectBackdrop"></div>
+    <button class="overlay-close" id="projectClose">&times;</button>
     <div class="project-window">
-      <button class="overlay-close" id="projectClose">&times;</button>
       <div class="project-window-inner">
         <div class="monitor-row">
           <div class="monitor">
@@ -2075,9 +2107,8 @@ const THEME_GROUPS = [
     { key: '--font-body', label: 'Body font (everything else)', type: 'font' }
   ]},
   { title: 'Buttons', fields: [
-    { key: '--btn-bg', label: 'Background color', type: 'color' },
-    { key: '--btn-text', label: 'Text color', type: 'color' },
-    { key: '--btn-border', label: 'Border color', type: 'color' }
+    { key: '--btn-bg', label: 'Text fill color', type: 'color' },
+    { key: '--btn-border', label: 'Text outline color', type: 'color' }
   ]},
   { title: 'Landing page', fields: [
     { key: '--landing-bg', label: 'Background color', type: 'color' },
