@@ -27,6 +27,12 @@
     --btn-bg:#f3e9d8;
     --btn-text:#2b2118;
     --btn-border:#2b2118;
+    --btn-size:19px;
+    --btn-outline-width:1.4px;
+
+    --close-btn-size:34px;
+    --project-nav-size:24px;
+    --media-nav-size:36px;
 
     --landing-bg:#172318;
     --landing-title-color:#fffaf0;
@@ -41,6 +47,7 @@
 
     --shelf-bg:#1c120b;
     --spine-text-scale:1;
+    --book-scale:1;
 
     --spread-cover-color:#451721;
     --spread-page-color:#e9d7ac;
@@ -101,10 +108,10 @@
     color:var(--btn-bg);
     font-weight:800;
     padding:10px 20px;
-    font-size:19px;
+    font-size:var(--btn-size);
     letter-spacing:2px;
-    -webkit-text-stroke:1.4px var(--btn-border);
-    text-stroke:1.4px var(--btn-border);
+    -webkit-text-stroke:var(--btn-outline-width) var(--btn-border);
+    text-stroke:var(--btn-outline-width) var(--btn-border);
     paint-order:stroke fill;
     cursor:pointer;
     outline:none;
@@ -685,7 +692,7 @@
     flex-shrink:0;
     background:transparent;
     border:none;
-    font-size:24px;
+    font-size:var(--project-nav-size);
     color:#7a6a4a;
     padding:4px 14px;
     cursor:pointer;
@@ -701,7 +708,7 @@
   .media-nav{
     position:absolute;
     top:50%;
-    width:36px;height:36px;
+    width:var(--media-nav-size);height:var(--media-nav-size);
     transform:translateY(-50%);
     border-radius:50%;
     display:flex;
@@ -710,7 +717,7 @@
     border:none;
     background:rgba(0,0,0,.45);
     color:#fff;
-    font-size:16px;
+    font-size:calc(var(--media-nav-size) * .44);
     cursor:pointer;
     opacity:0;
     transition:opacity .18s ease, background .18s ease;
@@ -730,11 +737,11 @@
   .overlay-close{
     position:absolute;
     top:22px;right:26px;
-    width:34px;height:34px;
+    width:var(--close-btn-size);height:var(--close-btn-size);
     border-radius:50%;
     background:var(--cream);
     border:2px solid var(--ink);
-    font-size:18px;
+    font-size:calc(var(--close-btn-size) * .53);
     line-height:1;
     display:flex;
     align-items:center;
@@ -1223,7 +1230,7 @@
       gap:22px;
     }
     .project-navbtn{
-      font-size:19px;
+      font-size:calc(var(--project-nav-size) * .8);
       padding:2px 10px;
     }
     .gallery-thumb{
@@ -1365,6 +1372,12 @@ const DEFAULT_THEME = {
   '--btn-bg': '#f3e9d8',
   '--btn-text': '#2b2118',
   '--btn-border': '#2b2118',
+  '--btn-size': '19px',
+  '--btn-outline-width': '1.4px',
+
+  '--close-btn-size': '34px',
+  '--project-nav-size': '24px',
+  '--media-nav-size': '36px',
 
   '--landing-bg': '#172318',
   '--landing-title-color': '#fffaf0',
@@ -1379,6 +1392,7 @@ const DEFAULT_THEME = {
 
   '--shelf-bg': '#1c120b',
   '--spine-text-scale': '1',
+  '--book-scale': '1',
 
   '--spread-cover-color': '#451721',
   '--spread-page-color': '#e9d7ac',
@@ -1637,7 +1651,12 @@ function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
 // (capped) book width, so spacing keeps growing on bigger screens even after
 // the books themselves stop growing.
 function shelfMetrics(availW){
-  const bookW = clamp(availW / 8.5, 58, 130);
+  // book size is user-adjustable in Developer Mode (Theme > Bookshelf);
+  // applied here (the single shared source for both packing math and
+  // rendering) so the row-packing budget always matches the actual
+  // rendered size and never overflows
+  const bookScale = clamp(parseFloat(siteData.theme && siteData.theme['--book-scale']) || 1, 0.6, 1.6);
+  const bookW = clamp(availW / 8.5, 58, 130) * bookScale;
   const gapUnit = clamp(availW / 40, 12, 50);
   return { bookW, gapUnit };
 }
@@ -2166,7 +2185,14 @@ const THEME_GROUPS = [
   ]},
   { title: 'Buttons', fields: [
     { key: '--btn-bg', label: 'Text fill color', type: 'color' },
-    { key: '--btn-border', label: 'Text outline color', type: 'color' }
+    { key: '--btn-border', label: 'Text outline color', type: 'color' },
+    { key: '--btn-size', label: 'Text size (px)', type: 'size' },
+    { key: '--btn-outline-width', label: 'Outline thickness (px)', type: 'size', min: 0, max: 5, step: 0.2 }
+  ]},
+  { title: 'Icons & controls', fields: [
+    { key: '--close-btn-size', label: 'Close (×) button size (px)', type: 'size' },
+    { key: '--project-nav-size', label: 'Switch-project arrow size (px)', type: 'size' },
+    { key: '--media-nav-size', label: 'Switch-preview arrow size (px)', type: 'size' }
   ]},
   { title: 'Landing page', fields: [
     { key: '--landing-bg', label: 'Background color', type: 'color' },
@@ -2183,6 +2209,7 @@ const THEME_GROUPS = [
   ]},
   { title: 'Bookshelf page', fields: [
     { key: '--shelf-bg', label: 'Background color', type: 'color' },
+    { key: '--book-scale', label: 'Book size (%)', type: 'scale' },
     { key: '--spine-text-scale', label: 'Book spine text size (%)', type: 'scale' }
   ]},
   { title: 'Book pages (category spread)', fields: [
@@ -2216,10 +2243,11 @@ function themeFieldHTML(f){
   }
   if (f.type === 'size'){
     const num = parseFloat(val) || 0;
+    const min = f.min ?? 8, max = f.max ?? 160, step = f.step ?? 1;
     return `
       <div class="dev-field">
         <label>${escapeHTML(f.label)}</label>
-        <input type="number" class="devThemeSize" data-key="${f.key}" min="8" max="160" value="${num}">
+        <input type="number" class="devThemeSize" data-key="${f.key}" min="${min}" max="${max}" step="${step}" value="${num}">
       </div>`;
   }
   if (f.type === 'font'){
