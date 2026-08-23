@@ -658,40 +658,36 @@
   }
   .project-navbtn:hover{ color:var(--accent); transform:scale(1.15); }
 
-  /* preview switcher: lives ON the screen, invisible until you hover/touch
-     near the edge, so it reads as "this belongs to the video/image" */
+  /* preview switcher: only the small round arrow button itself is
+     clickable — it used to be a full-height strip along each edge, which
+     sat on top of the video/iframe and blocked its own controls (like the
+     player's fullscreen button). Now it's just a small circle so the rest
+     of the video surface is free for its own controls. */
   .media-nav{
     position:absolute;
-    top:0; bottom:0;
-    width:18%;
-    min-width:44px;
+    top:50%;
+    width:36px;height:36px;
+    transform:translateY(-50%);
+    border-radius:50%;
     display:flex;
     align-items:center;
+    justify-content:center;
     border:none;
+    background:rgba(0,0,0,.45);
     color:#fff;
-    font-size:22px;
-    text-shadow:0 2px 6px rgba(0,0,0,.6);
+    font-size:16px;
     cursor:pointer;
     opacity:0;
-    transition:opacity .18s ease;
+    transition:opacity .18s ease, background .18s ease;
     z-index:6;
   }
-  .media-nav-left{
-    left:0;
-    justify-content:flex-start;
-    padding-left:10px;
-    background:linear-gradient(90deg, rgba(0,0,0,.4), transparent);
-  }
-  .media-nav-right{
-    right:0;
-    justify-content:flex-end;
-    padding-right:10px;
-    background:linear-gradient(270deg, rgba(0,0,0,.4), transparent);
-  }
+  .media-nav:hover{ background:rgba(0,0,0,.7); }
+  .media-nav-left{ left:10px; }
+  .media-nav-right{ right:10px; }
   .monitor-screen:hover .media-nav{ opacity:1; }
   .media-nav:focus-visible{ opacity:1; }
   @media (hover:none){
-    .media-nav{ opacity:.5; }
+    .media-nav{ opacity:.55; }
   }
   /* sits in the dark backdrop just outside the window itself (not inside
      the book/paper), so it never lands on a color seam or gets crowded by
