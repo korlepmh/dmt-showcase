@@ -46,7 +46,7 @@
     --intro-label-color:#c1442e;
 
     --shelf-bg:#1c120b;
-    --spine-text-scale:1;
+    --spine-text-scale:1.5;
     --book-scale:1;
 
     --spread-cover-color:#451721;
@@ -483,12 +483,12 @@
   }
   .proj-author::before{ content:"— "; }
   #pageLeft .proj-author, .flip-page.left .proj-author{
-    left:28px;
-    text-align:left;
-  }
-  #pageRight .proj-author, .flip-page.right .proj-author{
     right:28px;
     text-align:right;
+  }
+  #pageRight .proj-author, .flip-page.right .proj-author{
+    left:28px;
+    text-align:left;
   }
   .cat-title{
     position:absolute;
@@ -580,18 +580,21 @@
   .spread-nav{
     position:absolute;
     bottom:38px;left:0;right:0;
-    display:flex;
-    justify-content:center;
-    gap:16px;
     z-index:6;
+    pointer-events:none;
   }
   .spread-nav button{
+    position:absolute;
+    bottom:0;
     background:transparent;
     border:none;
     font-size:22px;
     color:#7a6a4a;
     padding:4px 12px;
+    pointer-events:auto;
   }
+  .spread-nav button#spreadPrev{ left:28px; }
+  .spread-nav button#spreadNext{ right:28px; }
   .spread-nav button:hover{ color:var(--accent); }
   .spread-nav button:disabled{ opacity:.25; cursor:default; }
 
@@ -1391,7 +1394,7 @@ const DEFAULT_THEME = {
   '--intro-label-color': '#c1442e',
 
   '--shelf-bg': '#1c120b',
-  '--spine-text-scale': '1',
+  '--spine-text-scale': '1.5',
   '--book-scale': '1',
 
   '--spread-cover-color': '#451721',
@@ -1707,7 +1710,8 @@ function buildPlatform(group, availW){
   const platform = document.createElement('div');
   platform.className = 'shelf-platform';
   const { bookW, gapUnit } = shelfMetrics(availW);
-  const textScale = parseFloat(siteData.theme && siteData.theme['--spine-text-scale']) || 1;
+  const isMobileWidth = window.innerWidth <= 700;
+  const textScale = isMobileWidth ? 1.15 : (parseFloat(siteData.theme && siteData.theme['--spine-text-scale']) || 1);
   group.forEach(({ cat, index }) => {
     const b = document.createElement('div');
     b.className = 'book';
