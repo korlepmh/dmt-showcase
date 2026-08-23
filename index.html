@@ -1904,7 +1904,7 @@ function renderProject(){
       watchLink.href = current.url;
       watchLink.target = '_blank';
       watchLink.rel = 'noopener';
-      watchLink.textContent = 'Watch on YouTube/Vimeo ↗';
+      watchLink.textContent = 'Watch on YouTube ↗';
       screenEl.appendChild(watchLink);
     } else {
       // couldn't recognize the link as a YouTube/Vimeo video — embedding the
@@ -1915,7 +1915,7 @@ function renderProject(){
       fallback.href = current.url;
       fallback.target = '_blank';
       fallback.rel = 'noopener';
-      fallback.textContent = 'Link not recognized as YouTube/Vimeo — open video ↗';
+      fallback.textContent = 'Link not recognized as YouTube — open video ↗';
       screenEl.appendChild(fallback);
     }
   } else if (current && current.type === 'image'){
@@ -2279,7 +2279,7 @@ function renderDevPanel(){
                   <textarea class="devProjDesc" data-cat="${ci}" data-proj="${pi}">${escapeHTML(proj.desc)}</textarea>
                 </div>
                 <div class="dev-field">
-                  <label>Video link (YouTube or Vimeo, optional)</label>
+                  <label>Video link (YouTube, optional)</label>
                   <input type="text" class="devProjVideo" data-cat="${ci}" data-proj="${pi}" placeholder="https://youtube.com/watch?v=..." value="${escapeAttr(proj.videoUrl || '')}">
                 </div>
                 <div class="dev-field">
