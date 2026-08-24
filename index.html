@@ -145,7 +145,7 @@
     top:24px;left:24px;
     z-index:20;
     padding:10px 22px;
-    font-size:25px;
+    font-size:14px;
     letter-spacing:1px;
   }
 
@@ -2510,11 +2510,13 @@ function wireDevPanel(){
     siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
     $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
     $('devLandingPreview').textContent = '';
+    applyBasics();
   });
   $('devLandingClear').addEventListener('click', () => {
     siteData.landingBg = null;
     $('devLandingPreview').style.backgroundImage = '';
     $('devLandingPreview').textContent = 'No image set';
+    applyBasics();
   });
 
   $('devMascotFile').addEventListener('change', async (e) => {
@@ -2523,11 +2525,13 @@ function wireDevPanel(){
     siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
     $('devMascotPreview').style.backgroundImage = `url('${siteData.mascotImg}')`;
     $('devMascotPreview').textContent = '';
+    applyBasics();
   });
   $('devMascotClear').addEventListener('click', () => {
     siteData.mascotImg = null;
     $('devMascotPreview').style.backgroundImage = '';
     $('devMascotPreview').textContent = 'No image set';
+    applyBasics();
   });
 
   document.querySelectorAll('.devCatName').forEach(el => {
