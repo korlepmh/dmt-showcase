@@ -1158,6 +1158,18 @@
     line-height:1.5;
     margin-top:10px;
   }
+  .dev-sync-banner{
+    display:none;
+    background:#3a2f14;
+    border:1px solid #8a6a1f;
+    color:#f0d999;
+    border-radius:5px;
+    padding:8px 10px;
+    font-size:11.5px;
+    line-height:1.5;
+    margin-bottom:14px;
+  }
+  .dev-sync-banner.show{ display:block; }
 
   /* ---------- MOBILE / NARROW SCREENS ---------- */
   @media (max-width: 700px){
@@ -1419,6 +1431,12 @@ const DEFAULT_THEME = {
 };
 
 const DEFAULTS = {
+  // Bumped by "Export data.json" every time you publish. Visiting browsers
+  // compare this against whatever version (if any) is cached in their own
+  // localStorage — if they don't match, the stale local cache is dropped
+  // and the freshly-published data.json wins automatically, with no
+  // manual "Reset all" click needed on that device.
+  version: 1,
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
@@ -1459,19 +1477,46 @@ const DEFAULTS = {
 const STORAGE_KEY = 'dmtShowcaseSiteData';
 function cloneDefaults(){ return JSON.parse(JSON.stringify(DEFAULTS)); }
 
-// Loading priority:
-// 1. localStorage — this browser's in-progress edits (from the dev panel), if any
-// 2. data.json — the "published" content, hosted next to index.html, same for every visitor
-// 3. built-in DEFAULTS — used if neither of the above is available yet
+// Loading priority, with an auto-refresh check:
+// 1. Fetch data.json — the "published" content, hosted next to index.html,
+//    same for every visitor. Its `version` number is the source of truth.
+// 2. Check localStorage — this browser's own saved copy, if any (e.g. from
+//    using Developer Mode on this device).
+// 3. If BOTH exist and their `version` numbers don't match, the published
+//    file has moved on since this device last saved — the stale local copy
+//    is discarded automatically and the fresh data.json is used instead.
+//    If they match, the local copy is kept (it may hold in-progress edits
+//    made in Developer Mode that haven't been exported/published yet).
+// 4. If data.json can't be fetched (offline, or opened via file://), fall
+//    back to whatever's in localStorage, then finally to built-in DEFAULTS.
+let dataSyncWasReset = false; // set true when a stale local copy gets dropped, for the dev-panel banner
 async function loadSiteData(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e){ console.warn('Could not read saved data, trying data.json next', e); }
+  let remote = null;
   try {
     const res = await fetch('data.json', { cache: 'no-store' });
-    if (res.ok) return await res.json();
+    if (res.ok) remote = await res.json();
   } catch(e){ /* no data.json published yet, or opened via file:// where fetch is blocked */ }
+
+  let local = null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) local = JSON.parse(raw);
+  } catch(e){ console.warn('Could not read saved data', e); }
+
+  if (local && remote){
+    const localVersion = local.version || 0;
+    const remoteVersion = remote.version || 0;
+    if (localVersion !== remoteVersion){
+      // a newer (or different) data.json has been published since this
+      // device last saved locally — drop the stale local copy
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+      local = null;
+      dataSyncWasReset = true;
+    }
+  }
+
+  if (local) return local;
+  if (remote) return remote;
   return cloneDefaults();
 }
 
@@ -2319,6 +2364,11 @@ function fileToDataURL(file, maxDim, quality){
 function renderDevPanel(){
   const body = $('devBody');
   body.innerHTML = `
+    <div class="dev-sync-banner${dataSyncWasReset ? ' show' : ''}" id="devSyncBanner">
+      A newer published data.json was found, so an older locally-saved copy on this device was
+      automatically replaced with it. Any local edits you hadn't exported yet may be gone —
+      check your content below before making new changes.
+    </div>
     <div class="dev-section">
       <h3>Site basics</h3>
       <div class="dev-field">
@@ -2429,8 +2479,9 @@ function renderDevPanel(){
       Changes here are saved in this browser only, so other devices won't see them yet.
       To publish for everyone: click "Export data.json" to download the file, then in your
       GitHub repo upload it next to index.html (use "Add file → Upload files", same folder,
-      same name — it will ask to replace the old one, confirm). Every visitor's browser will
-      then automatically load your latest content, even on a different device.
+      same name — it will ask to replace the old one, confirm). Every visitor's browser
+      (including phones that had older content cached) will then automatically pick up your
+      latest content on their next visit — no manual reset needed.
       <br><br>
       Tip: project name, description, student name, video link and screenshots can also be filled in from a
       spreadsheet instead of typed here — see the "projects.xlsx" template. If that file exists
@@ -2507,7 +2558,12 @@ function wireDevPanel(){
   $('devLandingFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
+    try {
+      siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
+    } catch(err){
+      alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
+      return;
+    }
     $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
     $('devLandingPreview').textContent = '';
     applyBasics();
@@ -2522,7 +2578,12 @@ function wireDevPanel(){
   $('devMascotFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
+    try {
+      siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
+    } catch(err){
+      alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
+      return;
+    }
     $('devMascotPreview').style.backgroundImage = `url('${siteData.mascotImg}')`;
     $('devMascotPreview').textContent = '';
     applyBasics();
@@ -2549,7 +2610,13 @@ function wireDevPanel(){
       const file = e.target.files[0];
       if (!file) return;
       const ci = parseInt(e.target.dataset.cat, 10);
-      const dataUrl = await fileToDataURL(file, 400, 0.85);
+      let dataUrl;
+      try {
+        dataUrl = await fileToDataURL(file, 400, 0.85);
+      } catch(err){
+        alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
+        return;
+      }
       siteData.categories[ci].image = dataUrl;
       const preview = document.querySelector(`[data-cat-preview="${ci}"]`);
       preview.style.backgroundImage = `url('${dataUrl}')`;
@@ -2596,8 +2663,12 @@ function wireDevPanel(){
       if (!files.length) return;
       const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
       for (const file of files){
-        const dataUrl = await fileToDataURL(file, 1000, 0.8);
-        siteData.categories[ci].projects[pi].gallery.push(dataUrl);
+        try {
+          const dataUrl = await fileToDataURL(file, 1000, 0.8);
+          siteData.categories[ci].projects[pi].gallery.push(dataUrl);
+        } catch(err){
+          alert('One of those images could not be read by the browser (this can happen with HEIC/iPhone camera photos) and was skipped. Try a JPG or PNG instead.');
+        }
       }
       refreshGalleryList(ci, pi);
       e.target.value = '';
@@ -2687,12 +2758,20 @@ if (!DEV_MODE_ENABLED){
 }
 $('devCloseBtn').addEventListener('click', () => $('devPanel').classList.remove('open'));
 $('devSaveBtn').addEventListener('click', () => {
+  // Save & apply only stores your in-progress local edits — it does NOT
+  // bump the version number, so this device will keep using them (instead
+  // of treating them as "stale") until you actually publish via Export.
   saveSiteData();
   applyAndRerenderEverything();
   $('devSaveBtn').textContent = 'Saved!';
   setTimeout(() => { $('devSaveBtn').textContent = 'Save & apply'; }, 1200);
 });
 $('devExportBtn').addEventListener('click', () => {
+  // Publishing: stamp a new version so every visiting browser (including
+  // ones with an older cached copy) will automatically detect this file is
+  // newer and switch to it — no manual reset needed on their end.
+  siteData.version = Date.now();
+  saveSiteData(); // keep this device's own local copy in sync with the new version too
   const blob = new Blob([JSON.stringify(siteData, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
