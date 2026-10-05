@@ -316,6 +316,8 @@
     flex-direction:column;
     align-items:center;
     background:var(--shelf-bg);
+    background-size:cover;
+    background-position:center;
     padding:64px 32px 24px;
   }
   .bookcase-wrap{
@@ -342,6 +344,37 @@
     -webkit-mask-image:linear-gradient(to bottom,
       transparent 0, black 64px, black calc(100% - 64px), transparent 100%);
   }
+  /* chevron hints showing the shelf can scroll up/down — each made from
+     two short bars meeting at a point, like the two strokes of "<" and ">"
+     laid back to back and rotated onto their sides */
+  .shelf-scroll-hint{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    width:30px;height:18px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s ease;
+    z-index:5;
+  }
+  .shelf-scroll-hint.show{ opacity:.8; }
+  .shelf-scroll-hint::before,
+  .shelf-scroll-hint::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    width:58%;
+    height:3px;
+    background:#f0e6c8;
+    border-radius:2px;
+  }
+  .shelf-scroll-hint-up{ top:8px; }
+  .shelf-scroll-hint-up::before{ left:0; transform-origin:right center; transform:rotate(-38deg); }
+  .shelf-scroll-hint-up::after{ right:0; transform-origin:left center; transform:rotate(38deg); }
+  .shelf-scroll-hint-down{ bottom:8px; }
+  .shelf-scroll-hint-down::before{ left:0; transform-origin:right center; transform:rotate(38deg); }
+  .shelf-scroll-hint-down::after{ right:0; transform-origin:left center; transform:rotate(-38deg); }
+
   .bookcase-stack{
     display:flex;
     flex-direction:column;
@@ -462,33 +495,47 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
     text-align:center;
     background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     box-shadow:inset 0 0 30px rgba(120,85,35,.15), 0 2px 10px rgba(0,0,0,.35);
+    overflow-y:auto;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(43,33,24,.35) transparent;
   }
+  .page::-webkit-scrollbar{ width:7px; }
+  .page::-webkit-scrollbar-track{ background:transparent; }
+  .page::-webkit-scrollbar-thumb{
+    background:rgba(43,33,24,.35);
+    border-radius:999px;
+  }
+  .page::-webkit-scrollbar-thumb:hover{ background:rgba(43,33,24,.55); }
   /* signed like a name written inside the front cover of a real book — a
      small, slightly tilted, handwritten-feeling credit tucked in the
      bottom corner of each page, near the outer edge (away from the spine) */
   .proj-author{
-    position:absolute;
-    bottom:26px;
-    max-width:calc(100% - 56px);
+    align-self:stretch;
+    flex-shrink:0;
+    margin-top:22px;
     font-family:var(--font-title);
     font-size:var(--spread-author-size);
     color:var(--spread-author-color);
+    pointer-events:none;
+  }
+  .proj-author span{
+    display:inline-block;
+    max-width:100%;
     border-bottom:1px solid color-mix(in srgb, var(--spread-author-color) 60%, transparent);
     padding-bottom:2px;
-    pointer-events:none;
   }
   .proj-author::before{ content:"— "; }
   #pageLeft .proj-author, .flip-page.left .proj-author{
-    right:28px;
     text-align:right;
+    padding-right:28px;
   }
   #pageRight .proj-author, .flip-page.right .proj-author{
-    left:28px;
     text-align:left;
+    padding-left:28px;
   }
   .cat-title{
     position:absolute;
@@ -1158,18 +1205,6 @@
     line-height:1.5;
     margin-top:10px;
   }
-  .dev-sync-banner{
-    display:none;
-    background:#3a2f14;
-    border:1px solid #8a6a1f;
-    color:#f0d999;
-    border-radius:5px;
-    padding:8px 10px;
-    font-size:11.5px;
-    line-height:1.5;
-    margin-bottom:14px;
-  }
-  .dev-sync-banner.show{ display:block; }
 
   /* ---------- MOBILE / NARROW SCREENS ---------- */
   @media (max-width: 700px){
@@ -1300,6 +1335,8 @@
     <div class="bookcase-wrap">
       <div class="bookcase-viewport">
         <div class="bookcase-stack" id="bookcaseStack"></div>
+        <div class="shelf-scroll-hint shelf-scroll-hint-up" id="shelfHintUp"></div>
+        <div class="shelf-scroll-hint shelf-scroll-hint-down" id="shelfHintDown"></div>
       </div>
     </div>
   </section>
@@ -1431,15 +1468,11 @@ const DEFAULT_THEME = {
 };
 
 const DEFAULTS = {
-  // Bumped by "Export data.json" every time you publish. Visiting browsers
-  // compare this against whatever version (if any) is cached in their own
-  // localStorage — if they don't match, the stale local cache is dropped
-  // and the freshly-published data.json wins automatically, with no
-  // manual "Reset all" click needed on that device.
-  version: 1,
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
+  shelfBg: null,
+  shelfMomentum: 0.5,
   mascotImg: null,
   theme: { ...DEFAULT_THEME },
   introSlides: [
@@ -1477,46 +1510,19 @@ const DEFAULTS = {
 const STORAGE_KEY = 'dmtShowcaseSiteData';
 function cloneDefaults(){ return JSON.parse(JSON.stringify(DEFAULTS)); }
 
-// Loading priority, with an auto-refresh check:
-// 1. Fetch data.json — the "published" content, hosted next to index.html,
-//    same for every visitor. Its `version` number is the source of truth.
-// 2. Check localStorage — this browser's own saved copy, if any (e.g. from
-//    using Developer Mode on this device).
-// 3. If BOTH exist and their `version` numbers don't match, the published
-//    file has moved on since this device last saved — the stale local copy
-//    is discarded automatically and the fresh data.json is used instead.
-//    If they match, the local copy is kept (it may hold in-progress edits
-//    made in Developer Mode that haven't been exported/published yet).
-// 4. If data.json can't be fetched (offline, or opened via file://), fall
-//    back to whatever's in localStorage, then finally to built-in DEFAULTS.
-let dataSyncWasReset = false; // set true when a stale local copy gets dropped, for the dev-panel banner
+// Loading priority:
+// 1. localStorage — this browser's in-progress edits (from the dev panel), if any
+// 2. data.json — the "published" content, hosted next to index.html, same for every visitor
+// 3. built-in DEFAULTS — used if neither of the above is available yet
 async function loadSiteData(){
-  let remote = null;
-  try {
-    const res = await fetch('data.json', { cache: 'no-store' });
-    if (res.ok) remote = await res.json();
-  } catch(e){ /* no data.json published yet, or opened via file:// where fetch is blocked */ }
-
-  let local = null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) local = JSON.parse(raw);
-  } catch(e){ console.warn('Could not read saved data', e); }
-
-  if (local && remote){
-    const localVersion = local.version || 0;
-    const remoteVersion = remote.version || 0;
-    if (localVersion !== remoteVersion){
-      // a newer (or different) data.json has been published since this
-      // device last saved locally — drop the stale local copy
-      try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
-      local = null;
-      dataSyncWasReset = true;
-    }
-  }
-
-  if (local) return local;
-  if (remote) return remote;
+    if (raw) return JSON.parse(raw);
+  } catch(e){ console.warn('Could not read saved data, trying data.json next', e); }
+  try {
+    const res = await fetch('data.json', { cache: 'no-store' });
+    if (res.ok) return await res.json();
+  } catch(e){ /* no data.json published yet, or opened via file:// where fetch is blocked */ }
   return cloneDefaults();
 }
 
@@ -1623,6 +1629,13 @@ function applyBasics(){
       `linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)), url('${siteData.landingBg}')`;
   } else {
     landing.style.backgroundImage = '';
+  }
+  const shelf = $('screen-shelf');
+  if (siteData.shelfBg){
+    shelf.style.backgroundImage =
+      `linear-gradient(rgba(10,7,4,.55), rgba(10,7,4,.55)), url('${siteData.shelfBg}')`;
+  } else {
+    shelf.style.backgroundImage = '';
   }
   const mascotBox = $('mascotBox');
   if (siteData.mascotImg){
@@ -1883,6 +1896,34 @@ function renderShelf(){
   setupShelfSlider();
 }
 
+// ---- scroll hint arrows: visible by default, fade out after 2s of no
+// scroll interaction, reappear immediately on the next interaction ----
+let shelfHintTimer = null;
+function showShelfHints(){
+  const up = $('shelfHintUp'), down = $('shelfHintDown');
+  if (up) up.classList.add('show');
+  if (down) down.classList.add('show');
+}
+function hideShelfHints(){
+  const up = $('shelfHintUp'), down = $('shelfHintDown');
+  if (up) up.classList.remove('show');
+  if (down) down.classList.remove('show');
+}
+function registerShelfInteraction(){
+  showShelfHints();
+  clearTimeout(shelfHintTimer);
+  shelfHintTimer = setTimeout(hideShelfHints, 2000);
+}
+
+// momentum "friction" (how long the shelf keeps gliding after you let go)
+// is adjustable in Developer Mode > Theme > Bookshelf page: 0 = stops
+// almost immediately, 100 = glides for a long time. Stored as a 0–1 value.
+function shelfFriction(){
+  const raw = parseFloat(siteData.shelfMomentum);
+  const m = isNaN(raw) ? 0.5 : clamp(raw, 0, 1);
+  return 0.86 + m * 0.125; // 0.86 (short glide) .. 0.985 (long glide)
+}
+
 function setupShelfSlider(){
   const viewport = document.querySelector('.bookcase-viewport');
   const stack = $('bookcaseStack');
@@ -1890,6 +1931,8 @@ function setupShelfSlider(){
   requestAnimationFrame(() => {
     const loopHeight = stack.scrollHeight / 2;
     let offset = 0;
+    let velocity = 0;
+    let momentumFrame = null;
     stack.style.transform = 'translateY(0px)';
 
     const moveTo = (value) => {
@@ -1899,30 +1942,79 @@ function setupShelfSlider(){
       stack.style.transform = `translateY(-${offset}px)`;
     };
 
-    // mouse wheel / trackpad scrolls the shelf
+    const stopMomentum = () => {
+      if (momentumFrame) cancelAnimationFrame(momentumFrame);
+      momentumFrame = null;
+      velocity = 0;
+    };
+
+    const startMomentum = () => {
+      if (momentumFrame) cancelAnimationFrame(momentumFrame);
+      const friction = shelfFriction();
+      const step = () => {
+        velocity *= friction;
+        if (Math.abs(velocity) < 0.08){
+          momentumFrame = null;
+          return;
+        }
+        moveTo(offset + velocity);
+        momentumFrame = requestAnimationFrame(step);
+      };
+      momentumFrame = requestAnimationFrame(step);
+    };
+
+    // mouse wheel / trackpad scrolls the shelf, with momentum carrying on
+    // after the wheel stops (scaled down from the raw wheel delta so it
+    // doesn't fly off immediately)
     viewport.onwheel = (e) => {
       e.preventDefault();
+      stopMomentum();
       moveTo(offset + e.deltaY);
+      velocity = e.deltaY * 0.5;
+      startMomentum();
+      registerShelfInteraction();
     };
 
     // finger drag scrolls the shelf on touch devices — the shelf uses a
     // custom transform (not native scroll) so it needs its own touch
-    // handling, there's no scrollbar underneath to fall back on
+    // handling, there's no scrollbar underneath to fall back on. Drag
+    // speed over the last movement becomes the momentum on release.
     let touchStartY = 0, touchStartOffset = 0, dragging = false;
+    let lastTouchY = 0, lastTouchTime = 0, touchVelocity = 0;
     viewport.ontouchstart = (e) => {
       if (!e.touches.length) return;
+      stopMomentum();
       dragging = true;
       touchStartY = e.touches[0].clientY;
       touchStartOffset = offset;
+      lastTouchY = touchStartY;
+      lastTouchTime = performance.now();
+      touchVelocity = 0;
+      registerShelfInteraction();
     };
     viewport.ontouchmove = (e) => {
       if (!dragging || !e.touches.length) return;
       e.preventDefault();
-      const dy = touchStartY - e.touches[0].clientY;
+      const y = e.touches[0].clientY;
+      const now = performance.now();
+      const dy = touchStartY - y;
       moveTo(touchStartOffset + dy);
+      const dt = now - lastTouchTime;
+      if (dt > 0) touchVelocity = ((lastTouchY - y) / dt) * 16;
+      lastTouchY = y;
+      lastTouchTime = now;
+      registerShelfInteraction();
     };
-    viewport.ontouchend = () => { dragging = false; };
+    viewport.ontouchend = () => {
+      dragging = false;
+      velocity = touchVelocity;
+      startMomentum();
+    };
     viewport.ontouchcancel = () => { dragging = false; };
+
+    // show the hints right away when the shelf opens, then let them fade
+    // after 2s like any other idle period
+    registerShelfInteraction();
   });
 }
 $('shelfBack').addEventListener('click', () => {
@@ -1982,7 +2074,7 @@ function pageHTML(proj){
     </div>
     <div class="proj-name">${proj.name}</div>
     <div class="proj-desc">${proj.desc}</div>
-    ${proj.author ? `<div class="proj-author">${proj.author}</div>` : ''}
+    ${proj.author ? `<div class="proj-author"><span>${proj.author}</span></div>` : ''}
   `;
 }
 function flipSpread(direction){
@@ -2327,6 +2419,12 @@ function themeGroupsHTML(){
       <div class="dev-theme-group-title">${escapeHTML(group.title)}</div>
       <div class="dev-theme-fields">
         ${group.fields.map(themeFieldHTML).join('')}
+        ${group.title === 'Bookshelf page' ? `
+          <div class="dev-field">
+            <label>Scroll momentum (%)</label>
+            <input type="number" id="devShelfMomentum" min="0" max="100" step="5" value="${Math.round((parseFloat(siteData.shelfMomentum) || 0) * 100)}">
+          </div>
+        ` : ''}
       </div>
     </div>
   `).join('');
@@ -2364,11 +2462,6 @@ function fileToDataURL(file, maxDim, quality){
 function renderDevPanel(){
   const body = $('devBody');
   body.innerHTML = `
-    <div class="dev-sync-banner${dataSyncWasReset ? ' show' : ''}" id="devSyncBanner">
-      A newer published data.json was found, so an older locally-saved copy on this device was
-      automatically replaced with it. Any local edits you hadn't exported yet may be gone —
-      check your content below before making new changes.
-    </div>
     <div class="dev-section">
       <h3>Site basics</h3>
       <div class="dev-field">
@@ -2385,6 +2478,14 @@ function renderDevPanel(){
         <div class="dev-row">
           <input type="file" id="devLandingFile" accept="image/*">
           <button class="dev-mini-btn" id="devLandingClear">Clear</button>
+        </div>
+      </div>
+      <div class="dev-field">
+        <label>Shelf (library) background image</label>
+        <div class="dev-img-preview" id="devShelfPreview" style="${siteData.shelfBg ? `background-image:url('${siteData.shelfBg}')` : ''}">${siteData.shelfBg ? '' : 'No image set'}</div>
+        <div class="dev-row">
+          <input type="file" id="devShelfFile" accept="image/*">
+          <button class="dev-mini-btn" id="devShelfClear">Clear</button>
         </div>
       </div>
       <div class="dev-field">
@@ -2479,9 +2580,8 @@ function renderDevPanel(){
       Changes here are saved in this browser only, so other devices won't see them yet.
       To publish for everyone: click "Export data.json" to download the file, then in your
       GitHub repo upload it next to index.html (use "Add file → Upload files", same folder,
-      same name — it will ask to replace the old one, confirm). Every visitor's browser
-      (including phones that had older content cached) will then automatically pick up your
-      latest content on their next visit — no manual reset needed.
+      same name — it will ask to replace the old one, confirm). Every visitor's browser will
+      then automatically load your latest content, even on a different device.
       <br><br>
       Tip: project name, description, student name, video link and screenshots can also be filled in from a
       spreadsheet instead of typed here — see the "projects.xlsx" template. If that file exists
@@ -2542,6 +2642,14 @@ function wireDevPanel(){
       if ($('screen-shelf').classList.contains('active')) renderShelf();
     });
   });
+  const shelfMomentumInput = $('devShelfMomentum');
+  if (shelfMomentumInput){
+    shelfMomentumInput.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (isNaN(n)) return;
+      siteData.shelfMomentum = clamp(n / 100, 0, 1);
+    });
+  }
   $('devThemeResetBtn').addEventListener('click', () => {
     if (!confirm('Reset all theme colors/fonts/sizes back to default? This only affects the theme, not your text/images.')) return;
     siteData.theme = { ...DEFAULT_THEME };
@@ -2558,12 +2666,7 @@ function wireDevPanel(){
   $('devLandingFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    try {
-      siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
-    } catch(err){
-      alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
-      return;
-    }
+    siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
     $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
     $('devLandingPreview').textContent = '';
     applyBasics();
@@ -2575,15 +2678,25 @@ function wireDevPanel(){
     applyBasics();
   });
 
+  $('devShelfFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    siteData.shelfBg = await fileToDataURL(file, 1800, 0.8);
+    $('devShelfPreview').style.backgroundImage = `url('${siteData.shelfBg}')`;
+    $('devShelfPreview').textContent = '';
+    applyBasics();
+  });
+  $('devShelfClear').addEventListener('click', () => {
+    siteData.shelfBg = null;
+    $('devShelfPreview').style.backgroundImage = '';
+    $('devShelfPreview').textContent = 'No image set';
+    applyBasics();
+  });
+
   $('devMascotFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    try {
-      siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
-    } catch(err){
-      alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
-      return;
-    }
+    siteData.mascotImg = await fileToDataURL(file, 500, 0.85);
     $('devMascotPreview').style.backgroundImage = `url('${siteData.mascotImg}')`;
     $('devMascotPreview').textContent = '';
     applyBasics();
@@ -2610,13 +2723,7 @@ function wireDevPanel(){
       const file = e.target.files[0];
       if (!file) return;
       const ci = parseInt(e.target.dataset.cat, 10);
-      let dataUrl;
-      try {
-        dataUrl = await fileToDataURL(file, 400, 0.85);
-      } catch(err){
-        alert('That image could not be read by the browser (this can happen with HEIC/iPhone camera photos). Try a JPG or PNG instead, or a screenshot of the image.');
-        return;
-      }
+      const dataUrl = await fileToDataURL(file, 400, 0.85);
       siteData.categories[ci].image = dataUrl;
       const preview = document.querySelector(`[data-cat-preview="${ci}"]`);
       preview.style.backgroundImage = `url('${dataUrl}')`;
@@ -2663,12 +2770,8 @@ function wireDevPanel(){
       if (!files.length) return;
       const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
       for (const file of files){
-        try {
-          const dataUrl = await fileToDataURL(file, 1000, 0.8);
-          siteData.categories[ci].projects[pi].gallery.push(dataUrl);
-        } catch(err){
-          alert('One of those images could not be read by the browser (this can happen with HEIC/iPhone camera photos) and was skipped. Try a JPG or PNG instead.');
-        }
+        const dataUrl = await fileToDataURL(file, 1000, 0.8);
+        siteData.categories[ci].projects[pi].gallery.push(dataUrl);
       }
       refreshGalleryList(ci, pi);
       e.target.value = '';
@@ -2758,20 +2861,12 @@ if (!DEV_MODE_ENABLED){
 }
 $('devCloseBtn').addEventListener('click', () => $('devPanel').classList.remove('open'));
 $('devSaveBtn').addEventListener('click', () => {
-  // Save & apply only stores your in-progress local edits — it does NOT
-  // bump the version number, so this device will keep using them (instead
-  // of treating them as "stale") until you actually publish via Export.
   saveSiteData();
   applyAndRerenderEverything();
   $('devSaveBtn').textContent = 'Saved!';
   setTimeout(() => { $('devSaveBtn').textContent = 'Save & apply'; }, 1200);
 });
 $('devExportBtn').addEventListener('click', () => {
-  // Publishing: stamp a new version so every visiting browser (including
-  // ones with an older cached copy) will automatically detect this file is
-  // newer and switch to it — no manual reset needed on their end.
-  siteData.version = Date.now();
-  saveSiteData(); // keep this device's own local copy in sync with the new version too
   const blob = new Blob([JSON.stringify(siteData, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
