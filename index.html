@@ -381,17 +381,37 @@
     will-change:transform;
   }
   .shelf-platform{
+    position:relative;
     display:flex;
     align-items:flex-end;
     justify-content:center;
     gap:0;
     min-height:400px;
-    padding:0 10px 0;
-    border-bottom:30px solid var(--wood);
+    padding:0 10px 30px;
+    margin-bottom:44px;
+  }
+  /* the shelf plank itself: a textured wood-grain strip (built from layered
+     gradients, no image file needed) instead of a flat solid-color border */
+  .shelf-platform::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:0;
+    height:30px;
+    background:
+      repeating-linear-gradient(180deg,
+        rgba(0,0,0,.16) 0 1px, transparent 1px 5px,
+        rgba(0,0,0,.09) 5px 6px, transparent 6px 11px,
+        rgba(255,255,255,.06) 11px 12px, transparent 12px 17px),
+      repeating-linear-gradient(180deg,
+        rgba(0,0,0,.07) 0 1px, transparent 1px 8px),
+      linear-gradient(180deg,
+        color-mix(in srgb, var(--wood) 88%, white) 0%,
+        var(--wood) 45%,
+        var(--wood-dark) 100%);
     box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.08),
       0 4px 0 rgba(0,0,0,.25),
       0 26px 24px -14px rgba(0,0,0,.65);
-    margin-bottom:44px;
   }
   .book{
     --tilt:0deg;
@@ -1927,6 +1947,7 @@ function shelfFriction(){
 function setupShelfSlider(){
   const viewport = document.querySelector('.bookcase-viewport');
   const stack = $('bookcaseStack');
+  const shelfScreen = $('screen-shelf');
   // wait a frame so layout/heights are settled
   requestAnimationFrame(() => {
     const loopHeight = stack.scrollHeight / 2;
@@ -1940,6 +1961,14 @@ function setupShelfSlider(){
       // seamlessly continues from the (identical) top copy
       offset = ((value % loopHeight) + loopHeight) % loopHeight;
       stack.style.transform = `translateY(-${offset}px)`;
+      // the background image sways gently along with the shelf too, for a
+      // subtle parallax feel — bounded (never pans the image far enough to
+      // reveal its edge) and tied to the same loop length as the book
+      // stack, so it drifts back and forth in sync without ever jumping
+      if (siteData.shelfBg){
+        const bgOffset = Math.sin((offset / loopHeight) * Math.PI * 2) * 36;
+        shelfScreen.style.backgroundPosition = `center ${bgOffset}px`;
+      }
     };
 
     const stopMomentum = () => {
