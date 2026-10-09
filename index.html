@@ -1652,10 +1652,19 @@ function applyBasics(){
   }
   const shelf = $('screen-shelf');
   if (siteData.shelfBg){
+    // layer 1: fixed dark overlay (keeps spines readable)
+    // layer 2: the image, fitted to the screen width and tiled vertically,
+    // so a seamless image repeats endlessly as it scrolls
     shelf.style.backgroundImage =
       `linear-gradient(rgba(10,7,4,.55), rgba(10,7,4,.55)), url('${siteData.shelfBg}')`;
+    shelf.style.backgroundSize = '100% 100%, 100% auto';
+    shelf.style.backgroundRepeat = 'no-repeat, repeat-y';
+    shelf.style.backgroundPosition = '0 0, center 0px';
   } else {
     shelf.style.backgroundImage = '';
+    shelf.style.backgroundSize = '';
+    shelf.style.backgroundRepeat = '';
+    shelf.style.backgroundPosition = '';
   }
   const mascotBox = $('mascotBox');
   if (siteData.mascotImg){
@@ -1961,14 +1970,17 @@ function setupShelfSlider(){
       // seamlessly continues from the (identical) top copy
       offset = ((value % loopHeight) + loopHeight) % loopHeight;
       stack.style.transform = `translateY(-${offset}px)`;
-      // the background image sways gently along with the shelf too, for a
-      // subtle parallax feel — bounded (never pans the image far enough to
-      // reveal its edge) and tied to the same loop length as the book
-      // stack, so it drifts back and forth in sync without ever jumping
-      if (siteData.shelfBg){
-        const bgOffset = Math.sin((offset / loopHeight) * Math.PI * 2) * 36;
-        shelfScreen.style.backgroundPosition = `center ${bgOffset}px`;
-      }
+    };
+
+    // the background image scrolls along with the shelf. bgPos is NEVER
+    // wrapped (unlike offset, which loops with the book stack), so the
+    // image keeps panning through its full height and only repeats when
+    // the image itself ends — CSS repeat-y handles the seamless tiling
+    let bgPos = 0;
+    const BG_SPEED = 0.6; // < 1 = drifts slower than the books (depth feel)
+    const updateBg = () => {
+      if (!siteData.shelfBg) return;
+      shelfScreen.style.backgroundPosition = `0 0, center ${-(bgPos * BG_SPEED)}px`;
     };
 
     const stopMomentum = () => {
@@ -1987,6 +1999,8 @@ function setupShelfSlider(){
           return;
         }
         moveTo(offset + velocity);
+        bgPos += velocity;
+        updateBg();
         momentumFrame = requestAnimationFrame(step);
       };
       momentumFrame = requestAnimationFrame(step);
@@ -1999,6 +2013,8 @@ function setupShelfSlider(){
       e.preventDefault();
       stopMomentum();
       moveTo(offset + e.deltaY);
+      bgPos += e.deltaY;
+      updateBg();
       velocity = e.deltaY * 0.5;
       startMomentum();
       registerShelfInteraction();
@@ -2008,7 +2024,7 @@ function setupShelfSlider(){
     // custom transform (not native scroll) so it needs its own touch
     // handling, there's no scrollbar underneath to fall back on. Drag
     // speed over the last movement becomes the momentum on release.
-    let touchStartY = 0, touchStartOffset = 0, dragging = false;
+    let touchStartY = 0, touchStartOffset = 0, touchStartBg = 0, dragging = false;
     let lastTouchY = 0, lastTouchTime = 0, touchVelocity = 0;
     viewport.ontouchstart = (e) => {
       if (!e.touches.length) return;
@@ -2016,6 +2032,7 @@ function setupShelfSlider(){
       dragging = true;
       touchStartY = e.touches[0].clientY;
       touchStartOffset = offset;
+      touchStartBg = bgPos;
       lastTouchY = touchStartY;
       lastTouchTime = performance.now();
       touchVelocity = 0;
@@ -2028,6 +2045,8 @@ function setupShelfSlider(){
       const now = performance.now();
       const dy = touchStartY - y;
       moveTo(touchStartOffset + dy);
+      bgPos = touchStartBg + dy;
+      updateBg();
       const dt = now - lastTouchTime;
       if (dt > 0) touchVelocity = ((lastTouchY - y) / dt) * 16;
       lastTouchY = y;
