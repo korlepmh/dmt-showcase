@@ -35,6 +35,7 @@
     --media-nav-size:36px;
 
     --landing-bg:#172318;
+    --logo-size:160px;
     --landing-title-color:#fffaf0;
     --landing-title-size:88px;
     --landing-slogan-color:#f0e6c8;
@@ -176,6 +177,16 @@
   }
   .landing-glow{
     display:none;
+  }
+  .landing-logo{
+    display:none;
+    width:var(--logo-size);
+    max-width:70vw;
+    height:auto;
+    object-fit:contain;
+    margin-bottom:22px;
+    z-index:2;
+    filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));
   }
   .landing-slogan{
     color:var(--landing-slogan-color);
@@ -1339,6 +1350,7 @@
   <!-- LANDING -->
   <section id="screen-landing" class="screen active">
     <div class="landing-glow"></div>
+    <img class="landing-logo" id="landingLogo" alt="Logo">
     <div class="landing-slogan" id="landingSlogan">Decades Imagination, Magic Unfolded</div>
     <h1 class="landing-title" id="landingTitle">DMT SHOWCASE</h1>
     <button class="btn" id="enterBtn">ENTER</button>
@@ -1476,6 +1488,7 @@ const DEFAULT_THEME = {
   '--media-nav-size': '36px',
 
   '--landing-bg': '#172318',
+  '--logo-size': '160px',
   '--landing-title-color': '#fffaf0',
   '--landing-title-size': '88px',
   '--landing-slogan-color': '#f0e6c8',
@@ -1512,6 +1525,7 @@ const DEFAULTS = {
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
+  logo: null,
   shelfBg: null,
   shelfMomentum: 0.5,
   mascotImg: null,
@@ -1569,7 +1583,9 @@ async function loadSiteData(){
 
 // Optional: project name/content sections/video/preview can also come from a spreadsheet
 // called "projects.xlsx" placed next to index.html. Expected columns (any order):
-//   Category | Project Name | Student Name | Video URL | Images
+//   (Category) | Project Name | Student Name | Video URL | Images | content sections
+// Use one tab per category named exactly like the category (then no Category column is needed),
+// or one tab with a Category column.
 // "Category" must match one of the existing category names (case-insensitive).
 // "Student Name" is optional — shows as a signature at the bottom of the book page.
 // "Images" is optional: comma-separated image filenames/URLs, e.g. images/proj1.jpg, images/proj1b.jpg
@@ -1582,8 +1598,22 @@ async function loadProjectsFromExcel(){
     if (!res.ok) return null;
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, { type: 'array' });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    return XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    // every tab is read. A tab named after a category (e.g. "Board Game")
+    // puts all its rows in that category; a tab can also still use a
+    // "Category" column instead. The "Instructions" tab is skipped.
+    const all = [];
+    wb.SheetNames.forEach(name => {
+      if (name.trim().toLowerCase() === 'instructions') return;
+      const ws = wb.Sheets[name];
+      // the header row is wherever "Project Name" appears, so rows above it
+      // (e.g. an instruction note in row 1) are ignored
+      const grid = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      let headerIdx = grid.findIndex(r => r.some(c => ['project name', 'project'].includes(String(c).trim().toLowerCase())));
+      if (headerIdx < 0) headerIdx = 0;
+      XLSX.utils.sheet_to_json(ws, { defval: '', range: headerIdx })
+        .forEach(row => { row.__sheet = name; all.push(row); });
+    });
+    return all;
   } catch(e){
     console.warn('No projects.xlsx found, or it failed to parse — using existing project data', e);
     return null;
@@ -1630,7 +1660,7 @@ function applyExcelRowsToSiteData(rows){
   if (!rows || !rows.length) return;
   const byCategory = {};
   rows.forEach(row => {
-    const catName = getCol(row, 'Category');
+    const catName = getCol(row, 'Category') || String(row.__sheet || '').trim();
     const projName = getCol(row, 'Project Name', 'Project', 'Name');
     if (!catName || !projName) return;
     const imagesRaw = getCol(row, 'Images', 'Image URLs', 'Image');
@@ -1699,6 +1729,14 @@ function applyBasics(){
       `linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)), url('${siteData.landingBg}')`;
   } else {
     landing.style.backgroundImage = '';
+  }
+  const logoEl = $('landingLogo');
+  if (siteData.logo){
+    logoEl.src = siteData.logo;
+    logoEl.style.display = 'block';
+  } else {
+    logoEl.removeAttribute('src');
+    logoEl.style.display = 'none';
   }
   const shelf = $('screen-shelf');
   if (siteData.shelfBg){
@@ -2441,6 +2479,7 @@ const THEME_GROUPS = [
   ]},
   { title: 'Landing page', fields: [
     { key: '--landing-bg', label: 'Background color', type: 'color' },
+    { key: '--logo-size', label: 'Logo size (px)', type: 'size', min: 40, max: 600 },
     { key: '--landing-title-color', label: 'Title color', type: 'color' },
     { key: '--landing-title-size', label: 'Title size (px)', type: 'size' },
     { key: '--landing-slogan-color', label: 'Slogan color', type: 'color' },
@@ -2532,7 +2571,7 @@ function themeGroupsHTML(){
 }
 
 /* ================= developer mode ================= */
-function fileToDataURL(file, maxDim, quality){
+function fileToDataURL(file, maxDim, quality, mime){
   maxDim = maxDim || 900;
   quality = quality || 0.82;
   return new Promise((resolve, reject) => {
@@ -2550,7 +2589,7 @@ function fileToDataURL(file, maxDim, quality){
         canvas.width = width;
         canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        resolve(canvas.toDataURL(mime || 'image/jpeg', quality));
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -2579,6 +2618,14 @@ function renderDevPanel(){
         <div class="dev-row">
           <input type="file" id="devLandingFile" accept="image/*">
           <button class="dev-mini-btn" id="devLandingClear">Clear</button>
+        </div>
+      </div>
+      <div class="dev-field">
+        <label>Logo (shown on the cover page — PNG with transparent background works best)</label>
+        <div class="dev-img-preview" id="devLogoPreview" style="${siteData.logo ? `background-image:url('${siteData.logo}');background-size:contain;background-repeat:no-repeat` : ''}">${siteData.logo ? '' : 'No logo set'}</div>
+        <div class="dev-row">
+          <input type="file" id="devLogoFile" accept="image/*">
+          <button class="dev-mini-btn" id="devLogoClear">Clear</button>
         </div>
       </div>
       <div class="dev-field">
@@ -2766,6 +2813,28 @@ function wireDevPanel(){
     siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
     $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
     $('devLandingPreview').textContent = '';
+    applyBasics();
+  });
+  $('devLogoFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      // PNG keeps the logo's transparent background (JPEG would turn it black/white)
+      siteData.logo = await fileToDataURL(file, 800, 0.92, 'image/png');
+    } catch(err){
+      alert('That image could not be read by the browser. Try a PNG or JPG instead.');
+      return;
+    }
+    $('devLogoPreview').style.backgroundImage = `url('${siteData.logo}')`;
+    $('devLogoPreview').style.backgroundSize = 'contain';
+    $('devLogoPreview').style.backgroundRepeat = 'no-repeat';
+    $('devLogoPreview').textContent = '';
+    applyBasics();
+  });
+  $('devLogoClear').addEventListener('click', () => {
+    siteData.logo = null;
+    $('devLogoPreview').style.backgroundImage = '';
+    $('devLogoPreview').textContent = 'No logo set';
     applyBasics();
   });
   $('devLandingClear').addEventListener('click', () => {
