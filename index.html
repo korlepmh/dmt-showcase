@@ -924,6 +924,15 @@
     margin:0 0 10px;
     letter-spacing:1px;
   }
+  .project-sections{ text-align:left; }
+  .project-sections h3{
+    font-family:var(--font-title);
+    font-size:calc(var(--project-desc-size) + 4px);
+    color:var(--project-title-color);
+    margin:18px 0 4px;
+    letter-spacing:.5px;
+  }
+  .project-sections p{ margin:0; white-space:pre-line; }
   .project-info p{
     font-size:var(--project-desc-size);
     line-height:1.7;
@@ -1395,7 +1404,7 @@
         <div class="gallery-strip" id="galleryStrip"></div>
         <div class="project-info">
           <h2 id="projectTitle"></h2>
-          <p id="projectDesc"></p>
+          <div id="projectDesc" class="project-sections"></div>
         </div>
         <div class="project-nav-controls">
           <button class="project-navbtn" id="projectPrev" title="Previous project" aria-label="Previous project">&#10094;</button>
@@ -1546,9 +1555,9 @@ async function loadSiteData(){
   return cloneDefaults();
 }
 
-// Optional: project name/description/video/preview can also come from a spreadsheet
+// Optional: project name/content sections/video/preview can also come from a spreadsheet
 // called "projects.xlsx" placed next to index.html. Expected columns (any order):
-//   Category | Project Name | Description | Student Name | Video URL | Images
+//   Category | Project Name | Student Name | Video URL | Images
 // "Category" must match one of the existing category names (case-insensitive).
 // "Student Name" is optional — shows as a signature at the bottom of the book page.
 // "Images" is optional: comma-separated image filenames/URLs, e.g. images/proj1.jpg, images/proj1b.jpg
@@ -1576,6 +1585,35 @@ function getCol(row, ...names){
   }
   return '';
 }
+// the content sections a project can have, in display order. Each one is
+// an optional spreadsheet column with the same name — if a contributor
+// leaves it blank, that section (and its title) simply isn't shown.
+const PROJECT_SECTIONS = [
+  'Game Concept',
+  'Storyline',
+  'Game Objective',
+  'Characters',
+  'Company & Owner',
+  'Level Design',
+  'Game Mechanics',
+  'Development Process',
+  'Ideation & Inspiration',
+  'Board Game Component'
+];
+function filledSections(proj){
+  const sec = (proj && proj.sections) || {};
+  return PROJECT_SECTIONS
+    .map(title => ({ title, text: String(sec[title] || '').trim() }))
+    .filter(x => x.text);
+}
+// short text shown on the book-page preview: Game Concept, or Storyline if
+// Game Concept is blank, or the old single description as a last fallback
+function previewText(proj){
+  const sec = (proj && proj.sections) || {};
+  return String(sec['Game Concept'] || '').trim()
+    || String(sec['Storyline'] || '').trim();
+}
+
 function applyExcelRowsToSiteData(rows){
   if (!rows || !rows.length) return;
   const byCategory = {};
@@ -1586,7 +1624,7 @@ function applyExcelRowsToSiteData(rows){
     const imagesRaw = getCol(row, 'Images', 'Image URLs', 'Image');
     const proj = {
       name: projName,
-      desc: getCol(row, 'Description', 'Desc'),
+      sections: Object.fromEntries(PROJECT_SECTIONS.map(t => [t, getCol(row, t)])),
       author: getCol(row, 'Student Name', 'Student', 'Author'),
       videoUrl: getCol(row, 'Video URL', 'Video') || null,
       gallery: imagesRaw ? imagesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
@@ -2121,7 +2159,7 @@ function pageHTML(proj){
       ${showPlay ? '<div class="play-icon"></div>' : ''}
     </div>
     <div class="proj-name">${proj.name}</div>
-    <div class="proj-desc">${proj.desc}</div>
+    <div class="proj-desc">${escapeHTML(previewText(proj))}</div>
     ${proj.author ? `<div class="proj-author"><span>${proj.author}</span></div>` : ''}
   `;
 }
@@ -2230,7 +2268,10 @@ function renderProject(){
   }
 
   $('projectTitle').textContent = proj.name;
-  $('projectDesc').textContent = proj.desc + " (Full write-up, credits, and media go here.)";
+  const secs = filledSections(proj);
+  $('projectDesc').innerHTML = secs.length
+    ? secs.map(x => `<h3>${escapeHTML(x.title)}</h3><p>${escapeHTML(x.text)}</p>`).join('')
+    : '';
   const multi = projects.length > 1;
   $('projectPrev').style.display = multi ? 'flex' : 'none';
   $('projectNext').style.display = multi ? 'flex' : 'none';
@@ -2600,10 +2641,6 @@ function renderDevPanel(){
                   <input type="text" class="devProjName" data-cat="${ci}" data-proj="${pi}" value="${escapeAttr(proj.name)}">
                 </div>
                 <div class="dev-field">
-                  <label>Description</label>
-                  <textarea class="devProjDesc" data-cat="${ci}" data-proj="${pi}">${escapeHTML(proj.desc)}</textarea>
-                </div>
-                <div class="dev-field">
                   <label>Student name (optional — shown as a signature on the book page)</label>
                   <input type="text" class="devProjAuthor" data-cat="${ci}" data-proj="${pi}" placeholder="e.g. Alex Tan" value="${escapeAttr(proj.author || '')}">
                 </div>
@@ -2794,12 +2831,6 @@ function wireDevPanel(){
       siteData.categories[ci].projects[pi].name = e.target.value;
     });
   });
-  document.querySelectorAll('.devProjDesc').forEach(el => {
-    el.addEventListener('input', e => {
-      const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
-      siteData.categories[ci].projects[pi].desc = e.target.value;
-    });
-  });
   document.querySelectorAll('.devProjAuthor').forEach(el => {
     el.addEventListener('input', e => {
       const ci = parseInt(e.target.dataset.cat, 10), pi = parseInt(e.target.dataset.proj, 10);
@@ -2830,7 +2861,6 @@ function wireDevPanel(){
       const ci = parseInt(e.target.dataset.cat, 10);
       siteData.categories[ci].projects.push({
         name: `${siteData.categories[ci].name} — New Project`,
-        desc: '',
         author: '',
         videoUrl: null,
         gallery: []
