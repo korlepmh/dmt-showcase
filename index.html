@@ -67,6 +67,18 @@
     --project-desc-size:14px;
   }
   *{box-sizing:border-box;}
+  /* visitors can't highlight/select text anywhere on the site (the
+     Developer Mode fields below stay selectable so editing still works) */
+  html,body{
+    -webkit-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+  }
+  input, textarea, select, #devPanel{
+    -webkit-user-select:text;
+    user-select:text;
+  }
+  img{ -webkit-user-drag:none; }
   html,body{
     margin:0;padding:0;height:100%;
     font-family:var(--font-body);
