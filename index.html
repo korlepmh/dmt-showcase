@@ -35,7 +35,6 @@
     --media-nav-size:36px;
 
     --landing-bg:#172318;
-    --logo-size:160px;
     --landing-title-color:#fffaf0;
     --landing-title-size:88px;
     --landing-slogan-color:#f0e6c8;
@@ -178,14 +177,20 @@
   .landing-glow{
     display:none;
   }
-  .landing-logo{
-    display:none;
-    width:var(--logo-size);
-    max-width:70vw;
+  /* cover logos: each one is placed freely (left/top in % of the screen,
+     centered on that point) and sized separately from Developer Mode */
+  #landingLogos{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+  }
+  #landingLogos img{
+    position:absolute;
+    transform:translate(-50%,-50%);
     height:auto;
+    max-width:70vw;
     object-fit:contain;
-    margin-bottom:22px;
-    z-index:2;
     filter:drop-shadow(0 4px 14px rgba(0,0,0,.5));
   }
   .landing-slogan{
@@ -1350,7 +1355,7 @@
   <!-- LANDING -->
   <section id="screen-landing" class="screen active">
     <div class="landing-glow"></div>
-    <img class="landing-logo" id="landingLogo" alt="Logo">
+    <div id="landingLogos"></div>
     <div class="landing-slogan" id="landingSlogan">Decades Imagination, Magic Unfolded</div>
     <h1 class="landing-title" id="landingTitle">DMT SHOWCASE</h1>
     <button class="btn" id="enterBtn">ENTER</button>
@@ -1488,7 +1493,6 @@ const DEFAULT_THEME = {
   '--media-nav-size': '36px',
 
   '--landing-bg': '#172318',
-  '--logo-size': '160px',
   '--landing-title-color': '#fffaf0',
   '--landing-title-size': '88px',
   '--landing-slogan-color': '#f0e6c8',
@@ -1525,7 +1529,7 @@ const DEFAULTS = {
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
-  logo: null,
+  logos: [],
   shelfBg: null,
   shelfMomentum: 0.5,
   mascotImg: null,
@@ -1719,6 +1723,33 @@ function applyTheme(){
   });
 }
 
+// cover logos: any number, each with its own image, size (px) and position
+// (x / y as % of the screen, measured to the logo's center)
+function migrateLogos(){
+  if (siteData.logo && !(siteData.logos && siteData.logos.length)){
+    siteData.logos = [{ src: siteData.logo, size: 160, x: 50, y: 14 }];
+  }
+  delete siteData.logo;
+  if (!Array.isArray(siteData.logos)) siteData.logos = [];
+}
+function renderLogos(){
+  migrateLogos();
+  const box = $('landingLogos');
+  if (!box) return;
+  box.innerHTML = '';
+  siteData.logos.forEach(l => {
+    if (!l.src) return;
+    const img = document.createElement('img');
+    img.src = l.src;
+    img.alt = 'Logo';
+    img.draggable = false;
+    img.style.width = (l.size || 160) + 'px';
+    img.style.left = (l.x ?? 50) + '%';
+    img.style.top = (l.y ?? 14) + '%';
+    box.appendChild(img);
+  });
+}
+
 function applyBasics(){
   applyTheme();
   $('landingSlogan').textContent = siteData.slogan;
@@ -1730,14 +1761,7 @@ function applyBasics(){
   } else {
     landing.style.backgroundImage = '';
   }
-  const logoEl = $('landingLogo');
-  if (siteData.logo){
-    logoEl.src = siteData.logo;
-    logoEl.style.display = 'block';
-  } else {
-    logoEl.removeAttribute('src');
-    logoEl.style.display = 'none';
-  }
+  renderLogos();
   const shelf = $('screen-shelf');
   if (siteData.shelfBg){
     // layer 1: fixed dark overlay (keeps spines readable)
@@ -2479,7 +2503,6 @@ const THEME_GROUPS = [
   ]},
   { title: 'Landing page', fields: [
     { key: '--landing-bg', label: 'Background color', type: 'color' },
-    { key: '--logo-size', label: 'Logo size (px)', type: 'size', min: 40, max: 600 },
     { key: '--landing-title-color', label: 'Title color', type: 'color' },
     { key: '--landing-title-size', label: 'Title size (px)', type: 'size' },
     { key: '--landing-slogan-color', label: 'Slogan color', type: 'color' },
@@ -2621,14 +2644,6 @@ function renderDevPanel(){
         </div>
       </div>
       <div class="dev-field">
-        <label>Logo (shown on the cover page — PNG with transparent background works best)</label>
-        <div class="dev-img-preview" id="devLogoPreview" style="${siteData.logo ? `background-image:url('${siteData.logo}');background-size:contain;background-repeat:no-repeat` : ''}">${siteData.logo ? '' : 'No logo set'}</div>
-        <div class="dev-row">
-          <input type="file" id="devLogoFile" accept="image/*">
-          <button class="dev-mini-btn" id="devLogoClear">Clear</button>
-        </div>
-      </div>
-      <div class="dev-field">
         <label>Shelf (library) background image</label>
         <div class="dev-img-preview" id="devShelfPreview" style="${siteData.shelfBg ? `background-image:url('${siteData.shelfBg}')` : ''}">${siteData.shelfBg ? '' : 'No image set'}</div>
         <div class="dev-row">
@@ -2644,6 +2659,36 @@ function renderDevPanel(){
           <button class="dev-mini-btn" id="devMascotClear">Clear</button>
         </div>
       </div>
+    </div>
+
+    <div class="dev-section">
+      <h3>Cover page logos</h3>
+      ${(migrateLogos(), siteData.logos).map((l, i) => `
+        <div class="dev-proj">
+          <div class="dev-proj-label">
+            <span>Logo ${i + 1}</span>
+            <button class="dev-mini-btn dev-danger devLogoRemove" data-i="${i}">Remove</button>
+          </div>
+          <div class="dev-img-preview" style="background-image:url('${l.src}');background-size:contain;background-repeat:no-repeat"></div>
+          <div class="dev-field">
+            <label>Replace image</label>
+            <input type="file" class="devLogoReplace" data-i="${i}" accept="image/*">
+          </div>
+          <div class="dev-theme-fields">
+            <div class="dev-field"><label>Size (px)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="size" min="20" max="800" step="5" value="${l.size ?? 160}"></div>
+            <div class="dev-field"><label>Left → right (%)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="x" min="-20" max="120" step="1" value="${l.x ?? 50}"></div>
+            <div class="dev-field"><label>Top → bottom (%)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="y" min="-20" max="120" step="1" value="${l.y ?? 14}"></div>
+          </div>
+        </div>
+      `).join('')}
+      <div class="dev-field" style="margin-top:10px;">
+        <label>Add a logo (PNG with transparent background works best)</label>
+        <input type="file" id="devLogoAdd" accept="image/*">
+      </div>
+      <div class="dev-note">Position is the logo's center: 50 / 50 is the middle of the cover, 0 / 0 the top-left corner.</div>
     </div>
 
     <div class="dev-section">
@@ -2815,27 +2860,50 @@ function wireDevPanel(){
     $('devLandingPreview').textContent = '';
     applyBasics();
   });
-  $('devLogoFile').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const logoRead = async (file) => {
     try {
-      // PNG keeps the logo's transparent background (JPEG would turn it black/white)
-      siteData.logo = await fileToDataURL(file, 800, 0.92, 'image/png');
+      // PNG keeps the logo's transparent background (JPEG would not)
+      return await fileToDataURL(file, 800, 0.92, 'image/png');
     } catch(err){
       alert('That image could not be read by the browser. Try a PNG or JPG instead.');
-      return;
+      return null;
     }
-    $('devLogoPreview').style.backgroundImage = `url('${siteData.logo}')`;
-    $('devLogoPreview').style.backgroundSize = 'contain';
-    $('devLogoPreview').style.backgroundRepeat = 'no-repeat';
-    $('devLogoPreview').textContent = '';
-    applyBasics();
+  };
+  $('devLogoAdd').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const src = await logoRead(file);
+    if (!src) return;
+    const n = siteData.logos.length;
+    siteData.logos.push({ src, size: 160, x: 50, y: Math.min(14 + n * 12, 90) });
+    renderLogos();
+    renderDevPanel();
   });
-  $('devLogoClear').addEventListener('click', () => {
-    siteData.logo = null;
-    $('devLogoPreview').style.backgroundImage = '';
-    $('devLogoPreview').textContent = 'No logo set';
-    applyBasics();
+  document.querySelectorAll('.devLogoReplace').forEach(el => {
+    el.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const src = await logoRead(file);
+      if (!src) return;
+      siteData.logos[parseInt(e.target.dataset.i, 10)].src = src;
+      renderLogos();
+      renderDevPanel();
+    });
+  });
+  document.querySelectorAll('.devLogoNum').forEach(el => {
+    el.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (isNaN(n)) return;
+      siteData.logos[parseInt(e.target.dataset.i, 10)][e.target.dataset.k] = n;
+      renderLogos();
+    });
+  });
+  document.querySelectorAll('.devLogoRemove').forEach(el => {
+    el.addEventListener('click', e => {
+      siteData.logos.splice(parseInt(e.target.dataset.i, 10), 1);
+      renderLogos();
+      renderDevPanel();
+    });
   });
   $('devLandingClear').addEventListener('click', () => {
     siteData.landingBg = null;
