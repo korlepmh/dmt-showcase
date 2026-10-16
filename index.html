@@ -1743,9 +1743,12 @@ function renderLogos(){
     img.src = l.src;
     img.alt = 'Logo';
     img.draggable = false;
-    img.style.width = (l.size || 160) + 'px';
-    img.style.left = (l.x ?? 50) + '%';
-    img.style.top = (l.y ?? 14) + '%';
+    // on phone-width screens a logo uses its own phone size/position
+    // (falling back to the computer values if none were set)
+    const phone = window.innerWidth <= 700;
+    img.style.width = ((phone ? (l.mSize ?? l.size) : l.size) || 160) + 'px';
+    img.style.left = ((phone ? (l.mX ?? l.x) : l.x) ?? 50) + '%';
+    img.style.top = ((phone ? (l.mY ?? l.y) : l.y) ?? 14) + '%';
     box.appendChild(img);
   });
 }
@@ -1837,6 +1840,7 @@ $('nextBtn').addEventListener('click', () => {
 // is resized while it's the visible screen, so resizing/maximizing the
 // browser — or rotating a phone — doesn't leave books sized for whatever
 // width happened to be current the first time the shelf was opened
+window.addEventListener('resize', () => { renderLogos(); });
 let shelfResizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(shelfResizeTimer);
@@ -2674,6 +2678,7 @@ function renderDevPanel(){
             <label>Replace image</label>
             <input type="file" class="devLogoReplace" data-i="${i}" accept="image/*">
           </div>
+          <div class="dev-theme-group-title" style="margin:6px 0 4px;">Computer</div>
           <div class="dev-theme-fields">
             <div class="dev-field"><label>Size (px)</label>
               <input type="number" class="devLogoNum" data-i="${i}" data-k="size" min="20" max="800" step="5" value="${l.size ?? 160}"></div>
@@ -2682,13 +2687,22 @@ function renderDevPanel(){
             <div class="dev-field"><label>Top → bottom (%)</label>
               <input type="number" class="devLogoNum" data-i="${i}" data-k="y" min="-20" max="120" step="1" value="${l.y ?? 14}"></div>
           </div>
+          <div class="dev-theme-group-title" style="margin:10px 0 4px;">Phone (screens 700px wide or less)</div>
+          <div class="dev-theme-fields">
+            <div class="dev-field"><label>Size (px)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="mSize" min="20" max="800" step="5" value="${l.mSize ?? l.size ?? 160}"></div>
+            <div class="dev-field"><label>Left → right (%)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="mX" min="-20" max="120" step="1" value="${l.mX ?? l.x ?? 50}"></div>
+            <div class="dev-field"><label>Top → bottom (%)</label>
+              <input type="number" class="devLogoNum" data-i="${i}" data-k="mY" min="-20" max="120" step="1" value="${l.mY ?? l.y ?? 14}"></div>
+          </div>
         </div>
       `).join('')}
       <div class="dev-field" style="margin-top:10px;">
         <label>Add a logo (PNG with transparent background works best)</label>
         <input type="file" id="devLogoAdd" accept="image/*">
       </div>
-      <div class="dev-note">Position is the logo's center: 50 / 50 is the middle of the cover, 0 / 0 the top-left corner.</div>
+      <div class="dev-note">To preview the phone values on a computer, make the browser window narrower than 700px (the cover updates live). Position is the logo's center: 50 / 50 is the middle of the cover, 0 / 0 the top-left corner.</div>
     </div>
 
     <div class="dev-section">
