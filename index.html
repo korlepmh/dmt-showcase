@@ -1263,6 +1263,41 @@
     margin-top:10px;
   }
 
+  /* ---------- PHONE HELD SIDEWAYS ---------- */
+  /* a browser can't truly lock orientation, so on a phone (touch screen,
+     short height) held in landscape this covers the site with a prompt
+     to turn it back upright; tablets/computers are unaffected */
+  #rotateNotice{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:5000;
+    background:#1c120b;
+    color:#f0e6c8;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    text-align:center;
+    padding:20px;
+    font-family:var(--font-title);
+    font-size:20px;
+    letter-spacing:1px;
+  }
+  #rotateNotice .rotate-phone{
+    width:30px;height:52px;
+    border:3px solid #f0e6c8;
+    border-radius:7px;
+    animation:rotateHint 2.2s ease-in-out infinite;
+  }
+  @keyframes rotateHint{
+    0%,15%{ transform:rotate(90deg); }
+    55%,100%{ transform:rotate(0deg); }
+  }
+  @media (hover:none) and (pointer:coarse) and (orientation:landscape) and (max-height:600px){
+    #rotateNotice{ display:flex; }
+  }
+
   /* ---------- MOBILE / NARROW SCREENS ---------- */
   @media (max-width: 700px){
     .book .spine-text{
@@ -1443,6 +1478,11 @@
     </div>
   </section>
 
+</div>
+
+<div id="rotateNotice">
+  <div class="rotate-phone"></div>
+  <div>Please turn your phone upright<br>to view the showcase</div>
 </div>
 
 <!-- DEVELOPER MODE: add images / edit text without touching code -->
@@ -1801,7 +1841,17 @@ function applyBasics(){
 }
 
 /* ---------------- landing ---------------- */
+// ask the browser to lock to portrait — only honored in some cases (e.g.
+// Android fullscreen / installed app), silently ignored everywhere else
+function tryLockPortrait(){
+  try {
+    if (screen.orientation && screen.orientation.lock){
+      screen.orientation.lock('portrait').catch(() => {});
+    }
+  } catch(e){}
+}
 $('enterBtn').addEventListener('click', () => {
+  tryLockPortrait();
   introIndex = 0;
   renderIntro();
   showScreen('screen-intro');
