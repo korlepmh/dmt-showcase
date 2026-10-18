@@ -960,6 +960,14 @@
     margin:18px 0 4px;
     letter-spacing:.5px;
   }
+  .project-assets a{
+    display:block;
+    margin-top:4px;
+    font-size:var(--project-desc-size);
+    color:var(--accent);
+    text-decoration:underline;
+    cursor:pointer;
+  }
   .project-sections p{ margin:0; white-space:pre-line; }
   .project-info p{
     font-size:var(--project-desc-size);
@@ -1710,6 +1718,9 @@ function applyExcelRowsToSiteData(rows){
     const imagesRaw = getCol(row, 'Images', 'Image URLs', 'Image');
     const proj = {
       name: projName,
+      // asset links: one or more URLs in one cell, separated by spaces, commas or new lines
+      assets: getCol(row, 'Assets Link', 'Assets Links', 'Assets', 'Asset Link')
+        .split(/[\s,;]+/).filter(u => /^https?:\/\//i.test(u)),
       sections: Object.fromEntries(PROJECT_SECTIONS.map(t => [t, getCol(row, t)])),
       author: getCol(row, 'Student Name', 'Student', 'Author'),
       videoUrl: getCol(row, 'Video URL', 'Video') || null,
@@ -2400,6 +2411,12 @@ function renderProject(){
   $('projectDesc').innerHTML = secs.length
     ? secs.map(x => `<h3>${escapeHTML(x.title)}</h3><p>${escapeHTML(x.text)}</p>`).join('')
     : '';
+  const assets = (proj.assets || []).filter(u => /^https?:\/\//i.test(u));
+  if (assets.length){
+    $('projectDesc').innerHTML += `<h3>Assets</h3><div class="project-assets">${
+      assets.map((u, i) => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener">View assets${assets.length > 1 ? ' ' + (i + 1) : ''} ↗</a>`).join('')
+    }</div>`;
+  }
   const multi = projects.length > 1;
   $('projectPrev').style.display = multi ? 'flex' : 'none';
   $('projectNext').style.display = multi ? 'flex' : 'none';
