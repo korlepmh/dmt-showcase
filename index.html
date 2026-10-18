@@ -960,6 +960,40 @@
     margin:18px 0 4px;
     letter-spacing:.5px;
   }
+  .proj-sec{
+    border-bottom:1px solid rgba(43,33,24,.18);
+  }
+  .proj-sec-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+    background:none;
+    border:none;
+    padding:12px 2px;
+    text-align:left;
+    cursor:pointer;
+    font-family:var(--font-title);
+    font-size:calc(var(--project-desc-size) + 4px);
+    color:var(--project-title-color);
+    letter-spacing:.5px;
+  }
+  .proj-sec-head:hover{ color:var(--accent); }
+  .proj-sec-chev{
+    display:inline-block;
+    font-size:.8em;
+    transition:transform .2s ease;
+  }
+  .proj-sec.open .proj-sec-chev{ transform:rotate(90deg); }
+  .proj-sec-body{
+    display:grid;
+    grid-template-rows:0fr;
+    transition:grid-template-rows .25s ease;
+  }
+  .proj-sec.open .proj-sec-body{ grid-template-rows:1fr; }
+  .proj-sec-body > div{ overflow:hidden; min-height:0; }
+  .project-sections .proj-sec-body p{ margin:0 0 14px; }
+  .project-assets{ margin-bottom:12px; }
   .project-assets a{
     display:block;
     margin-top:4px;
@@ -2329,9 +2363,11 @@ $('categoryBackdrop').addEventListener('click', closeCategory);
 
 /* ---------------- project detail (overlay window) ---------------- */
 let galleryIndex = 0;
+let sectionOpen = null; // which content sections are expanded (null = reset to default)
 function openProject(catIdx, projIdx){
   currentProjectRef = { catIdx, projIdx };
   galleryIndex = 0;
+  sectionOpen = null;
   renderProject();
   $('screen-project').classList.add('open');
 }
@@ -2407,16 +2443,36 @@ function renderProject(){
   }
 
   $('projectTitle').textContent = proj.name;
-  const secs = filledSections(proj);
-  $('projectDesc').innerHTML = secs.length
-    ? secs.map(x => `<h3>${escapeHTML(x.title)}</h3><p>${escapeHTML(x.text)}</p>`).join('')
-    : '';
+  // content sections are collapsible: the first one starts open, the rest
+  // closed. Open/closed state is kept while you flip through previews, and
+  // resets whenever you open or switch to a different project.
+  const secItems = filledSections(proj).map(x => ({ title: x.title, html: `<p>${escapeHTML(x.text)}</p>` }));
   const assets = (proj.assets || []).filter(u => /^https?:\/\//i.test(u));
   if (assets.length){
-    $('projectDesc').innerHTML += `<h3>Assets</h3><div class="project-assets">${
+    secItems.push({ title: 'Assets', html: `<div class="project-assets">${
       assets.map((u, i) => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener">View assets${assets.length > 1 ? ' ' + (i + 1) : ''} ↗</a>`).join('')
-    }</div>`;
+    }</div>` });
   }
+  if (!sectionOpen){
+    sectionOpen = {};
+    if (secItems.length) sectionOpen[secItems[0].title] = true;
+  }
+  $('projectDesc').innerHTML = secItems.map(x => `
+    <div class="proj-sec${sectionOpen[x.title] ? ' open' : ''}">
+      <button type="button" class="proj-sec-head" data-t="${escapeAttr(x.title)}" aria-expanded="${sectionOpen[x.title] ? 'true' : 'false'}">
+        <span class="proj-sec-chev">&#9656;</span><span>${escapeHTML(x.title)}</span>
+      </button>
+      <div class="proj-sec-body"><div>${x.html}</div></div>
+    </div>`).join('');
+  $('projectDesc').querySelectorAll('.proj-sec-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sec = btn.parentElement;
+      const open = !sec.classList.contains('open');
+      sec.classList.toggle('open', open);
+      sectionOpen[btn.dataset.t] = open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
   const multi = projects.length > 1;
   $('projectPrev').style.display = multi ? 'flex' : 'none';
   $('projectNext').style.display = multi ? 'flex' : 'none';
@@ -2464,6 +2520,7 @@ function goToProject(delta){
   const nextIdx = (projIdx + delta + projects.length) % projects.length;
   currentProjectRef = { catIdx, projIdx: nextIdx };
   galleryIndex = 0;
+  sectionOpen = null;
   renderProject();
 }
 function closeProject(){
