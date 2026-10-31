@@ -580,7 +580,9 @@
     border-bottom:1px solid color-mix(in srgb, var(--spread-author-color) 60%, transparent);
     padding-bottom:2px;
   }
-  .proj-author::before{ content:"— "; }
+  /* the dash sits inside the same inline block as the names, so it stays
+     on the first line right before the first name instead of above them */
+  .proj-author span::before{ content:"— "; }
   #pageLeft .proj-author, .flip-page.left .proj-author{
     align-self:flex-end;
     text-align:right;
