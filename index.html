@@ -562,9 +562,13 @@
      small, slightly tilted, handwritten-feeling credit tucked in the
      bottom corner of each page, near the outer edge (away from the spine) */
   .proj-author{
-    align-self:stretch;
     flex-shrink:0;
     margin-top:22px;
+    /* group projects list several names: they wrap onto extra lines and
+       never take more than half of the page's width */
+    width:fit-content;
+    max-width:calc(50% - 28px);
+    overflow-wrap:anywhere;
     font-family:var(--font-title);
     font-size:var(--spread-author-size);
     color:var(--spread-author-color);
@@ -578,12 +582,14 @@
   }
   .proj-author::before{ content:"— "; }
   #pageLeft .proj-author, .flip-page.left .proj-author{
+    align-self:flex-end;
     text-align:right;
-    padding-right:28px;
+    margin-right:28px;
   }
   #pageRight .proj-author, .flip-page.right .proj-author{
+    align-self:flex-start;
     text-align:left;
-    padding-left:28px;
+    margin-left:28px;
   }
   .cat-title{
     position:absolute;
@@ -1743,6 +1749,15 @@ function filledSections(proj){
 }
 // short text shown on the book-page preview: Game Concept, or Storyline if
 // Game Concept is blank, or Abstract if both are blank
+// group projects: names can be separated by commas, semicolons, "|", new
+// lines, " & " or " / " — they're always shown as "Name, Name, Name"
+function formatAuthors(raw){
+  return String(raw || '')
+    .split(/[\n\r,;|]+|\s&\s|\s\/\s/)
+    .map(n => n.trim())
+    .filter(Boolean)
+    .join(', ');
+}
 function previewText(proj){
   const sec = (proj && proj.sections) || {};
   return String(sec['Game Concept'] || '').trim()
@@ -1766,7 +1781,7 @@ function applyExcelRowsToSiteData(rows){
       sections: Object.fromEntries(PROJECT_SECTIONS.map(t => [t, getCol(row, t)])),
       author: getCol(row, 'Student Name', 'Student', 'Author'),
       videoUrl: getCol(row, 'Video URL', 'Video') || null,
-      gallery: imagesRaw ? imagesRaw.split(',').map(s => s.trim()).filter(Boolean) : []
+      gallery: imagesRaw ? imagesRaw.split(/[\n\r,;]+/).map(s => normalizeImageSrc(s.trim().replace(/^["']|["']$/g, ''))).filter(Boolean) : []
     };
     (byCategory[catName.toLowerCase()] ||= []).push(proj);
   });
@@ -2341,7 +2356,7 @@ function pageHTML(proj){
     </div>
     <div class="proj-name">${proj.name}</div>
     <div class="proj-desc">${escapeHTML(previewText(proj))}</div>
-    ${proj.author ? `<div class="proj-author"><span>${proj.author}</span></div>` : ''}
+    ${formatAuthors(proj.author) ? `<div class="proj-author"><span>${escapeHTML(formatAuthors(proj.author))}</span></div>` : ''}
   `;
 }
 function flipSpread(direction){
@@ -2426,7 +2441,7 @@ function renderProject(){
       watchLink.href = current.url;
       watchLink.target = '_blank';
       watchLink.rel = 'noopener';
-      watchLink.textContent = 'Watch on YouTube ↗';
+      watchLink.textContent = (videoSiteName(current.url) === 'Google Drive' ? 'Open in Google Drive' : 'Watch on ' + videoSiteName(current.url)) + ' ↗';
       screenEl.appendChild(watchLink);
     } else {
       // couldn't recognize the link as a YouTube/Vimeo video — embedding the
@@ -2437,7 +2452,7 @@ function renderProject(){
       fallback.href = current.url;
       fallback.target = '_blank';
       fallback.rel = 'noopener';
-      fallback.textContent = 'Link not recognized as YouTube — open video ↗';
+      fallback.textContent = 'Link not recognized — open video ↗';
       screenEl.appendChild(fallback);
     }
   } else if (current && current.type === 'image'){
@@ -2588,7 +2603,28 @@ function parseVimeoId(url){
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return m ? m[1] : null;
 }
+// Google Drive share links ("drive.google.com/file/d/ID/view", "open?id=ID")
+// — the file must be shared as "Anyone with the link" to load for visitors
+function parseDriveId(url){
+  if (!url) return null;
+  let m = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if (m) return m[1];
+  m = url.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+// a Drive link isn't a direct image — turn it into one the page can display
+function normalizeImageSrc(u){
+  const id = parseDriveId(u);
+  return id ? `https://drive.google.com/thumbnail?id=${id}&sz=w1600` : u;
+}
+function videoSiteName(url){
+  if (parseDriveId(url)) return 'Google Drive';
+  if (parseVimeoId(url)) return 'Vimeo';
+  return 'YouTube';
+}
 function videoEmbedUrl(url){
+  const drive = parseDriveId(url);
+  if (drive) return `https://drive.google.com/file/d/${drive}/preview`;
   const yt = parseYouTubeId(url);
   // rel=0 keeps "related videos" to the same channel only, modestbranding
   // trims the YouTube logo, iv_load_policy=3 hides annotation callouts
@@ -2601,6 +2637,8 @@ function videoEmbedUrl(url){
 function videoThumbUrl(url){
   const yt = parseYouTubeId(url);
   if (yt) return `https://img.youtube.com/vi/${yt}/hqdefault.jpg`;
+  const drive = parseDriveId(url);
+  if (drive) return `https://drive.google.com/thumbnail?id=${drive}&sz=w800`;
   return null; // Vimeo thumbnails need an API call — falls back to a generic tile
 }
 function getMediaItems(proj){
