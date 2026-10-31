@@ -1635,12 +1635,12 @@ const DEFAULTS = {
     { name: "3D Modelling", color: "#e77b49", big: false, image: null },
     { name: "Virtual Reality (VR)", color: "#162e93", big: false, image: null },
     { name: "Embedded Game Development", color: "#1a1953", big: false, image: null },
-    { name: "Non-Linear Editing (NLE)", color: "#60241e", big: false, image: null },
+    { name: "Non-Linear Editing", color: "#60241e", big: false, image: null },
     { name: "3D Animation", color: "#95271d", big: false, image: null },
     { name: "Online Game Development", color: "#2f2fe4", big: false, image: null },
     { name: "Augmented Reality (AR)", color: "#162e93", big: false, image: null },
     { name: "Game Engine Design", color: "#1a1953", big: false, image: null },
-    { name: "Final Year Project (FYP)", color: "#ffc349", big: true, image: null }
+    { name: "Final Year Project", color: "#ffc349", big: true, image: null }
   ].map(cat => ({
     ...cat,
     projects: [1,2,3].map(n => ({
@@ -1783,6 +1783,23 @@ function previewText(proj){
     || String(sec['Abstract'] || '').trim();
 }
 
+// category/tab names are compared ignoring capitals and any "(...)" suffix,
+// so a tab called "Final Year Project (FYP)" still matches "Final Year Project"
+function catKey(n){
+  return String(n || '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+// names changed on purpose: an older saved data.json may still hold the
+// previous names, so they are updated here when the site loads
+const CATEGORY_RENAMES = {
+  'Non-Linear Editing (NLE)': 'Non-Linear Editing',
+  'Final Year Project (FYP)': 'Final Year Project'
+};
+function applyCategoryRenames(){
+  (siteData.categories || []).forEach(cat => {
+    if (CATEGORY_RENAMES[cat.name]) cat.name = CATEGORY_RENAMES[cat.name];
+  });
+}
+
 function applyExcelRowsToSiteData(rows){
   if (!rows || !rows.length) return;
   const byCategory = {};
@@ -1801,10 +1818,10 @@ function applyExcelRowsToSiteData(rows){
       videoUrl: fixLink(getCol(row, 'Video URL', 'Video')) || null,
       gallery: imagesRaw ? imagesRaw.split(/[\n\r,;]+/).map(s => normalizeImageSrc(s.trim().replace(/^["']|["']$/g, ''))).filter(Boolean) : []
     };
-    (byCategory[catName.toLowerCase()] ||= []).push(proj);
+    (byCategory[catKey(catName)] ||= []).push(proj);
   });
   siteData.categories.forEach(cat => {
-    const rows = byCategory[cat.name.toLowerCase()];
+    const rows = byCategory[catKey(cat.name)];
     if (rows && rows.length) cat.projects = rows;
   });
 }
@@ -3347,6 +3364,7 @@ $('devResetBtn').addEventListener('click', () => {
 /* ================= init ================= */
 (async () => {
   siteData = await loadSiteData();
+  applyCategoryRenames();
   try {
     const rows = await loadProjectsFromExcel();
     if (rows) applyExcelRowsToSiteData(rows);
