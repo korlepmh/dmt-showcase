@@ -1717,6 +1717,13 @@ function getCol(row, ...names){
 // an optional spreadsheet column with the same name — if a contributor
 // leaves it blank, that section (and its title) simply isn't shown.
 const PROJECT_SECTIONS = [
+  // report-style sections (used by Final Year Project; blank = hidden elsewhere)
+  'Abstract',
+  'Problem Statement',
+  'Methodology',
+  'Implementation',
+  'Result',
+  'Conclusion',
   'Game Concept',
   'Storyline',
   'Game Objective',
@@ -1735,11 +1742,12 @@ function filledSections(proj){
     .filter(x => x.text);
 }
 // short text shown on the book-page preview: Game Concept, or Storyline if
-// Game Concept is blank, or the old single description as a last fallback
+// Game Concept is blank, or Abstract if both are blank
 function previewText(proj){
   const sec = (proj && proj.sections) || {};
   return String(sec['Game Concept'] || '').trim()
-    || String(sec['Storyline'] || '').trim();
+    || String(sec['Storyline'] || '').trim()
+    || String(sec['Abstract'] || '').trim();
 }
 
 function applyExcelRowsToSiteData(rows){
