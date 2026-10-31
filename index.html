@@ -1766,7 +1766,7 @@ function filledSections(proj){
     .filter(x => x.text);
 }
 // short text shown on the book-page preview: Game Concept, or Storyline if
-// Game Concept is blank, or Abstract if both are blank
+// that is blank, then Ideation & Inspiration, then Abstract
 // group projects: names can be separated by commas, semicolons, "|", new
 // lines, " & " or " / " — they're always shown as "Name, Name, Name"
 function formatAuthors(raw){
@@ -1780,6 +1780,7 @@ function previewText(proj){
   const sec = (proj && proj.sections) || {};
   return String(sec['Game Concept'] || '').trim()
     || String(sec['Storyline'] || '').trim()
+    || String(sec['Ideation & Inspiration'] || '').trim()
     || String(sec['Abstract'] || '').trim();
 }
 
