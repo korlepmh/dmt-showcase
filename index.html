@@ -2664,15 +2664,21 @@ function parseDriveId(url){
   return m ? m[1] : null;
 }
 // a Drive link isn't a direct image — turn it into one the page can display
+// the folder on GitHub that holds the project images
+const IMAGE_FOLDER = 'image';
 function normalizeImageSrc(u){
   const id = parseDriveId(u);
   if (id) return `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
   u = String(u || '').trim();
-  // a plain file name (no folder, no web address) is looked up in the
-  // "images" folder, so the sheet can say "cover.png" or "images/cover.png"
-  if (u && !/^(https?:|data:|blob:)/i.test(u) && !u.includes('/')) u = 'images/' + u;
-  // spaces / apostrophes in local file names would break the CSS url('...')
-  if (u && !/^(https?:|data:|blob:)/i.test(u)) u = u.replace(/ /g, '%20').replace(/'/g, '%27');
+  const isWeb = /^(https?:|data:|blob:)/i.test(u);
+  if (u && !isWeb){
+    // "cover.png", "images/cover.png" and "Image/cover.png" all point to
+    // the same folder, so contributors can't get the folder part wrong
+    if (!u.includes('/')) u = IMAGE_FOLDER + '/' + u;
+    else u = u.replace(/^\.?\/?images?\//i, IMAGE_FOLDER + '/');
+    // spaces / apostrophes in local file names would break the CSS url('...')
+    u = u.replace(/ /g, '%20').replace(/'/g, '%27');
+  }
   return u;
 }
 function videoSiteName(url){
