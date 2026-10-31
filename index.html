@@ -1702,6 +1702,24 @@ async function loadProjectsFromExcel(){
       const grid = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
       let headerIdx = grid.findIndex(r => r.some(c => ['project name', 'project'].includes(String(c).trim().toLowerCase())));
       if (headerIdx < 0) headerIdx = 0;
+      // a Google Sheets link chip / linked text exports only its display
+      // text (e.g. the file name) as the cell value, with the real URL kept
+      // separately as a hyperlink — recover that URL for link columns
+      try {
+        const rng = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+        const hAbs = rng.s.r + headerIdx;
+        const linkCols = ['video url', 'video', 'images', 'image urls', 'image', 'assets link', 'assets links', 'assets', 'asset link'];
+        for (let C = rng.s.c; C <= rng.e.c; C++){
+          const h = ws[XLSX.utils.encode_cell({ r: hAbs, c: C })];
+          if (!h || !linkCols.includes(String(h.v).trim().toLowerCase())) continue;
+          for (let R = hAbs + 1; R <= rng.e.r; R++){
+            const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+            if (cell && cell.l && cell.l.Target && !/^https?:\/\//i.test(String(cell.v ?? '').trim())){
+              cell.t = 's'; cell.v = cell.l.Target; cell.w = cell.l.Target;
+            }
+          }
+        }
+      } catch(e){ console.warn('Could not read hyperlinks', e); }
       XLSX.utils.sheet_to_json(ws, { defval: '', range: headerIdx })
         .forEach(row => { row.__sheet = name; all.push(row); });
     });
@@ -1777,10 +1795,10 @@ function applyExcelRowsToSiteData(rows){
       name: projName,
       // asset links: one or more URLs in one cell, separated by spaces, commas or new lines
       assets: getCol(row, 'Assets Link', 'Assets Links', 'Assets', 'Asset Link')
-        .split(/[\s,;]+/).filter(u => /^https?:\/\//i.test(u)),
+        .split(/[\s,;]+/).map(fixLink).filter(u => /^https?:\/\//i.test(u)),
       sections: Object.fromEntries(PROJECT_SECTIONS.map(t => [t, getCol(row, t)])),
       author: getCol(row, 'Student Name', 'Student', 'Author'),
-      videoUrl: getCol(row, 'Video URL', 'Video') || null,
+      videoUrl: fixLink(getCol(row, 'Video URL', 'Video')) || null,
       gallery: imagesRaw ? imagesRaw.split(/[\n\r,;]+/).map(s => normalizeImageSrc(s.trim().replace(/^["']|["']$/g, ''))).filter(Boolean) : []
     };
     (byCategory[catName.toLowerCase()] ||= []).push(proj);
@@ -2447,12 +2465,18 @@ function renderProject(){
       // couldn't recognize the link as a YouTube/Vimeo video — embedding the
       // raw page would just fail (YouTube/Vimeo block framing non-embed
       // pages), so link out instead of showing a broken blank frame
-      const fallback = document.createElement('a');
+      const isFullLink = /^https?:\/\//i.test(current.url);
+      const fallback = document.createElement(isFullLink ? 'a' : 'div');
       fallback.className = 'video-fallback';
-      fallback.href = current.url;
-      fallback.target = '_blank';
-      fallback.rel = 'noopener';
-      fallback.textContent = 'Link not recognized — open video ↗';
+      if (isFullLink){
+        fallback.href = current.url;
+        fallback.target = '_blank';
+        fallback.rel = 'noopener';
+        fallback.textContent = 'Link not recognized — open video ↗';
+      } else {
+        fallback.style.textDecoration = 'none';
+        fallback.textContent = 'This video link is incomplete. Paste the full link (starting with https://) in the sheet.';
+      }
       screenEl.appendChild(fallback);
     }
   } else if (current && current.type === 'image'){
@@ -2605,9 +2629,19 @@ function parseVimeoId(url){
 }
 // Google Drive share links ("drive.google.com/file/d/ID/view", "open?id=ID")
 // — the file must be shared as "Anyone with the link" to load for visitors
+// a link pasted without "https://" would be treated by the browser as a
+// file on THIS site (-> a GitHub 404 page), so complete known link types
+function fixLink(u){
+  u = String(u || '').trim();
+  if (!u || /^https?:\/\//i.test(u)) return u;
+  if (/^(www\.|(drive|docs)\.google\.com|youtu\.be|(m\.|music\.)?youtube\.com|vimeo\.com)/i.test(u)){
+    return 'https://' + u.replace(/^\/+/, '');
+  }
+  return u;
+}
 function parseDriveId(url){
   if (!url) return null;
-  let m = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  let m = url.match(/drive\.google\.com\/file\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]+)/);
   if (m) return m[1];
   m = url.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]+)/);
   return m ? m[1] : null;
@@ -2643,7 +2677,7 @@ function videoThumbUrl(url){
 }
 function getMediaItems(proj){
   const items = [];
-  if (proj.videoUrl) items.push({ type: 'video', url: proj.videoUrl });
+  if (proj.videoUrl) items.push({ type: 'video', url: fixLink(proj.videoUrl) });
   (proj.gallery || []).forEach(src => items.push({ type: 'image', src }));
   return items;
 }
