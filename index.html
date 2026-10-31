@@ -2564,7 +2564,13 @@ function renderGalleryStrip(items){
     return;
   }
   strip.style.display = 'flex';
-  strip.innerHTML = items.map((item, i) => {
+  // show at most 5 thumbnails: the current one sits in the middle, except
+  // near the ends, where the window stops so the first one is leftmost and
+  // the last one is rightmost
+  const MAX_THUMBS = 5;
+  const winStart = Math.max(0, Math.min(galleryIndex - Math.floor(MAX_THUMBS / 2), items.length - MAX_THUMBS));
+  const visible = items.map((item, i) => ({ item, i })).slice(winStart, winStart + MAX_THUMBS);
+  strip.innerHTML = visible.map(({ item, i }) => {
     const active = i === galleryIndex ? ' active' : '';
     if (item.type === 'video'){
       const thumb = videoThumbUrl(item.url);
