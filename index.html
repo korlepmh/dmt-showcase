@@ -2467,7 +2467,10 @@ function renderProject(){
     if (embed){
       const iframe = document.createElement('iframe');
       iframe.src = embed;
-      iframe.style.cssText = 'width:100%;height:100%;border:0;border-radius:4px;';
+      // absolutely fill the frame — a percentage height inside the 16:9 box is
+      // unreliable on phone browsers (the video can spill out of the frame)
+      iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;max-width:100%;border:0;display:block;';
+      iframe.setAttribute('scrolling', 'no');
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.allowFullscreen = true;
       screenEl.appendChild(iframe);
