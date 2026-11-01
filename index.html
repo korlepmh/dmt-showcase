@@ -2479,6 +2479,10 @@ function openProject(catIdx, projIdx){
   $('screen-project').classList.add('open');
 }
 let driveFitObserver = null;
+let driveFitFn = null;
+// entering / leaving fullscreen re-applies (or removes) the Drive scaling
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, () => { if (driveFitFn) driveFitFn(); }));
 function renderProject(){
   const { catIdx, projIdx } = currentProjectRef;
   const cat = siteData.categories[catIdx];
@@ -2491,6 +2495,7 @@ function renderProject(){
 
   // clear anything injected on a previous render (iframe or fallback link)
   if (driveFitObserver){ driveFitObserver.disconnect(); driveFitObserver = null; }
+  driveFitFn = null;
   const oldFrame = screenEl.querySelector('iframe');
   if (oldFrame) oldFrame.remove();
   const oldFallback = screenEl.querySelector('.video-fallback');
@@ -2531,6 +2536,16 @@ function renderProject(){
         // (maxWidth must be 'none', or the 960px player gets squeezed first)
         const BASE_W = 960, BASE_H = 540;
         const fitDrive = () => {
+          // while the video is fullscreen, drop the shrink-to-fit scaling so
+          // the player can use the whole screen
+          if ((document.fullscreenElement || document.webkitFullscreenElement) === iframe){
+            iframe.style.maxWidth = 'none';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.inset = '0';
+            iframe.style.transform = 'none';
+            return;
+          }
           if (window.innerWidth <= 700){
             iframe.style.maxWidth = 'none';
             iframe.style.width = BASE_W + 'px';
@@ -2545,6 +2560,7 @@ function renderProject(){
             iframe.style.transform = 'none';
           }
         };
+        driveFitFn = fitDrive;
         fitDrive();
         if (window.ResizeObserver){
           driveFitObserver = new ResizeObserver(fitDrive);
