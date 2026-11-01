@@ -6,9 +6,7 @@
 <title>DMT Showcase</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=IM+Fell+English&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#f3e9d8;
@@ -1552,7 +1550,6 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // Set this to false before publishing the site so the gear icon and the
 // whole Developer Mode panel are hidden from visitors. Set it back to true
@@ -1669,7 +1666,7 @@ async function loadSiteData(){
     if (raw) return JSON.parse(raw);
   } catch(e){ console.warn('Could not read saved data, trying data.json next', e); }
   try {
-    const res = await fetch('data.json', { cache: 'no-store' });
+    const res = await fetch('data.json', { cache: 'no-cache' });
     if (res.ok) return await res.json();
   } catch(e){ /* no data.json published yet, or opened via file:// where fetch is blocked */ }
   return cloneDefaults();
@@ -1685,11 +1682,29 @@ async function loadSiteData(){
 // "Images" is optional: comma-separated image filenames/URLs, e.g. images/proj1.jpg, images/proj1b.jpg
 // If projects.xlsx is present and readable, it replaces the projects list for any
 // category it mentions (overriding both defaults and Developer Mode edits for those rows).
+// the spreadsheet-reading library is big, so it is fetched in the
+// background (in parallel with the sheet itself) instead of blocking the
+// cover page from appearing
+function loadXlsxLibrary(){
+  if (typeof XLSX !== 'undefined') return Promise.resolve(true);
+  return new Promise(resolve => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    sc.onload = () => resolve(true);
+    sc.onerror = () => resolve(false);
+    document.head.appendChild(sc);
+  });
+}
 async function loadProjectsFromExcel(){
-  if (typeof XLSX === 'undefined') return null;
   try {
-    const res = await fetch('projects.xlsx', { cache: 'no-store' });
-    if (!res.ok) return null;
+    // "no-cache" = reuse the saved copy only if the server confirms it is
+    // still current, so returning visitors skip the download but always
+    // see updated content
+    const [res, libOk] = await Promise.all([
+      fetch('projects.xlsx', { cache: 'no-cache' }),
+      loadXlsxLibrary()
+    ]);
+    if (!libOk || typeof XLSX === 'undefined' || !res.ok) return null;
     const buf = await res.arrayBuffer();
     const wb = XLSX.read(buf, { type: 'array' });
     // every tab is read. A tab named after a category (e.g. "Board Game")
@@ -2356,6 +2371,22 @@ function closeCategory(){
 function isMobileSpread(){
   return window.matchMedia('(max-width: 700px)').matches;
 }
+// warm the browser cache so images are already there when a page opens
+const preloadedImgs = new Set();
+function preloadImages(list){
+  (list || []).forEach(src => {
+    if (!src || preloadedImgs.has(src)) return;
+    preloadedImgs.add(src);
+    const im = new Image();
+    im.decoding = 'async';
+    im.src = src;
+  });
+}
+function coverOf(proj){
+  if (!proj) return null;
+  return (proj.gallery && proj.gallery.length ? proj.gallery[0] : null)
+    || (proj.videoUrl ? videoThumbUrl(proj.videoUrl) : null);
+}
 function renderSpread(){
   const cat = siteData.categories[currentCat];
   $('catTitleLeft').textContent = cat.name;
@@ -2368,6 +2399,8 @@ function renderSpread(){
   $('pageRight').innerHTML = right ? pageHTML(right) : '';
   $('spreadPrev').disabled = spreadStart === 0;
   $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
+  // load the covers of the next spread right away so flipping feels instant
+  preloadImages(cat.projects.slice(spreadStart + step, spreadStart + step * 3).map(coverOf));
 
   document.querySelectorAll('.proj-thumb').forEach(el => {
     el.addEventListener('click', () => {
@@ -2549,6 +2582,8 @@ function renderProject(){
   const mediaMulti = items.length > 1;
   $('mediaPrev').style.display = mediaMulti ? 'flex' : 'none';
   $('mediaNext').style.display = mediaMulti ? 'flex' : 'none';
+  // the project's other images load in the background while this one shows
+  preloadImages(items.filter(x => x.type === 'image').slice(0, 8).map(x => x.src));
   renderGalleryStrip(items);
 }
 function goToMedia(delta){
@@ -3388,13 +3423,19 @@ $('devResetBtn').addEventListener('click', () => {
 
 /* ================= init ================= */
 (async () => {
+  // start fetching the project sheet right away, in parallel with data.json
+  const excelPromise = loadProjectsFromExcel();
   siteData = await loadSiteData();
   applyCategoryRenames();
+  applyBasics(); // the cover page appears now, without waiting for the sheet
   try {
-    const rows = await loadProjectsFromExcel();
-    if (rows) applyExcelRowsToSiteData(rows);
+    const rows = await excelPromise;
+    if (rows){
+      applyExcelRowsToSiteData(rows);
+      // if a book page was already opened before the sheet arrived, refresh it
+      if (currentCat !== null && $('screen-category').classList.contains('open')) renderSpread();
+    }
   } catch(e){ console.warn('Could not apply projects.xlsx', e); }
-  applyBasics();
 })();
 </script>
 </body>
