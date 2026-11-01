@@ -2465,6 +2465,7 @@ function openProject(catIdx, projIdx){
   renderProject();
   $('screen-project').classList.add('open');
 }
+let driveFitObserver = null;
 function renderProject(){
   const { catIdx, projIdx } = currentProjectRef;
   const cat = siteData.categories[catIdx];
@@ -2476,6 +2477,7 @@ function renderProject(){
   const screenEl = $('projectScreen');
 
   // clear anything injected on a previous render (iframe or fallback link)
+  if (driveFitObserver){ driveFitObserver.disconnect(); driveFitObserver = null; }
   const oldFrame = screenEl.querySelector('iframe');
   if (oldFrame) oldFrame.remove();
   const oldFallback = screenEl.querySelector('.video-fallback');
@@ -2507,6 +2509,32 @@ function renderProject(){
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.allowFullscreen = true;
       screenEl.appendChild(iframe);
+      if (parseDriveId(current.url)){
+        // Google Drive's player switches to a cramped "phone" layout inside a
+        // small frame (video pushed down and cropped). On phones, load it at
+        // a desktop-sized 960x540 and shrink it to fit, so Drive keeps its
+        // normal layout; on bigger screens it just fills the frame.
+        const BASE_W = 960, BASE_H = 540;
+        const fit = () => {
+          if (window.innerWidth <= 700){
+            iframe.style.width = BASE_W + 'px';
+            iframe.style.height = BASE_H + 'px';
+            iframe.style.inset = '0 auto auto 0';
+            iframe.style.transformOrigin = '0 0';
+            iframe.style.transform = `scale(${screenEl.clientWidth / BASE_W})`;
+          } else {
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.inset = '0';
+            iframe.style.transform = 'none';
+          }
+        };
+        fit();
+        if (window.ResizeObserver){
+          driveFitObserver = new ResizeObserver(fit);
+          driveFitObserver.observe(screenEl);
+        }
+      }
       // always-visible fallback link too — if the embed is blocked (common
       // when the page is opened via file:// instead of a real server) this
       // is the guaranteed way to actually watch it
