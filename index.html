@@ -2478,6 +2478,7 @@ function openProject(catIdx, projIdx){
   renderProject();
   $('screen-project').classList.add('open');
 }
+let driveFitObserver = null;
 function renderProject(){
   const { catIdx, projIdx } = currentProjectRef;
   const cat = siteData.categories[catIdx];
@@ -2489,6 +2490,7 @@ function renderProject(){
   const screenEl = $('projectScreen');
 
   // clear anything injected on a previous render (iframe or fallback link)
+  if (driveFitObserver){ driveFitObserver.disconnect(); driveFitObserver = null; }
   const oldFrame = screenEl.querySelector('iframe');
   if (oldFrame) oldFrame.remove();
   const oldFallback = screenEl.querySelector('.video-fallback');
@@ -2512,18 +2514,7 @@ function renderProject(){
     }
     screenEl.querySelector('.play-icon').style.display = 'none';
     const embed = videoEmbedUrl(current.url);
-    // Google Drive's player doesn't fit inside a small phone frame (it shows
-    // tiny or cropped), so on phones a Drive video opens in Drive instead
-    const driveOnPhone = !!parseDriveId(current.url) && window.innerWidth <= 700;
-    if (driveOnPhone){
-      const play = document.createElement('a');
-      play.className = 'video-play-btn';
-      play.href = current.url;
-      play.target = '_blank';
-      play.rel = 'noopener';
-      play.textContent = '▶  Play video in Google Drive';
-      screenEl.appendChild(play);
-    } else if (embed){
+    if (embed){
       const iframe = document.createElement('iframe');
       iframe.src = embed;
       // absolutely fill the frame — a percentage height inside the 16:9 box is
@@ -2533,6 +2524,33 @@ function renderProject(){
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
       iframe.allowFullscreen = true;
       screenEl.appendChild(iframe);
+      if (parseDriveId(current.url)){
+        // Google Drive's player looks cramped and cropped inside a small
+        // phone frame, so on phones it is loaded at a normal 960x540 size and
+        // shrunk to fit the frame; on bigger screens it just fills the frame.
+        // (maxWidth must be 'none', or the 960px player gets squeezed first)
+        const BASE_W = 960, BASE_H = 540;
+        const fitDrive = () => {
+          if (window.innerWidth <= 700){
+            iframe.style.maxWidth = 'none';
+            iframe.style.width = BASE_W + 'px';
+            iframe.style.height = BASE_H + 'px';
+            iframe.style.inset = '0 auto auto 0';
+            iframe.style.transformOrigin = '0 0';
+            iframe.style.transform = `scale(${screenEl.clientWidth / BASE_W})`;
+          } else {
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.inset = '0';
+            iframe.style.transform = 'none';
+          }
+        };
+        fitDrive();
+        if (window.ResizeObserver){
+          driveFitObserver = new ResizeObserver(fitDrive);
+          driveFitObserver.observe(screenEl);
+        }
+      }
       // always-visible fallback link too — if the embed is blocked (common
       // when the page is opened via file:// instead of a real server) this
       // is the guaranteed way to actually watch it
