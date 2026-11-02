@@ -16,63 +16,30 @@
       "image": "data:image/jpeg;base64,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",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "C👀kie Escape !",
+          "assets": [],
           "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
+            "Game Concept": "C👀kie Escape is a turn-based educational board game for four players that combines strategic movement and cybersecurity learning. Players become cookies trapped inside a dangerous oven, navigating an infinite loop to collect resources and participate in cybersecurity battles. Through interactive and competitive gameplay, players learn cybersecurity concepts while developing strategic thinking. The goal is to accumulate the most Cookie Coins and become the only cookie to escape the oven successfully.",
+            "Storyline": "Cookie Escape tells the story of five cookies trapped in a dangerous digital oven, where they must navigate an infinite loop, collect resources, and avoid cybersecurity threats such as phishing, scams, and malware. Players become User Cookies (Defenders) or Hacker Cookies (Attackers) and compete in battles involving layered security. By applying cybersecurity knowledge and managing resources wisely, players earn Cookie Coins. The player with the most coins successfully escapes the oven.",
+            "Game Objective": "The main objective is to accumulate the highest number of Cookie Coins by the end of the game. Players must explore the map, collect resources, and win cybersecurity battles to maximize their rewards. The player with the most Cookie Coins wins and successfully escapes the oven.",
+            "Characters": "Matcha Luccy,Twrinkle Brownie,Aunty Marrie,Yammy Potato,Slay Kirashian",
             "Company & Owner": "",
             "Level Design": "",
-            "Game Mechanics": "",
+            "Game Mechanics": "Players roll dice to move, collect resources, and battle to earn Cookie Coins around the loop.\nQ&A, Mystery, Trap, and Resource spaces trigger different events.\nPlayers collect Cookie Coins and Resource Cards.\n\nAfter 3 laps, players enter the battle phase.\nDraw roles as Defenders or Attackers during battles.\nBuild and attack across three security layers.\nBattle difficulty and rewards increase each round.\n\nThe player with the most Cookie Coins wins.",
             "Development Process": "",
             "Ideation & Inspiration": "",
-            "Board Game Component": ""
+            "Board Game Component": "Map, Resources card, QnA card, Mystery card, Battle Tray, C👀kie Coin, Role card, Layer Element card, Attacker card"
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Lim Gui Xuan, Emily Lim Jia Qi, Lim Tze Qian, Tan Kai Xuan, Tang Yong Han",
+          "videoUrl": null,
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
-        },
-        {
-          "name": "Example Project Name",
-          "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
-            "Company & Owner": "",
-            "Level Design": "",
-            "Game Mechanics": "",
-            "Development Process": "",
-            "Ideation & Inspiration": "",
-            "Board Game Component": ""
-          },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
-        },
-        {
-          "name": "Example Project Name",
-          "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
-            "Company & Owner": "",
-            "Level Design": "",
-            "Game Mechanics": "",
-            "Development Process": "",
-            "Ideation & Inspiration": "",
-            "Board Game Component": ""
-          },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/C👀kie%20Escape%20!%20_Coverpage.jpeg"
           ]
         }
       ]
@@ -84,8 +51,15 @@
       "image": "data:image/jpeg;base64,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",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "潮音未绝 The Echoes of Teochew Opera in Malaysia",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
             "Storyline": "",
             "Game Objective": "",
@@ -97,15 +71,30 @@
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Lim Tze Qian\nTan Kai Xuan\nLim Gui Xuan\nWong Guanjiek\nTang Yong Han",
+          "videoUrl": "https://youtu.be/txnk5PPCqYU?si=w8oc-_jYHBZW-LBS",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/CYWL_1%20CoverPage.png",
+            "image/CYWL_%202014445.png",
+            "image/CYWL_%202014322.png",
+            "image/CYWL_%202014238.png",
+            "image/CYWL_%202014230.png",
+            "image/CYWL_%202014215.png",
+            "image/CYWL_%202014204.png",
+            "image/CYWL_%202014141.png",
+            "image/CYWL_%202014127.png"
           ]
         },
         {
-          "name": "Example Project Name",
+          "name": "光落天后 Temple of Light",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
             "Storyline": "",
             "Game Objective": "",
@@ -114,33 +103,56 @@
             "Level Design": "",
             "Game Mechanics": "",
             "Development Process": "",
-            "Ideation & Inspiration": "",
+            "Ideation & Inspiration": "The concept of Temple of Light was inspired by the changing atmosphere of Thean Hou Temple throughout different times of the day. Light becomes the main visual element, guiding the audience from the warm natural tones of the afternoon, through the softer blue-hour transition, and finally into the glowing lanterns at night. The visual direction focuses on traditional architecture, cultural details, symmetry, and cinematic colour tones to create a calm, reflective, and timeless mood.",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Gan Yi Lin\nHo Hui San\nAngel Ling Zhi\nLiu Xuanyi",
+          "videoUrl": "https://youtu.be/OtOAoPH5L2g",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/Temple_of_Light_Title.png",
+            "image/Temple_Ceiling_Detail_01.png",
+            "image/Lanterns_at_Night.png",
+            "image/Dragon_Roof_Ornament.png",
+            "image/Dragon_Pillar_and_Lanterns.png"
           ]
         },
         {
-          "name": "Example Project Name",
+          "name": "一柱香 A Stick of Time",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
             "Storyline": "",
             "Game Objective": "",
             "Characters": "",
-            "Company & Owner": "",
+            "Company & Owner": "1. TANYI ENTERPRISE\n枟艺企业\n2. Foo Kok Keong (Owner of TANYI ENTERPRISE)",
             "Level Design": "",
             "Game Mechanics": "",
             "Development Process": "",
-            "Ideation & Inspiration": "",
+            "Ideation & Inspiration": "Inspired by the traditional incense-making industry, A Stick of Time explores the craftsmanship and cultural value behind incense production. Through this documentary, we wanted to capture the stories of local artisans and raise awareness of the importance of preserving traditional crafts in a changing world.",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Chia Yee Lam\nChan Yikka\nChen Ailing\nLi Zhizhen\nLin Xinyu\nOoi Yin",
+          "videoUrl": "https://drive.google.com/file/d/1I_oPLfY70JaY5L2GFt9rsZdW9O5Gs0jq/view",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/YZX_1%20Video%20Highlight.png",
+            "image/YZX_Editing.png",
+            "image/YZX_Gather%20Equiment.png",
+            "image/YZX_Shooting.png",
+            "image/YZX_Storyline%201.png",
+            "image/YZX_Storyline%202.png",
+            "image/YZX_Storyline%203.png",
+            "image/YZX_Storyline%204.png",
+            "image/YZX_Storyline%205.png",
+            "image/YZX_Storyline%206.png",
+            "image/YZX_Storyline%207.png",
+            "image/YZX_Storyline%208.png",
+            "image/YZX_Storyline%209.png"
           ]
         }
       ]
@@ -152,10 +164,17 @@
       "image": "data:image/jpeg;base64,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",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "What's My Colour",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
-            "Storyline": "",
+            "Storyline": "A baby chameleon embarks on a magical journey to find his original colour, discovering along the way that his experiences and changing colours make him unique.",
             "Game Objective": "",
             "Characters": "",
             "Company & Owner": "",
@@ -165,15 +184,34 @@
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Woo Feng Yuan",
+          "videoUrl": "https://drive.google.com/file/d/11HHwWqXWf1n9pXUsg9BXab44nVU1xl36/view?usp=drive_link",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/What%27s%20My%20Colour%20Title%20Image.png",
+            "image/What%27s%20My%20Colour%20Storyboard.png",
+            "image/What%27s%20My%20Colour%20Sketch.png",
+            "image/What%27s%20My%20Colour%20Main%20Character.png",
+            "image/What%27s%20My%20Colour%20Highlight%201.png",
+            "image/What%27s%20My%20Colour%20Highlight%202.png",
+            "image/What%27s%20My%20Colour%20Highlight%203.png",
+            "image/What%27s%20My%20Colour%20Highlight%204.png",
+            "image/What%27s%20My%20Colour%20Highlight%205.png",
+            "image/What%27s%20My%20Colour%20Highlight%206.png",
+            "image/What%27s%20My%20Colour%20Highlight%207.png",
+            "image/What%27s%20My%20Colour%20Highlight%208.png",
+            "image/What%27s%20My%20Colour%20Highlight%209.png"
           ]
         },
         {
-          "name": "Example Project Name",
+          "name": "MONAMI",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
             "Storyline": "",
             "Game Objective": "",
@@ -185,31 +223,9 @@
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
-        },
-        {
-          "name": "Example Project Name",
-          "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
-            "Company & Owner": "",
-            "Level Design": "",
-            "Game Mechanics": "",
-            "Development Process": "",
-            "Ideation & Inspiration": "",
-            "Board Game Component": ""
-          },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
+          "author": "Emily Lim Jia Qi",
+          "videoUrl": "https://youtu.be/dJopurtPpkw",
+          "gallery": []
         }
       ]
     },
@@ -326,14 +342,63 @@
       ]
     },
     {
-      "name": "Non-Linear Editing (NLE)",
+      "name": "Non-Linear Editing",
       "color": "#c7b352",
       "big": false,
       "image": "data:image/jpeg;base64,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",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "第七天 The Seventh Day",
+          "assets": [],
           "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
+            "Game Concept": "",
+            "Storyline": "This short film is told from the unique perspective of the departed, the narrative follows a deceased older sister who, before her spirit fades away, revisits childhood haunts to leave behind objects holding precious memories shared with her younger sister. In the poignant finale, she returns home to embrace her grieving sister, vanishing after calling her name one last time. Though unseen, the younger sister discovers these sentimental items on her bed and peacefully places their dolls side by side. Serving as a comprehensive independent practice in visual storytelling, the project utilizes delicate camera work and emotional editing to transform abstract longing into tangible companionship, depicting a deeply moving, two-way farewell across the boundaries of life and death.",
+            "Game Objective": "",
+            "Characters": "1. Nian nian - The younger sister of Xing xing\n2. Xing xing - The elder sister of Nian nian",
+            "Company & Owner": "",
+            "Level Design": "",
+            "Game Mechanics": "",
+            "Development Process": "",
+            "Ideation & Inspiration": "Inspired by the Chinese tradition of “Tou Qi (头七)”, which believes that the deceased return on the seventh day after death, this film explores family, love, and loss. We wanted to show that saying goodbye does not mean forgetting, but keeping memories alive while moving forward.",
+            "Board Game Component": ""
+          },
+          "author": "Chia Yee Lam\nOoi Yin\nChen Ailing\nLi Zhizhen\nLin Xinyu\nPeng Yiying",
+          "videoUrl": "https://drive.google.com/file/d/1a73jZR50y78h72OVWW_kB9UdsDUGFCPo/view?usp=drive_link",
+          "gallery": [
+            "image/DQT_1%20Video%20Highlight.png",
+            "image/DQT_Editing.png",
+            "image/DQT_Recce.png",
+            "image/DQT_Shooting.png",
+            "image/DQT_Storyboard%201.png",
+            "image/DQT_Storyboard%202.png",
+            "image/DQT_Storyboard%203.png",
+            "image/DQT_Storyline%201.png",
+            "image/DQT_Storyline%202.png",
+            "image/DQT_Storyline%203.png",
+            "image/DQT_Storyline%204.png",
+            "image/DQT_Storyline%205.png",
+            "image/DQT_Storyline%206.png",
+            "image/DQT_Storyline%207.png",
+            "image/DQT_Storyline%208.png",
+            "image/DQT_Storyline%209.png"
+          ]
+        },
+        {
+          "name": "Munara",
+          "assets": [],
+          "sections": {
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
             "Game Concept": "",
             "Storyline": "",
             "Game Objective": "",
@@ -345,11 +410,9 @@
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
+          "author": "Toleubek Akniyet\nChan Yikka\nCao Ziyu\nAidyn Sartayeva\nLaurenz Karen",
+          "videoUrl": "https://drive.google.com/file/d/1CCGE-_Q6ffyGjMNLm6fdHV_TygEQpe-0/view?usp=sharing",
+          "gallery": []
         }
       ]
     },
@@ -388,23 +451,36 @@
       "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGQAFkDASIAAhEBAxEB/8QAGgABAQEBAQEBAAAAAAAAAAAAAAcIBgEFBP/EAEkQAAEBAwYHCwkFCAMAAAAAAAABAgMEBQYHERaRCFNUVZOx0RIUFRchMzZxcoGSEyMxMkFRouHwIlJhlMEmNUViY3OCoydEof/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDvqE5pQE4Y6IiZSYR8w5RFYYarqVa/SpYLBSBmyE0ZwmDanmoxS0AclYKQM2QmjFgZAzZCaM60AclYGQM2QmjPFmBN9fTJcGvW7OuAHIcX83s0wOiHF/N7NMDojrwByHF/N7NUDohxfzezVA6I68AQqmKj6AkuT0leTGHcPuVXyjtmupr8U5eQjxpqnBK5lvvr3GZQLdg2r5qMQtBF8G71IvqLQAAAAAAAAAAAHCU39C3/AFfqhmQ01Tf0Lf8AV+qGZQLdg283GKWgjGDbzUYWcAAAAAAAAAAAODpxrsW/q+uVDMppmnHoU/8Ar2oZmAtuDaqKzGJXyohaTMFFrE5t8v25Ai0h/s1N1+hSgKtJK/xdhP8AFAK+CQJxk53d+FAvGTndjwoBXwSBOMlP4u7X/FD2uknOzu5AK8CQ10k52d3Ief8AJNf73d+FAK+CQ10k52d3IK6SM6u7kA6KnBUSZb+tfqtDMpSaTX88mZMYdS1HI+hmmvVZ95NgKvQS+gHSRW/IryFfo+yq1lW35IOdf9a7DN015U3g02m4aa3XuQ+9aT+i88KgXPfkhZ1/1tbBvuQs6po2thDLS/0nlyi0q4p5coFz33IWdU0bWwb7kLOqaNrYQy0q4p7cotKuKe3KBc99SHnVNE0N9SHnVNE0Q20q4t7cotK1in1ygXLfUh51TRNDfMiZ1TRNENtK1i31yi0rWLfXKB19Nr2T3kiu0hI1H6p6U3CprIqdHOaWGo5wy73LaInp3SKc4BRKHpLcR76JV6ww0rLPJukrKTZmCxTnwnK4OcO5fvYxHrG6qZ5OUtHB0HifiUDgbMwWJc+EWYgcS58J33B0HifiUcHQeJ+JQOBsxA4lz4TyzEBiXPhKBwdB4n4l2jg6DxPxLtAn9l4DEufD8xZeAxLnwfMoHB0HifiXaODoPE/Eu0Cf2Xk/EufB8xZaT8S58HzKBwdB4lPEu0cHweJTxLtAi1JUgwUHIKvXbp2y0lfKyzURyo0jTXCQ7mabTTt0jK8vtX3GbwLRg2p52MX+VdaFtIlg285F9ldaFtAAAAAAAAAAADgaceiLXWuozQaWpyrsg1V711GaeUC0YNnOxnZ/UtpE8G31ozqLYAAAAAAAAAAAHA05LVM9vrUzPWaYpxRFmg3X71M0VAWnBs9eM6i2ESwbOdjeyW0AAAAAAAAAAAOBpx5Zotda6jNFRpinBP2Rb79RmcC0YNnOxvZLaRHBs52N7JbgAAAAAAAAAAA4Km/og336jM5pim/og336jM4FowbOdjeyW0iODZzsb2S3AAAAAAAAAAABwVN/RBvv1GZzTNN/Q9536jMwFowbOdjeyW0iWDZzsb2S2gAAAAAAAAAABwdN/Q9536jMxpinFK5nt9amZ6vxAs+DZz0b2S3ERwbOejeyW4AAAAAAAAAAAODpv6IPE69RmY0zTf0Ped+ozMBaMGznY3sltIjg2c7G9ktwAAAAAAAAAAAcFTjXY9ur3qZn5TTNN/Q9536jMwFowbOdjeyW0iWDZzsb2S2gAAAAAAAAAABwdN/Q9536jMxpim/og336jM4Fowa+djeyW0iWDZzsb2S2gAAAAAAAAAABwVN/RBvv1GZzTFN/RBvv1GZwLRg2c7G9ktpE8Gz14zqLYAAAAAAAAAAAHBU4L+yLffqMzml6ceiLXWuozRWBacG31ozqUthEsGznozsrrLaAAAAAAAAAAAHA04rVNBvrUzRWaXpy5Zntp+KmaKgLRg285F9ldaFtIlg2r56MT+VdaFtAAAAAAAAAAADgKckrmg11rqM01KaXpx6Itda6jNAFfwd4t3DPYxW2WlrZ9hZeF3GLef8Am0zpRZLsPJD5+j96jvdpyVp6Tv7byflbNyAUzhdxi3tybRwvD4t7cm0mduJPyti5BbiT8rYuQCmcLw+Le3JtPeF4fFvbk2kytxJ+VMXILcydlTFybQKbwvD4t7cm0cLw33HtybSZW5k7KWLk2i3Mn5Qxd8wKbwvDfce3JtHC0N9x7cm0mVuZPyhi75i3MnZQxd8wPqU0Sg4fzVaYYZbReX0p+BnMqlIE64KUZFWHdPmW2lr5EQlVf4AdFM+SWJRV4rbCt7n0VIdJZZxk7Vx9SgVt0ykV5SGcPv7jFdRWPLQ2bYHQoBFLKuMnauFlXOTtXFs8tD5tgdCg8vD5tgdCgETsq5ydq4WUc5O1cWzy8Pm2B0KDy7jN0DoUAidlHWTNXHtlHeTtXFr8u4zdA6FBvhxm6C0KARSybvJ2rhZN3kzVxa98Oc3QWhQb4c5vgtEgGd53SEzJ8Ky9ZdNMHKFupxfMNSI7RmGh3X9tjc1kRA7qimSZxynExCSHEu4dlln7atrUilDWaVIXslaFvXYfgwbfUjOotAEmSaVIXtlaFvXYFmlSH7JWhL12FZAEmSaVIXtlaFvXYe2RpBzvC3rsKwAJPZGkHO8Leuw8slSFX+9oW9dhWQBJ7JUg53hb12CyNIGd4a9dhWABnmk6bE7YOSGYyVo1zEQ7DXqsLyp+JLzTVOFVi39fu/VDMoFvwbeajCzkXwbebi0LQAAAAAAAAAAAHBU4pXMp/wDXtQzMaapxSuZb/wCvahmUC3YN3qRfUWgi+DanmoxS0AAAAAAAAAAABwlN/Qt/1fqhmQ03Tf0Mf9X6oZkAt2Davm4xC0GZqL54WMlSJhpSh3rDDa7htNx9t20i8taKU3jem3lTzQqBTATLjem5lTzQqON6bmVPNCoFNBMuN6bmVPNCp4tL83E/7T3ucKBTgTHjgm5lT78uo44Jt5U+/LqBTgTDjgm5lT78up7xwTcyp9+XUD6VOK1TLffXuMylMpQpIZnFDMybJrLe9q/tttsVK17quX0HBcCSzmiP/LN7AP/Z",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "We Were Mummies",
+          "assets": [
+            "https://assetstore.unity.com/packages/3d/environments/historic/polygon-ancient-egypt-pack-art-by-synty-293283"
+          ],
           "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
+            "Game Concept": "We Were Mummies is a two-player online co-op escape puzzle game set in an ancient Egyptian tomb. Two thieves cursed into mummies must communicate and work together to solve puzzles, escape, and defeat the guardian statue to break the curse.",
+            "Storyline": "Two greedy thieves sneak into an ancient Egyptian tomb to steal a sacred relic. When they open its coffin, the guardian statue curses them and turns them into mummies. Trapped underground, they must work together to escape and defeat the guardian to break the curse.",
+            "Game Objective": "Work together to solve cooperative puzzles, escape every chamber of the tomb, and defeat the guardian statue to break the curse and return to human form.",
+            "Characters": "Protagonist – Thief 1 (Mummy): a cursed thief who becomes Blind in Level 2.\nProtagonist – Thief 2 (Mummy): a cursed thief who becomes Deaf in Level 2.\nAntagonist – Guardian Statue (Giant King): the tomb’s guardian who cursed the thieves, fought as the final boss.",
             "Company & Owner": "",
-            "Level Design": "",
-            "Game Mechanics": "",
-            "Development Process": "",
-            "Ideation & Inspiration": "",
+            "Level Design": "Level 1: Separated. Players solve the Gates of Colour maze and the Mirror Mimic pose puzzle from separate rooms.\nLevel 2: Blind & Deaf. Players guide each other through Dropping Tiles and Gaze of Bastet.\nFinal Level: Giant King. Players knock the boss into 8 pillars to break the curse.",
+            "Game Mechanics": "Main mechanic: neither player can progress alone.\n\nCarry and place torches.\nAim and throw objects.\nInteract with levers, buttons and pressure plates.\nBlind and Deaf curses in Level 2.\nIn-game voice chat.\nBoss fight: hit the boss twice to knock him into the pillars.",
+            "Development Process": "Concept: defined the game idea, puzzle rules and environment design.\nBlockout: prototyped level layouts in ProBuilder.\nModelling: refined rooms and structures in Blender.\nEnvironment: built the full levels in Unity using the Synty Polygon Ancient Egypt pack.\nMechanics: scripted player actions, puzzles and the boss in C# with reusable interfaces.\nMultiplayer: added online co-op with Photon PUN 2 and custom voice chat.\nCutscenes: created story, hint and ending sequences with Unity Timeline.\nVersion control: used GitHub branches to merge the team’s work.",
+            "Ideation & Inspiration": "The game is inspired by the co-op puzzle game We Were Here, which is built around teamwork and communication. We chose an Ancient Civilization theme set in Egypt because its pyramids, hidden tombs, relics and legendary curses suit an escape puzzle adventure. It uses a stylized art style with vibrant colours and simplified characters.",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Wilyman Howard, Gunawan Nelsen Keane, Tando Jocelyne Audrey",
+          "videoUrl": "https://drive.google.com/file/d/1xITEHCiU4WHHjcCai1R3r4xF7bRjQ7Yk/view?usp=drive_link",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/Cover.png",
+            "image/Screenshot%202026-10-29%20221615.png",
+            "image/Screenshot%202026-10-29%20224301.png",
+            "image/Screenshot%202026-10-29%20224609.png",
+            "image/Screenshot%202026-10-29%20224709.png"
           ]
         }
       ]
@@ -416,24 +492,29 @@
       "image": "data:image/jpeg;base64,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",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "Le Petit Prince",
+          "assets": [],
           "sections": {
-            "Game Concept": "",
-            "Storyline": "",
-            "Game Objective": "",
-            "Characters": "",
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
+            "Game Concept": "This project adapts Le Petit Prince into an interactive Augmented Reality (AR) storybook, where the Little Prince explores eight planets to discover how to care for his beloved rose. Each planet represents a negative human behaviour. Through character dialogues, interactive activities, and minigames, users engage with the story and learn more about each planet.",
+            "Storyline": "The Le Petit Prince explores eight planets",
+            "Game Objective": "to discover how to care for his beloved rose and learn about moral values through this AR storybook.",
+            "Characters": "1. Little Prince\n2. Fox\n3. King\n4. Hat Man\n5. Drunkard\n6. Businessman\n7. Lamplighter\n8.Gardener",
             "Company & Owner": "",
-            "Level Design": "",
-            "Game Mechanics": "",
+            "Level Design": "Level 1: Asteroid B-612 — Story Beginning\nLevel 2: The King’s Planet — Pride\nLevel 3: The Hat Man’s Planet — Vanity\nLevel 4: The Drunkard’s Planet - Jealousy\nLevel 5: The Businessman’s Planet - Greed\nLevel 6: The Lamplighter’s Planet - Sloth\nLevel 7: The Gardener’s Planet - Anger\nLevel 8: Earth - Moral of the story",
+            "Game Mechanics": "Mechanic: Interactive AR Storytelling\nIf users tap anywhere on the screen → Controls dialogue, character animations, and mini games in the correct order.\nUsers complete story-related activities → Animations are triggered at specific moments to enhance storytelling.",
             "Development Process": "",
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
-          "gallery": [
-            "Screenshot 2026-10-08 001504.png"
-          ]
+          "author": "1. Joshua Lau Lik Seng\n2. Bryan Law Ee Jiun\n3. Ong Yen Xin\n4. Yap Shuyi",
+          "videoUrl": "https://drive.google.com/file/d/1LdNPlxcvBrNe4fXj29duFMhphVeFFvjL/view",
+          "gallery": []
         }
       ]
     },
@@ -466,15 +547,22 @@
       ]
     },
     {
-      "name": "Final Year Project (FYP)",
+      "name": "Final Year Project",
       "color": "#e2b55a",
       "big": true,
       "image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGQAFkDASIAAhEBAxEB/8QAGgABAQEBAQEBAAAAAAAAAAAAAAcIBgEFBP/EAEkQAAEBAwYHCwkFCAMAAAAAAAABAgMEBQYHERaRCFNUVZOx0RIUFRchMzZxcoGSEyMxMkFRouHwIlJhlMEmNUViY3OCoydEof/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwDvqE5pQE4Y6IiZSYR8w5RFYYarqVa/SpYLBSBmyE0ZwmDanmoxS0AclYKQM2QmjFgZAzZCaM60AclYGQM2QmjPFmBN9fTJcGvW7OuAHIcX83s0wOiHF/N7NMDojrwByHF/N7NUDohxfzezVA6I68AQqmKj6AkuT0leTGHcPuVXyjtmupr8U5eQjxpqnBK5lvvr3GZQLdg2r5qMQtBF8G71IvqLQAAAAAAAAAAAHCU39C3/AFfqhmQ01Tf0Lf8AV+qGZQLdg283GKWgjGDbzUYWcAAAAAAAAAAAODpxrsW/q+uVDMppmnHoU/8Ar2oZmAtuDaqKzGJXyohaTMFFrE5t8v25Ai0h/s1N1+hSgKtJK/xdhP8AFAK+CQJxk53d+FAvGTndjwoBXwSBOMlP4u7X/FD2uknOzu5AK8CQ10k52d3Ief8AJNf73d+FAK+CQ10k52d3IK6SM6u7kA6KnBUSZb+tfqtDMpSaTX88mZMYdS1HI+hmmvVZ95NgKvQS+gHSRW/IryFfo+yq1lW35IOdf9a7DN015U3g02m4aa3XuQ+9aT+i88KgXPfkhZ1/1tbBvuQs6po2thDLS/0nlyi0q4p5coFz33IWdU0bWwb7kLOqaNrYQy0q4p7cotKuKe3KBc99SHnVNE0N9SHnVNE0Q20q4t7cotK1in1ygXLfUh51TRNDfMiZ1TRNENtK1i31yi0rWLfXKB19Nr2T3kiu0hI1H6p6U3CprIqdHOaWGo5wy73LaInp3SKc4BRKHpLcR76JV6ww0rLPJukrKTZmCxTnwnK4OcO5fvYxHrG6qZ5OUtHB0HifiUDgbMwWJc+EWYgcS58J33B0HifiUcHQeJ+JQOBsxA4lz4TyzEBiXPhKBwdB4n4l2jg6DxPxLtAn9l4DEufD8xZeAxLnwfMoHB0HifiXaODoPE/Eu0Cf2Xk/EufB8xZaT8S58HzKBwdB4lPEu0cHweJTxLtAi1JUgwUHIKvXbp2y0lfKyzURyo0jTXCQ7mabTTt0jK8vtX3GbwLRg2p52MX+VdaFtIlg285F9ldaFtAAAAAAAAAAADgaceiLXWuozQaWpyrsg1V711GaeUC0YNnOxnZ/UtpE8G31ozqLYAAAAAAAAAAAHA05LVM9vrUzPWaYpxRFmg3X71M0VAWnBs9eM6i2ESwbOdjeyW0AAAAAAAAAAAOBpx5Zotda6jNFRpinBP2Rb79RmcC0YNnOxvZLaRHBs52N7JbgAAAAAAAAAAA4Km/og336jM5pim/og336jM4FowbOdjeyW0iODZzsb2S3AAAAAAAAAAABwVN/RBvv1GZzTNN/Q9536jMwFowbOdjeyW0iWDZzsb2S2gAAAAAAAAAABwdN/Q9536jMxpinFK5nt9amZ6vxAs+DZz0b2S3ERwbOejeyW4AAAAAAAAAAAODpv6IPE69RmY0zTf0Ped+ozMBaMGznY3sltIjg2c7G9ktwAAAAAAAAAAAcFTjXY9ur3qZn5TTNN/Q9536jMwFowbOdjeyW0iWDZzsb2S2gAAAAAAAAAABwdN/Q9536jMxpim/og336jM4Fowa+djeyW0iWDZzsb2S2gAAAAAAAAAABwVN/RBvv1GZzTFN/RBvv1GZwLRg2c7G9ktpE8Gz14zqLYAAAAAAAAAAAHBU4L+yLffqMzml6ceiLXWuozRWBacG31ozqUthEsGznozsrrLaAAAAAAAAAAAHA04rVNBvrUzRWaXpy5Zntp+KmaKgLRg285F9ldaFtIlg2r56MT+VdaFtAAAAAAAAAAADgKckrmg11rqM01KaXpx6Itda6jNAFfwd4t3DPYxW2WlrZ9hZeF3GLef8Am0zpRZLsPJD5+j96jvdpyVp6Tv7byflbNyAUzhdxi3tybRwvD4t7cm0mduJPyti5BbiT8rYuQCmcLw+Le3JtPeF4fFvbk2kytxJ+VMXILcydlTFybQKbwvD4t7cm0cLw33HtybSZW5k7KWLk2i3Mn5Qxd8wKbwvDfce3JtHC0N9x7cm0mVuZPyhi75i3MnZQxd8wPqU0Sg4fzVaYYZbReX0p+BnMqlIE64KUZFWHdPmW2lr5EQlVf4AdFM+SWJRV4rbCt7n0VIdJZZxk7Vx9SgVt0ykV5SGcPv7jFdRWPLQ2bYHQoBFLKuMnauFlXOTtXFs8tD5tgdCg8vD5tgdCgETsq5ydq4WUc5O1cWzy8Pm2B0KDy7jN0DoUAidlHWTNXHtlHeTtXFr8u4zdA6FBvhxm6C0KARSybvJ2rhZN3kzVxa98Oc3QWhQb4c5vgtEgGd53SEzJ8Ky9ZdNMHKFupxfMNSI7RmGh3X9tjc1kRA7qimSZxynExCSHEu4dlln7atrUilDWaVIXslaFvXYfgwbfUjOotAEmSaVIXtlaFvXYFmlSH7JWhL12FZAEmSaVIXtlaFvXYe2RpBzvC3rsKwAJPZGkHO8Leuw8slSFX+9oW9dhWQBJ7JUg53hb12CyNIGd4a9dhWABnmk6bE7YOSGYyVo1zEQ7DXqsLyp+JLzTVOFVi39fu/VDMoFvwbeajCzkXwbebi0LQAAAAAAAAAAAHBU4pXMp/wDXtQzMaapxSuZb/wCvahmUC3YN3qRfUWgi+DanmoxS0AAAAAAAAAAABwlN/Qt/1fqhmQ03Tf0Mf9X6oZkAt2Davm4xC0GZqL54WMlSJhpSh3rDDa7htNx9t20i8taKU3jem3lTzQqBTATLjem5lTzQqON6bmVPNCoFNBMuN6bmVPNCp4tL83E/7T3ucKBTgTHjgm5lT78uo44Jt5U+/LqBTgTDjgm5lT78up7xwTcyp9+XUD6VOK1TLffXuMylMpQpIZnFDMybJrLe9q/tttsVK17quX0HBcCSzmiP/LN7AP/Z",
       "projects": [
         {
-          "name": "Example Project Name",
+          "name": "Design and Extension of a Unity-Based Visual Authoring Tool for Bullet-Hell Games",
+          "assets": [],
           "sections": {
-            "Game Concept": "",
+            "Abstract": "",
+            "Problem Statement": "",
+            "Methodology": "",
+            "Implementation": "",
+            "Result": "",
+            "Conclusion": "",
+            "Game Concept": "Code 81 is a vertically scrolling bullet-hell game where players navigate intense aerial encounters, upgrade their firepower, and defeat multi-phase bosses through precise movement and well-timed special attacks.",
             "Storyline": "",
             "Game Objective": "",
             "Characters": "",
@@ -485,10 +573,49 @@
             "Ideation & Inspiration": "",
             "Board Game Component": ""
           },
-          "author": "Alex Tan",
-          "videoUrl": "https://www.youtube.com/watch?v=oi2QgPH61JM",
+          "author": "Tang Feilian",
+          "videoUrl": "https://youtu.be/IB0JH4CdJVA",
           "gallery": [
-            "Screenshot 2026-10-08 001504.png"
+            "image/GameTitle.png",
+            "image/Bomb.png",
+            "image/GameScene.png",
+            "image/EditorLibrary.png",
+            "image/EditorEnemy.png",
+            "image/EditorPattern.png",
+            "image/EditorBoss.png"
+          ]
+        },
+        {
+          "name": "Investigating The Impact Of Fourth Wall Breaks (FWB) In Player’s Fear And Immersion Level In Horror Games",
+          "assets": [],
+          "sections": {
+            "Abstract": "This study investigates how Fourth Wall Breaks (FWB) impact player fear and immersion in horror games. A custom first-person horror prototype, “Twich”, developed in Unity Engine, 35 participants were tested using STAI-6, PANAS-SF, and IEQ-SF. Results demonstrated that FWB events significantly heighten player’s fear level (p < 0.05). However, heightened fear level correlates weakly with player immersion (r = 0.249), suggesting that although FWB effectively intensifies horror, its relationship with overall player immersion is complex and relies on broader game design factors.",
+            "Problem Statement": "Lack of empirical evidence regarding the impact of FWB on player fear levels.\nRelationship between FWB-induced fear emotions and player immersion remains underexplored.\nFWB is not widely utilized in AAA companies.",
+            "Methodology": "Stage 1: Literature Review & Research Design\nConduct a comprehensive literature review to identify FWB’s key design strategies and implementations. \nConstruct research design elements including sampling method and questionnaire design.\n\nStage 2: Prototype Design & Development\nDevelop a custom PC horror prototype using Unity game engine, adopting Ramadan & Widyani’s (2013) Game Development Life Cycle (GDLC).\n\nStage 3: Research Evaluation & Analysis\nData collection was conducted through a 30-45 minutes playtest, using pre-test/post-test method.\nPaired t-test and Pearson correlation was conducted to evaluate design effectiveness.",
+            "Implementation": "Initiation\nEstablishes and defines the game concept and gathers relevant game references (Parasocial, DDLC!).\n\nPre-production\nFocuses on core game designs, including the storyline, game mechanics, and FWB methods. \nTranslated into Game Design Document (GDD).\n\nProduction\nTranslates the game design into a playable prototype using Unity engine.\nIntegrates core system such as player movement, mini puzzles, interaction system, and storyline system.\nImplements three FWB methods (Medium Manipulation, Outside Medium Play, Player Prominent Involvement) without violating the device’s data.\n\nTesting\nIterative testing is conducted to identify and resolve bugs, ensuring the game and the FWB events function as intended. \n\nRelease\nThe finalized prototype is deployed under a controlled playtesting session to collect participants data.",
+            "Result": "RQ1 ✔ H1 ✔\nParticipants’ fear level significantly increases (p < .001) after the gameplay.\nPlayer Prominent Involvement yields the highest level of fear.\n\nRQ2 ✘ H2 ✘\nWeak positive correlation between the average fear level increase (ΔSTAI-6) and total immersion scores (IEQ-SF), suggested that FWB is not the sole factor that impacts player immersion. (r = 0.249, p = 0.149).\n\nMost Enjoyable Game Design Element\n27 out of 35 participants agree they enjoy Fourth Wall Breaks (FWB) events the most.\nMost participants report that FWB events successfully increase their level of fear and uneasiness based on qualitative feedbacks.",
+            "Conclusion": "Contributions\nProvided empirical evidence on the impact of FWB in horror games.\nExposed the potential of FWB in invoking genuine fear in horror games genre.\nProposed 3 types of FWB implementation.\n\nLimitations\nSmall and limited sample size (35 participants).\nRelied on subjective self-report measures, which may not effectively capture participants’ fear level fluctuations.\n\nFuture Work\nIncorporate physiological measuring equipment, such as heart rate monitors and galvanic skin response sensors.\nExpand research to investigate the specific impact of FWB on player engagement.",
+            "Game Concept": "",
+            "Storyline": "",
+            "Game Objective": "1. To design and develop a horror game prototype that implements Fourth Wall Break methods.\n2. To quantitatively evaluate the impact of Fourth Wall Break on player fear and anxiety using the PANAS-SF and STAI-6 psychometric scales.\n3. To assess how players fear and anxiety responses towards Fourth Wall Break are associated with their immersion level using IEQ-SF.",
+            "Characters": "",
+            "Company & Owner": "",
+            "Level Design": "",
+            "Game Mechanics": "",
+            "Development Process": "",
+            "Ideation & Inspiration": "",
+            "Board Game Component": ""
+          },
+          "author": "Bryan Law Ee Jiun",
+          "videoUrl": "https://drive.google.com/file/d/1aD_aXj3hCFXBQ63PNNwZFeeK5y29_lqO/view?usp=sharing",
+          "gallery": [
+            "image/Game%20Scene%201.png",
+            "image/Game%20Scene%202.png",
+            "image/Game%20Scene%203.png",
+            "image/GDLC.png",
+            "image/Most%20Enjoyable%20Game%20Elements.png",
+            "image/Pearson%20Correlation%20between%20STAI-6%20and%20IEQ-SF.png",
+            "image/STAI-6%20Mean%20Scores%20Across%20FWB%20Methods.png"
           ]
         }
       ]
@@ -522,11 +649,11 @@
     "--spread-title-color": "#7a6a4a",
     "--spread-title-size": "20px",
     "--spread-name-color": "#5e2822",
-    "--spread-name-size": "38px",
+    "--spread-name-size": "20px",
     "--spread-desc-color": "#28231a",
-    "--spread-desc-size": "18px",
+    "--spread-desc-size": "13px",
     "--spread-author-color": "#72501d",
-    "--spread-author-size": "15px",
+    "--spread-author-size": "10px",
     "--project-paper-color": "#e6d2a2",
     "--project-title-color": "#5e2822",
     "--project-title-size": "28px",
@@ -553,5 +680,11 @@
       "mSize": 175,
       "mX": 24
     }
-  ]
+  ],
+  "themePhone": {
+    "--spine-text-scale": "1.15",
+    "--intro-text-size": "23px",
+    "--btn-size": "20px"
+  },
+  "shelfMomentumPhone": 0.5
 }
