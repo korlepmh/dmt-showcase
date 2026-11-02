@@ -581,7 +581,8 @@
   /* the dash sits inside the same inline block as the names, so it stays
      on the first line right before the first name instead of above them */
   .proj-author span::before{ content:"— "; }
-  #pageLeft .proj-author, .flip-page.left .proj-author{
+  #pageLeft .proj-author, .flip-page.left .proj-author,
+  .flip-page.m-next .proj-author, .flip-page.m-prev .proj-author{
     align-self:flex-end;
     text-align:right;
     margin-right:28px;
@@ -615,7 +616,8 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:center;
+    justify-content:flex-start;
+    overflow:hidden;
     text-align:center;
     background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     backface-visibility:hidden;
@@ -632,6 +634,24 @@
     left:22px;
     transform-origin:right center;
     animation:flipPrev .5s ease forwards;
+  }
+  /* phone (single page): tapping next turns the page away to the left; tapping
+     previous is the exact reverse, the earlier page turning back in from the left */
+  .flip-page.m-next, .flip-page.m-prev{
+    left:16px; right:16px;
+    width:auto;
+    padding:34px 22px;
+    transform-origin:left center;
+  }
+  .flip-page.m-next{ animation:flipNextM .55s ease forwards; }
+  .flip-page.m-prev{ animation:flipPrevM .55s ease forwards; }
+  @keyframes flipNextM{
+    from{ transform:rotateY(0deg); }
+    to{ transform:rotateY(-160deg); }
+  }
+  @keyframes flipPrevM{
+    from{ transform:rotateY(-160deg); }
+    to{ transform:rotateY(0deg); }
   }
   @keyframes flipNext{
     from{ transform:rotateY(0deg); }
@@ -657,10 +677,30 @@
     font-size:13px;
     letter-spacing:1px;
     cursor:pointer;
+    position:relative;
     margin-top:20px;
     margin-bottom:16px;
     transition:transform .15s ease, box-shadow .15s ease;
     box-shadow:0 6px 14px rgba(0,0,0,.2);
+  }
+  .thumb-hint{
+    position:absolute;
+    left:50%;
+    bottom:8px;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.6);
+    color:#fff;
+    font-size:11px;
+    letter-spacing:.3px;
+    padding:4px 10px;
+    border-radius:999px;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  .thumb-hint .hint-tap{ display:none; }
+  @media (hover:none){
+    .thumb-hint .hint-tap{ display:inline; }
+    .thumb-hint .hint-click{ display:none; }
   }
   .proj-thumb:hover{
     transform:translateY(-4px) scale(1.02);
@@ -845,15 +885,25 @@
     border-radius:50%;
     background:var(--cream);
     border:2px solid var(--ink);
-    font-size:calc(var(--close-btn-size) * .53);
-    line-height:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    font-size:0;
+    padding:0;
     box-shadow:0 4px 12px rgba(0,0,0,.5);
     transition:transform .15s ease;
     z-index:45;
   }
+  /* the × is two bars crossing exactly at the circle's center, so it can't
+     sit high or low like a text character does */
+  .overlay-close::before, .overlay-close::after{
+    content:"";
+    position:absolute;
+    left:50%; top:50%;
+    width:calc(var(--close-btn-size) * .52);
+    height:3px;
+    border-radius:2px;
+    background:var(--ink);
+  }
+  .overlay-close::before{ transform:translate(-50%,-50%) rotate(45deg); }
+  .overlay-close::after{ transform:translate(-50%,-50%) rotate(-45deg); }
   .overlay-close:hover{ transform:scale(1.08); }
   /* framed like a small picture hung on the wall next to the paper, not a
      flatscreen TV: a warm wood border (matching the shelf's wood tones)
@@ -1243,6 +1293,8 @@
     flex-shrink:0;
   }
   .dev-mini-btn:hover{ background:#3d3d3d; }
+  .dev-mini-btn.dev-on{ background:#2f6f4f; border-color:#3f8f66; color:#fff; }
+  .dev-override{ color:#c9a463; }
   .dev-mini-btn:disabled{ opacity:.4; cursor:default; }
   .dev-mini-btn.dev-danger{ background:#4a2222; border-color:#6a3232; color:#f0c8c8; }
   .dev-mini-btn.dev-danger:hover{ background:#5a2a2a; }
@@ -1498,7 +1550,7 @@
   <!-- CATEGORY SPREAD (overlay window on top of the shelf) -->
   <section id="screen-category">
     <div class="overlay-backdrop" id="categoryBackdrop"></div>
-    <button class="overlay-close" id="categoryClose">&times;</button>
+    <button class="overlay-close" id="categoryClose" aria-label="Close"></button>
     <div class="book-spread">
       <div class="cat-title cat-title-left" id="catTitleLeft"></div>
       <div class="cat-title cat-title-right" id="catTitleRight"></div>
@@ -1514,7 +1566,7 @@
   <!-- PROJECT DETAIL (overlay window on top of the rack) -->
   <section id="screen-project">
     <div class="overlay-backdrop" id="projectBackdrop"></div>
-    <button class="overlay-close" id="projectClose">&times;</button>
+    <button class="overlay-close" id="projectClose" aria-label="Close"></button>
     <div class="project-window">
       <div class="project-window-inner">
         <div class="monitor-row">
@@ -1625,13 +1677,23 @@ const DEFAULT_THEME = {
   '--project-desc-size': '14px'
 };
 
+// values that differ on phones by default (everything else follows the PC value
+// until it is changed under "Phone" in Developer Mode)
+const DEFAULT_THEME_PHONE = {
+  '--spine-text-scale': '1.15'
+};
+
 const DEFAULTS = {
   slogan: "Decades Imagination, Magic Unfolded",
   title: "DMT SHOWCASE",
   landingBg: null,
+  landingBgPhone: null,
   logos: [],
   shelfBg: null,
+  shelfBgPhone: null,
   shelfMomentum: 0.5,
+  shelfMomentumPhone: null,
+  themePhone: { ...DEFAULT_THEME_PHONE },
   mascotImg: null,
   theme: { ...DEFAULT_THEME },
   introSlides: [
@@ -1884,8 +1946,22 @@ function showScreen(id){
 /* ================= apply site-wide basics ================= */
 // fills in any theme keys missing from saved/imported data (e.g. data saved
 // before the theme editor existed) with the defaults, so nothing breaks
+// phone = screens up to 700px wide (the same breakpoint the CSS uses)
+function isPhoneWidth(){ return window.innerWidth <= 700; }
+// every theme value can have a separate phone value (siteData.themePhone);
+// a phone with no value of its own for a setting just uses the PC value
+function hasPhoneValue(key){
+  const v = siteData.themePhone && siteData.themePhone[key];
+  return v !== undefined && v !== null && v !== '';
+}
+function themeVal(key){
+  return (isPhoneWidth() && hasPhoneValue(key)) ? siteData.themePhone[key] : siteData.theme[key];
+}
+function landingBgNow(){ return (isPhoneWidth() && siteData.landingBgPhone) || siteData.landingBg; }
+function shelfBgNow(){ return (isPhoneWidth() && siteData.shelfBgPhone) || siteData.shelfBg; }
 function normalizeTheme(){
   siteData.theme = Object.assign({}, DEFAULT_THEME, siteData.theme || {});
+  if (!siteData.themePhone) siteData.themePhone = { ...DEFAULT_THEME_PHONE };
 }
 // pushes every theme value onto the page as a CSS custom property — this is
 // what actually makes a Developer Mode color/font-size change take effect
@@ -1893,7 +1969,7 @@ function applyTheme(){
   normalizeTheme();
   const root = document.documentElement.style;
   Object.keys(DEFAULT_THEME).forEach(key => {
-    root.setProperty(key, siteData.theme[key]);
+    root.setProperty(key, themeVal(key));
   });
 }
 
@@ -1932,20 +2008,22 @@ function applyBasics(){
   $('landingSlogan').textContent = siteData.slogan;
   $('landingTitle').textContent = siteData.title;
   const landing = $('screen-landing');
-  if (siteData.landingBg){
+  const landingBg = landingBgNow();
+  if (landingBg){
     landing.style.backgroundImage =
-      `linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)), url('${siteData.landingBg}')`;
+      `linear-gradient(rgba(10,10,5,.35), rgba(10,10,5,.55)), url('${landingBg}')`;
   } else {
     landing.style.backgroundImage = '';
   }
   renderLogos();
   const shelf = $('screen-shelf');
-  if (siteData.shelfBg){
+  const shelfBg = shelfBgNow();
+  if (shelfBg){
     // layer 1: fixed dark overlay (keeps spines readable)
     // layer 2: the image, fitted to the screen width and tiled vertically,
     // so a seamless image repeats endlessly as it scrolls
     shelf.style.backgroundImage =
-      `linear-gradient(rgba(10,7,4,.55), rgba(10,7,4,.55)), url('${siteData.shelfBg}')`;
+      `linear-gradient(rgba(10,7,4,.55), rgba(10,7,4,.55)), url('${shelfBg}')`;
     shelf.style.backgroundSize = '100% 100%, 100% auto';
     shelf.style.backgroundRepeat = 'no-repeat, repeat-y';
     shelf.style.backgroundPosition = '0 0, center 0px';
@@ -2024,7 +2102,18 @@ $('nextBtn').addEventListener('click', () => {
 // is resized while it's the visible screen, so resizing/maximizing the
 // browser — or rotating a phone — doesn't leave books sized for whatever
 // width happened to be current the first time the shelf was opened
-window.addEventListener('resize', () => { renderLogos(); });
+let lastPhoneMode = isPhoneWidth();
+let phoneModeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(phoneModeTimer);
+  phoneModeTimer = setTimeout(() => {
+    const phone = isPhoneWidth();
+    if (phone === lastPhoneMode) return;
+    lastPhoneMode = phone;
+    applyBasics(); // theme values, backgrounds and logos for the new size
+    if (currentCat !== null && $('screen-category').classList.contains('open')) renderSpread();
+  }, 120);
+});
 let shelfResizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(shelfResizeTimer);
@@ -2048,7 +2137,7 @@ function shelfMetrics(availW){
   // applied here (the single shared source for both packing math and
   // rendering) so the row-packing budget always matches the actual
   // rendered size and never overflows
-  const bookScale = clamp(parseFloat(siteData.theme && siteData.theme['--book-scale']) || 1, 0.6, 1.6);
+  const bookScale = clamp(parseFloat(themeVal('--book-scale')) || 1, 0.6, 1.6);
   const bookW = clamp(availW / 8.5, 58, 130) * bookScale;
   const gapUnit = clamp(availW / 40, 12, 50);
   return { bookW, gapUnit };
@@ -2100,8 +2189,7 @@ function buildPlatform(group, availW){
   const platform = document.createElement('div');
   platform.className = 'shelf-platform';
   const { bookW, gapUnit } = shelfMetrics(availW);
-  const isMobileWidth = window.innerWidth <= 700;
-  const textScale = isMobileWidth ? 1.15 : (parseFloat(siteData.theme && siteData.theme['--spine-text-scale']) || 1);
+  const textScale = parseFloat(themeVal('--spine-text-scale')) || 1;
   group.forEach(({ cat, index }) => {
     const b = document.createElement('div');
     b.className = 'book';
@@ -2248,7 +2336,8 @@ function registerShelfInteraction(){
 // is adjustable in Developer Mode > Theme > Bookshelf page: 0 = stops
 // almost immediately, 100 = glides for a long time. Stored as a 0–1 value.
 function shelfFriction(){
-  const raw = parseFloat(siteData.shelfMomentum);
+  const phoneVal = isPhoneWidth() ? parseFloat(siteData.shelfMomentumPhone) : NaN;
+  const raw = !isNaN(phoneVal) ? phoneVal : parseFloat(siteData.shelfMomentum);
   const m = isNaN(raw) ? 0.5 : clamp(raw, 0, 1);
   return 0.86 + m * 0.125; // 0.86 (short glide) .. 0.985 (long glide)
 }
@@ -2279,7 +2368,7 @@ function setupShelfSlider(){
     let bgPos = 0;
     const BG_SPEED = 0.6; // < 1 = drifts slower than the books (depth feel)
     const updateBg = () => {
-      if (!siteData.shelfBg) return;
+      if (!shelfBgNow()) return;
       shelfScreen.style.backgroundPosition = `0 0, center ${-(bgPos * BG_SPEED)}px`;
     };
 
@@ -2408,6 +2497,8 @@ function renderSpread(){
   const step = mobile ? 1 : 2;
   const left = cat.projects[spreadStart];
   const right = mobile ? null : cat.projects[spreadStart + 1];
+  $('pageLeft').scrollTop = 0;
+  $('pageRight').scrollTop = 0;
   $('pageLeft').innerHTML = pageHTML(left);
   $('pageRight').innerHTML = right ? pageHTML(right) : '';
   $('spreadPrev').disabled = spreadStart === 0;
@@ -2437,19 +2528,53 @@ function pageHTML(proj){
   return `
     <div class="proj-thumb" style="${style}" data-idx="${idx}">
       ${showPlay ? '<div class="play-icon"></div>' : ''}
+      <span class="thumb-hint"><span class="hint-tap">Tap here to view more details</span><span class="hint-click">Click here to view more details</span></span>
     </div>
-    <div class="proj-name">${proj.name}</div>
+    <div class="proj-name">${escapeHTML(proj.name)}</div>
     <div class="proj-desc">${escapeHTML(previewText(proj))}</div>
     ${formatAuthors(proj.author) ? `<div class="proj-author"><span>${escapeHTML(formatAuthors(proj.author))}</span></div>` : ''}
   `;
 }
+let flipBusy = false;
 function flipSpread(direction){
   const spreadEl = document.querySelector('.book-spread');
   const isNext = direction === 'next';
   const mobile = isMobileSpread();
-  // on mobile only pageLeft is ever shown (single page at a time), so that's
-  // always the page being flipped away, regardless of direction
-  const sourceEl = mobile ? $('pageLeft') : (isNext ? $('pageRight') : $('pageLeft'));
+
+  if (mobile){
+    if (flipBusy) return;
+    const cat = siteData.categories[currentCat];
+    const target = spreadStart + (isNext ? 1 : -1);
+    if (target < 0 || target >= cat.projects.length) return;
+    flipBusy = true;
+    const clone = document.createElement('div');
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clone.remove();
+      if (!isNext){ spreadStart = target; renderSpread(); }
+      flipBusy = false;
+    };
+    if (isNext){
+      // the current page turns away to the left, revealing the next one
+      clone.className = 'flip-page m-next';
+      clone.innerHTML = $('pageLeft').innerHTML;
+      spreadEl.appendChild(clone);
+      spreadStart = target;
+      renderSpread();
+    } else {
+      // exact reverse: the previous page turns back in over the current one
+      clone.className = 'flip-page m-prev';
+      clone.innerHTML = pageHTML(cat.projects[target]);
+      spreadEl.appendChild(clone);
+    }
+    clone.addEventListener('animationend', finish, { once: true });
+    setTimeout(finish, 900); // safety net if the animation event never fires
+    return;
+  }
+
+  const sourceEl = isNext ? $('pageRight') : $('pageLeft');
   if (!sourceEl.innerHTML.trim()) return; // nothing on that page to flip
 
   // snapshot the current page as a floating clone, then swap the real
@@ -2460,7 +2585,7 @@ function flipSpread(direction){
   spreadEl.appendChild(clone);
   clone.addEventListener('animationend', () => clone.remove(), { once:true });
 
-  spreadStart += isNext ? (mobile ? 1 : 2) : (mobile ? -1 : -2);
+  spreadStart += isNext ? 2 : -2;
   renderSpread();
 }
 $('spreadPrev').addEventListener('click', () => flipSpread('prev'));
@@ -2884,12 +3009,32 @@ const THEME_GROUPS = [
     { key: '--project-desc-size', label: 'Description size (px)', type: 'size' }
   ]}
 ];
+// which version of the settings the Developer Mode panel is editing
+let devEditPhone = false;
+// the background image being edited: the PC one, or the phone one
+function devBg(which){
+  return siteData[which + 'Bg' + (devEditPhone ? 'Phone' : '')];
+}
+function setDevBg(which, value){
+  siteData[which + 'Bg' + (devEditPhone ? 'Phone' : '')] = value;
+}
+function devThemeValue(key){
+  return (devEditPhone && hasPhoneValue(key)) ? siteData.themePhone[key] : siteData.theme[key];
+}
+function setThemeValue(key, value){
+  normalizeTheme();
+  (devEditPhone ? siteData.themePhone : siteData.theme)[key] = value;
+}
+function themeLabel(f){
+  const mark = (devEditPhone && hasPhoneValue(f.key)) ? ' <span class="dev-override" title="Different from PC">●</span>' : '';
+  return escapeHTML(f.label) + mark;
+}
 function themeFieldHTML(f){
-  const val = siteData.theme[f.key];
+  const val = devThemeValue(f.key);
   if (f.type === 'color'){
     return `
       <div class="dev-field">
-        <label>${escapeHTML(f.label)}</label>
+        <label>${themeLabel(f)}</label>
         <input type="color" class="devThemeColor" data-key="${f.key}" value="${escapeAttr(val)}">
       </div>`;
   }
@@ -2898,14 +3043,14 @@ function themeFieldHTML(f){
     const min = f.min ?? 8, max = f.max ?? 160, step = f.step ?? 1;
     return `
       <div class="dev-field">
-        <label>${escapeHTML(f.label)}</label>
+        <label>${themeLabel(f)}</label>
         <input type="number" class="devThemeSize" data-key="${f.key}" min="${min}" max="${max}" step="${step}" value="${num}">
       </div>`;
   }
   if (f.type === 'font'){
     return `
       <div class="dev-field">
-        <label>${escapeHTML(f.label)}</label>
+        <label>${themeLabel(f)}</label>
         <select class="devThemeFont" data-key="${f.key}">
           ${FONT_PRESETS.map(p => `<option value="${escapeAttr(p.value)}"${p.value === val ? ' selected' : ''}>${escapeHTML(p.label)}</option>`).join('')}
         </select>
@@ -2915,7 +3060,7 @@ function themeFieldHTML(f){
     const pct = Math.round((parseFloat(val) || 1) * 100);
     return `
       <div class="dev-field">
-        <label>${escapeHTML(f.label)}</label>
+        <label>${themeLabel(f)}</label>
         <input type="number" class="devThemeScale" data-key="${f.key}" min="50" max="200" step="5" value="${pct}">
       </div>`;
   }
@@ -2929,8 +3074,8 @@ function themeGroupsHTML(){
         ${group.fields.map(themeFieldHTML).join('')}
         ${group.title === 'Bookshelf page' ? `
           <div class="dev-field">
-            <label>Scroll momentum (%)</label>
-            <input type="number" id="devShelfMomentum" min="0" max="100" step="5" value="${Math.round((parseFloat(siteData.shelfMomentum) || 0) * 100)}">
+            <label>Scroll momentum (%)${devEditPhone ? ' — blank = same as PC' : ''}</label>
+            <input type="number" id="devShelfMomentum" min="0" max="100" step="5" value="${(() => { const v = devEditPhone ? siteData.shelfMomentumPhone : siteData.shelfMomentum; return (v === null || v === undefined || isNaN(parseFloat(v))) ? '' : Math.round(parseFloat(v) * 100); })()}">
           </div>
         ` : ''}
       </div>
@@ -2971,6 +3116,15 @@ function renderDevPanel(){
   const body = $('devBody');
   body.innerHTML = `
     <div class="dev-section">
+      <h3>Editing settings for</h3>
+      <div class="dev-row">
+        <button class="dev-mini-btn${devEditPhone ? '' : ' dev-on'}" id="devModePC">PC</button>
+        <button class="dev-mini-btn${devEditPhone ? ' dev-on' : ''}" id="devModePhone">Phone</button>
+      </div>
+      <div class="dev-note">This switch applies to the backgrounds, theme (colors, sizes, fonts, book and text sizes) and scroll momentum below. Under Phone, a value left unchanged follows the PC value, and changed ones are marked ●. Phone values show on screens up to 700px wide, so narrow the browser window to preview them. Cover logos have their own PC and Phone boxes.</div>
+    </div>
+
+    <div class="dev-section">
       <h3>Site basics</h3>
       <div class="dev-field">
         <label>Slogan</label>
@@ -2981,16 +3135,16 @@ function renderDevPanel(){
         <input type="text" id="devTitle" value="${escapeAttr(siteData.title)}">
       </div>
       <div class="dev-field">
-        <label>Landing background image</label>
-        <div class="dev-img-preview" id="devLandingPreview" style="${siteData.landingBg ? `background-image:url('${siteData.landingBg}')` : ''}">${siteData.landingBg ? '' : 'No image set'}</div>
+        <label>Landing background image${devEditPhone ? ' — phone (empty = same as PC)' : ''}</label>
+        <div class="dev-img-preview" id="devLandingPreview" style="${devBg('landing') ? `background-image:url('${devBg('landing')}')` : ''}">${devBg('landing') ? '' : (devEditPhone ? 'Same as PC' : 'No image set')}</div>
         <div class="dev-row">
           <input type="file" id="devLandingFile" accept="image/*">
           <button class="dev-mini-btn" id="devLandingClear">Clear</button>
         </div>
       </div>
       <div class="dev-field">
-        <label>Shelf (library) background image</label>
-        <div class="dev-img-preview" id="devShelfPreview" style="${siteData.shelfBg ? `background-image:url('${siteData.shelfBg}')` : ''}">${siteData.shelfBg ? '' : 'No image set'}</div>
+        <label>Shelf (library) background image${devEditPhone ? ' — phone (empty = same as PC)' : ''}</label>
+        <div class="dev-img-preview" id="devShelfPreview" style="${devBg('shelf') ? `background-image:url('${devBg('shelf')}')` : ''}">${devBg('shelf') ? '' : (devEditPhone ? 'Same as PC' : 'No image set')}</div>
         <div class="dev-row">
           <input type="file" id="devShelfFile" accept="image/*">
           <button class="dev-mini-btn" id="devShelfClear">Clear</button>
@@ -3048,7 +3202,7 @@ function renderDevPanel(){
 
     <div class="dev-section">
       <h3>Theme — fonts, colors &amp; sizes</h3>
-      <button class="dev-mini-btn" id="devThemeResetBtn" style="margin-bottom:10px;">Reset theme only</button>
+      <button class="dev-mini-btn" id="devThemeResetBtn" style="margin-bottom:10px;">${devEditPhone ? 'Clear phone values' : 'Reset theme only'}</button>
       ${themeGroupsHTML()}
     </div>
 
@@ -3149,6 +3303,15 @@ function wireDevPanel(){
     head.addEventListener('click', () => head.closest('.dev-cat').classList.toggle('open'));
   });
 
+  const switchDevMode = (phone) => {
+    if (devEditPhone === phone) return;
+    devEditPhone = phone;
+    const keep = $('devBody').scrollTop;
+    renderDevPanel();
+    $('devBody').scrollTop = keep;
+  };
+  $('devModePC').addEventListener('click', () => switchDevMode(false));
+  $('devModePhone').addEventListener('click', () => switchDevMode(true));
   $('devSlogan').addEventListener('input', e => { siteData.slogan = e.target.value; });
   $('devTitle').addEventListener('input', e => { siteData.title = e.target.value; });
 
@@ -3156,7 +3319,7 @@ function wireDevPanel(){
   // so you see it update immediately without hitting Save
   document.querySelectorAll('.devThemeColor').forEach(el => {
     el.addEventListener('input', e => {
-      siteData.theme[e.target.dataset.key] = e.target.value;
+      setThemeValue(e.target.dataset.key, e.target.value);
       applyTheme();
     });
   });
@@ -3164,14 +3327,14 @@ function wireDevPanel(){
     el.addEventListener('input', e => {
       const n = parseFloat(e.target.value);
       if (!isNaN(n)) {
-        siteData.theme[e.target.dataset.key] = n + 'px';
+        setThemeValue(e.target.dataset.key, n + 'px');
         applyTheme();
       }
     });
   });
   document.querySelectorAll('.devThemeFont').forEach(el => {
     el.addEventListener('change', e => {
-      siteData.theme[e.target.dataset.key] = e.target.value;
+      setThemeValue(e.target.dataset.key, e.target.value);
       applyTheme();
     });
   });
@@ -3179,7 +3342,7 @@ function wireDevPanel(){
     el.addEventListener('input', e => {
       const n = parseFloat(e.target.value);
       if (isNaN(n)) return;
-      siteData.theme[e.target.dataset.key] = (n / 100).toString();
+      setThemeValue(e.target.dataset.key, (n / 100).toString());
       applyTheme();
       // spine text size is computed when the shelf is built, not read live
       // from CSS, so rebuild it now if it's the visible screen
@@ -3190,11 +3353,22 @@ function wireDevPanel(){
   if (shelfMomentumInput){
     shelfMomentumInput.addEventListener('input', e => {
       const n = parseFloat(e.target.value);
-      if (isNaN(n)) return;
-      siteData.shelfMomentum = clamp(n / 100, 0, 1);
+      if (isNaN(n)){
+        if (devEditPhone) siteData.shelfMomentumPhone = null; // blank = same as PC
+        return;
+      }
+      siteData[devEditPhone ? 'shelfMomentumPhone' : 'shelfMomentum'] = clamp(n / 100, 0, 1);
     });
   }
   $('devThemeResetBtn').addEventListener('click', () => {
+    if (devEditPhone){
+      if (!confirm('Clear all phone-specific values? Phones will then follow the PC settings.')) return;
+      siteData.themePhone = {};
+      siteData.shelfMomentumPhone = null;
+      applyBasics();
+      renderDevPanel();
+      return;
+    }
     if (!confirm('Reset all theme colors/fonts/sizes back to default? This only affects the theme, not your text/images.')) return;
     siteData.theme = { ...DEFAULT_THEME };
     applyTheme();
@@ -3210,8 +3384,8 @@ function wireDevPanel(){
   $('devLandingFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    siteData.landingBg = await fileToDataURL(file, 1600, 0.8);
-    $('devLandingPreview').style.backgroundImage = `url('${siteData.landingBg}')`;
+    setDevBg('landing', await fileToDataURL(file, 1600, 0.8));
+    $('devLandingPreview').style.backgroundImage = `url('${devBg('landing')}')`;
     $('devLandingPreview').textContent = '';
     applyBasics();
   });
@@ -3261,24 +3435,23 @@ function wireDevPanel(){
     });
   });
   $('devLandingClear').addEventListener('click', () => {
-    siteData.landingBg = null;
+    setDevBg('landing', null);
     $('devLandingPreview').style.backgroundImage = '';
-    $('devLandingPreview').textContent = 'No image set';
+    $('devLandingPreview').textContent = devEditPhone ? 'Same as PC' : 'No image set';
     applyBasics();
   });
-
   $('devShelfFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    siteData.shelfBg = await fileToDataURL(file, 1800, 0.8);
-    $('devShelfPreview').style.backgroundImage = `url('${siteData.shelfBg}')`;
+    setDevBg('shelf', await fileToDataURL(file, 1800, 0.8));
+    $('devShelfPreview').style.backgroundImage = `url('${devBg('shelf')}')`;
     $('devShelfPreview').textContent = '';
     applyBasics();
   });
   $('devShelfClear').addEventListener('click', () => {
-    siteData.shelfBg = null;
+    setDevBg('shelf', null);
     $('devShelfPreview').style.backgroundImage = '';
-    $('devShelfPreview').textContent = 'No image set';
+    $('devShelfPreview').textContent = devEditPhone ? 'Same as PC' : 'No image set';
     applyBasics();
   });
 
