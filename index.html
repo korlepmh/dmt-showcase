@@ -63,6 +63,8 @@
     --project-title-size:26px;
     --project-desc-color:#4a4030;
     --project-desc-size:14px;
+    --preview-min-h:0vh;
+    --detail-min-h:0vh;
   }
   *{box-sizing:border-box;}
   /* visitors can't highlight/select text anywhere on the site (the
@@ -514,6 +516,7 @@
     box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.4);
     width:min(1180px,96vw);
     height:min(820px,92vh);
+    min-height:var(--preview-min-h);
     position:relative;
     overflow:hidden;
     transform:scale(.92) translateY(16px);
@@ -564,7 +567,10 @@
      bottom corner of each page, near the outer edge (away from the spine) */
   .proj-author{
     flex-shrink:0;
-    margin-top:22px;
+    /* auto top margin pins the signature to the bottom of the page; more
+       names make it wrap onto extra lines that stack upward from there */
+    margin-top:auto;
+    padding-top:22px;
     /* group projects list several names: they wrap onto extra lines and
        never take more than half of the page's width */
     width:fit-content;
@@ -607,6 +613,15 @@
     color:var(--spread-title-color);
     z-index:6;
     pointer-events:none;
+  }
+  .cat-title-inline{
+    align-self:stretch;
+    flex-shrink:0;
+    text-align:center;
+    font-family:var(--font-title);
+    letter-spacing:1px;
+    font-size:var(--spread-title-size);
+    color:var(--spread-title-color);
   }
   .cat-title-left{ left:0; }
   .cat-title-right{ right:0; }
@@ -778,6 +793,7 @@
     border-radius:4px;
     width:min(760px,90vw);
     max-height:88vh;
+    min-height:var(--detail-min-h);
     /* the torn-edge clip-path below doesn't clip a native scrollbar cleanly
        across browsers — so this outer shape never scrolls itself; scrolling
        happens in .project-window-inner instead, which stays safely inside
@@ -801,6 +817,7 @@
     align-items:center;
     gap:20px;
     padding:40px 38px 34px;
+    min-height:var(--detail-min-h);
     max-height:88vh;
     overflow-y:auto;
     overflow-x:hidden; /* no horizontal scrollbar — content never needs it */
@@ -956,14 +973,47 @@
      thumbnails alike */
   #projectScreen .play-icon, .proj-thumb .play-icon{ display:none !important; }
   .gallery-strip{
+    --thumb-w:64px;
     display:none;
-    flex-wrap:wrap;
-    justify-content:center;
+    position:relative;
+    flex-wrap:nowrap;
     gap:8px;
-    max-width:min(680px,80vw);
+    overflow-x:auto;
+    overflow-y:hidden;
+    /* room for about 5 thumbnails, the rest scroll sideways */
+    width:calc(var(--thumb-w) * 5 + 8px * 4 + 12px);
+    max-width:100%;
+    padding:4px 6px 8px;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(43,33,24,.35) transparent;
+    -webkit-overflow-scrolling:touch;
+  }
+  .gallery-strip::-webkit-scrollbar{ height:6px; }
+  .gallery-strip::-webkit-scrollbar-thumb{ background:rgba(43,33,24,.35); border-radius:999px; }
+  /* auto margins center a short row, and collapse once the row overflows */
+  .gallery-strip .gallery-thumb:first-child{ margin-left:auto; }
+  .gallery-strip .gallery-thumb:last-child{ margin-right:auto; }
+  .media-ghost{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    background-size:cover;
+    background-position:center;
+  }
+  .media-ghost.out-left{ animation:ghostOutL .38s ease forwards; }
+  .media-ghost.out-right{ animation:ghostOutR .38s ease forwards; }
+  @keyframes ghostOutL{
+    from{ transform:translateX(0); opacity:1; }
+    to{ transform:translateX(-35%); opacity:0; }
+  }
+  @keyframes ghostOutR{
+    from{ transform:translateX(0); opacity:1; }
+    to{ transform:translateX(35%); opacity:0; }
   }
   .gallery-thumb{
-    width:64px;height:40px;
+    flex:0 0 auto;
+    width:var(--thumb-w);height:40px;
     border-radius:4px;
     border:2px solid rgba(43,33,24,.4);
     background-size:cover;
@@ -1078,6 +1128,8 @@
   .project-assets{ margin-bottom:12px; }
   .project-assets a{
     display:block;
+    overflow-wrap:anywhere;
+    word-break:break-all;
     margin-top:4px;
     font-size:var(--project-desc-size);
     color:var(--accent);
@@ -1528,8 +1580,9 @@
       font-size:calc(var(--project-nav-size) * .8);
       padding:2px 10px;
     }
+    .gallery-strip{ --thumb-w:52px; }
     .gallery-thumb{
-      width:52px;height:34px;
+      height:34px;
     }
   }
 </style>
@@ -1591,8 +1644,6 @@
     <div class="overlay-backdrop" id="categoryBackdrop"></div>
     <div class="overlay-frame" id="spreadFrame">
     <div class="book-spread">
-      <div class="cat-title cat-title-left" id="catTitleLeft"></div>
-      <div class="cat-title cat-title-right" id="catTitleRight"></div>
       <div class="page" id="pageLeft"></div>
       <div class="page" id="pageRight"></div>
       <div class="spread-nav">
@@ -1717,7 +1768,9 @@ const DEFAULT_THEME = {
   '--project-title-color': '#2b2118',
   '--project-title-size': '26px',
   '--project-desc-color': '#4a4030',
-  '--project-desc-size': '14px'
+  '--project-desc-size': '14px',
+  '--preview-min-h': '0vh',
+  '--detail-min-h': '0vh'
 };
 
 // values that differ on phones by default (everything else follows the PC value
@@ -2243,9 +2296,18 @@ function shelfMetrics(availW){
 // (see buildPlatform) — so the worst case total margin per book is 1.7x
 // gapUnit; the row-width math below must budget for that worst case, not
 // the average, or a run of maximum-margin books could still overflow
+// a category with more projects gets a thicker (and a little taller) book:
+// 0 = the category with the fewest projects, 1 = the one with the most
+function projectCountT(cat){
+  const counts = siteData.categories.map(c => (c.projects || []).length);
+  const lo = Math.min(...counts), hi = Math.max(...counts);
+  return hi === lo ? null : ((cat.projects || []).length - lo) / (hi - lo);
+}
+const BOOK_W_RANGE = [0.8, 1.25];   // thickness factor, fewest -> most projects
+const BOOK_H_RANGE = [0.9, 1.1];    // height factor
 function chunkIntoPlatforms(list, availW){
   const { bookW, gapUnit } = shelfMetrics(availW);
-  const worstSlot = bookW + gapUnit * 1.7;
+  const worstSlot = bookW * BOOK_W_RANGE[1] + gapUnit * 1.7;
   const maxPerRow = Math.max(2, Math.floor((availW * 0.96) / worstSlot));
   const cap = Math.min(maxPerRow, 5);
   const platforms = [];
@@ -2326,9 +2388,13 @@ function buildPlatform(group, availW){
     } else {
       // vary height so tops look uneven, like real books on a shelf —
       // height stays proportional to width so books never look short/fat
-      height = bookW * 2.9 + Math.random() * bookW * 0.85;
-      baseFontSize = clamp(bookW * 0.155, 11.5, 16.5);
-      b.style.width = bookW + 'px';
+      const t = projectCountT(cat);
+      const wF = t === null ? 1 : BOOK_W_RANGE[0] + (BOOK_W_RANGE[1] - BOOK_W_RANGE[0]) * t;
+      const hF = t === null ? 1 : BOOK_H_RANGE[0] + (BOOK_H_RANGE[1] - BOOK_H_RANGE[0]) * t;
+      const bw = bookW * wF;
+      height = (bookW * 2.9 + Math.random() * bookW * 0.85) * hF;
+      baseFontSize = clamp(bw * 0.155, 11.5, 16.5);
+      b.style.width = bw + 'px';
       // slight random lean, like a book left slightly askew
       b.style.setProperty('--tilt', (Math.random() * 8 - 4).toFixed(1) + 'deg');
     }
@@ -2591,16 +2657,14 @@ function coverOf(proj){
 }
 function renderSpread(){
   const cat = siteData.categories[currentCat];
-  $('catTitleLeft').textContent = cat.name;
-  $('catTitleRight').textContent = cat.name;
   const mobile = isMobileSpread();
   const step = mobile ? 1 : 2;
   const left = cat.projects[spreadStart];
   const right = mobile ? null : cat.projects[spreadStart + 1];
   $('pageLeft').scrollTop = 0;
   $('pageRight').scrollTop = 0;
-  $('pageLeft').innerHTML = pageHTML(left);
-  $('pageRight').innerHTML = right ? pageHTML(right) : '';
+  $('pageLeft').innerHTML = spreadPageHTML(left);
+  $('pageRight').innerHTML = mobile ? '' : spreadPageHTML(right);
   $('spreadPrev').disabled = spreadStart === 0;
   $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
   // load the covers of the next spread right away so flipping feels instant
@@ -2612,6 +2676,12 @@ function renderSpread(){
       openProject(currentCat, idx);
     });
   });
+}
+// the category title is the first thing inside each page, so it scrolls and
+// flips together with the thumbnail and the text below it
+function spreadPageHTML(proj){
+  const cat = siteData.categories[currentCat];
+  return `<div class="cat-title-inline">${escapeHTML(cat.name)}</div>` + pageHTML(proj);
 }
 function pageHTML(proj){
   if (!proj) return '';
@@ -2666,7 +2736,7 @@ function flipSpread(direction){
     } else {
       // exact reverse: the previous page turns back in over the current one
       clone.className = 'flip-page m-prev';
-      clone.innerHTML = pageHTML(cat.projects[target]);
+      clone.innerHTML = spreadPageHTML(cat.projects[target]);
       spreadEl.appendChild(clone);
     }
     clone.addEventListener('animationend', finish, { once: true });
@@ -2675,7 +2745,7 @@ function flipSpread(direction){
   }
 
   const sourceEl = isNext ? $('pageRight') : $('pageLeft');
-  if (!sourceEl.innerHTML.trim()) return; // nothing on that page to flip
+  if (!sourceEl.querySelector('.proj-thumb')) return; // nothing on that page to flip
 
   // snapshot the current page as a floating clone, then swap the real
   // content underneath immediately so the new page is revealed as it turns
@@ -2855,7 +2925,7 @@ function renderProject(){
   const assets = (proj.assets || []).filter(u => /^https?:\/\//i.test(u));
   if (assets.length){
     secItems.push({ title: 'Assets', html: `<div class="project-assets">${
-      assets.map((u, i) => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener">View assets${assets.length > 1 ? ' ' + (i + 1) : ''} ↗</a>`).join('')
+      assets.map(u => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${escapeHTML(u.replace(/^https?:\/\//i, '').replace(/\/$/, ''))} ↗</a>`).join('')
     }</div>` });
   }
   if (!sectionOpen){
@@ -2888,29 +2958,51 @@ function renderProject(){
   preloadImages(items.filter(x => x.type === 'image').slice(0, 8).map(x => x.src));
   renderGalleryStrip(items);
 }
+// switching to another preview: the old one slides away and fades out
+// (a snapshot of it is laid on top and animated), revealing the new one
+function addMediaGhost(dir){
+  const screenEl = $('projectScreen');
+  screenEl.querySelectorAll('.media-ghost').forEach(g => g.remove());
+  const cs = getComputedStyle(screenEl);
+  const g = document.createElement('div');
+  g.className = 'media-ghost ' + (dir > 0 ? 'out-left' : 'out-right');
+  g.style.backgroundImage = cs.backgroundImage;
+  g.style.backgroundColor = cs.backgroundColor;
+  screenEl.appendChild(g);
+  g.addEventListener('animationend', () => g.remove(), { once: true });
+  setTimeout(() => g.remove(), 700);
+}
+function showMedia(newIdx, dir){
+  const { catIdx, projIdx } = currentProjectRef;
+  const items = getMediaItems(siteData.categories[catIdx].projects[projIdx]);
+  if (newIdx < 0 || newIdx >= items.length || newIdx === galleryIndex) return;
+  addMediaGhost(dir || (newIdx > galleryIndex ? 1 : -1));
+  galleryIndex = newIdx;
+  renderProject();
+}
 function goToMedia(delta){
   const { catIdx, projIdx } = currentProjectRef;
   const proj = siteData.categories[catIdx].projects[projIdx];
   const items = getMediaItems(proj);
   if (items.length < 2) return;
-  galleryIndex = (galleryIndex + delta + items.length) % items.length;
-  renderProject();
+  showMedia((galleryIndex + delta + items.length) % items.length, delta > 0 ? 1 : -1);
 }
+// the thumbnail row scrolls sideways (about 5 thumbnails visible at a time);
+// the current one is kept in view, centered where there is room
+let lastStripProj = null;
 function renderGalleryStrip(items){
   const strip = $('galleryStrip');
   if (!items || items.length < 2){
     strip.innerHTML = '';
     strip.style.display = 'none';
+    lastStripProj = null;
     return;
   }
+  const key = currentProjectRef.catIdx + '-' + currentProjectRef.projIdx;
+  const sameProject = key === lastStripProj;
+  const prevScroll = sameProject ? strip.scrollLeft : 0;
   strip.style.display = 'flex';
-  // show at most 5 thumbnails: the current one sits in the middle, except
-  // near the ends, where the window stops so the first one is leftmost and
-  // the last one is rightmost
-  const MAX_THUMBS = 5;
-  const winStart = Math.max(0, Math.min(galleryIndex - Math.floor(MAX_THUMBS / 2), items.length - MAX_THUMBS));
-  const visible = items.map((item, i) => ({ item, i })).slice(winStart, winStart + MAX_THUMBS);
-  strip.innerHTML = visible.map(({ item, i }) => {
+  strip.innerHTML = items.map((item, i) => {
     const active = i === galleryIndex ? ' active' : '';
     if (item.type === 'video'){
       const thumb = videoThumbUrl(item.url);
@@ -2919,12 +3011,17 @@ function renderGalleryStrip(items){
     }
     return `<div class="gallery-thumb${active}" data-i="${i}" style="background-image:url('${item.src}')"></div>`;
   }).join('');
+  strip.scrollLeft = prevScroll;
   strip.querySelectorAll('.gallery-thumb').forEach(el => {
-    el.addEventListener('click', () => {
-      galleryIndex = parseInt(el.dataset.i, 10);
-      renderProject();
-    });
+    el.addEventListener('click', () => showMedia(parseInt(el.dataset.i, 10)));
   });
+  const cur = strip.querySelector('.gallery-thumb.active');
+  if (cur){
+    const target = Math.max(0, cur.offsetLeft - (strip.clientWidth - cur.offsetWidth) / 2);
+    if (strip.scrollTo) strip.scrollTo({ left: target, behavior: sameProject ? 'smooth' : 'auto' });
+    else strip.scrollLeft = target;
+  }
+  lastStripProj = key;
 }
 function goToProject(delta){
   const { catIdx, projIdx } = currentProjectRef;
@@ -2939,6 +3036,10 @@ function goToProject(delta){
 }
 function closeProject(){
   $('screen-project').classList.remove('open');
+  // removing the player is what actually stops a playing video
+  $('projectScreen').querySelectorAll('iframe, .watch-link').forEach(x => x.remove());
+  if (driveFitObserver){ driveFitObserver.disconnect(); driveFitObserver = null; }
+  driveFitFn = null;
 }
 $('projectClose').addEventListener('click', closeProject);
 $('projectBackdrop').addEventListener('click', closeProject);
@@ -3117,14 +3218,16 @@ const THEME_GROUPS = [
     { key: '--spread-desc-color', label: 'Description color', type: 'color' },
     { key: '--spread-desc-size', label: 'Description size (px)', type: 'size' },
     { key: '--spread-author-color', label: 'Student signature color', type: 'color' },
-    { key: '--spread-author-size', label: 'Student signature size (px)', type: 'size' }
+    { key: '--spread-author-size', label: 'Student signature size (px)', type: 'size' },
+    { key: '--preview-min-h', label: 'Minimum page height (% of screen)', type: 'vh' }
   ]},
   { title: 'Project detail page', fields: [
     { key: '--project-paper-color', label: 'Paper color', type: 'color' },
     { key: '--project-title-color', label: 'Title color', type: 'color' },
     { key: '--project-title-size', label: 'Title size (px)', type: 'size' },
     { key: '--project-desc-color', label: 'Description color', type: 'color' },
-    { key: '--project-desc-size', label: 'Description size (px)', type: 'size' }
+    { key: '--project-desc-size', label: 'Description size (px)', type: 'size' },
+    { key: '--detail-min-h', label: 'Minimum page height (% of screen)', type: 'vh' }
   ]}
 ];
 // which version of the settings the Developer Mode panel is editing
@@ -3180,6 +3283,14 @@ function themeFieldHTML(f){
       <div class="dev-field">
         <label>${themeLabel(f)}</label>
         <input type="number" class="devThemeScale" data-key="${f.key}" min="50" max="200" step="5" value="${pct}">
+      </div>`;
+  }
+  if (f.type === 'vh'){
+    const n = parseFloat(val) || 0;
+    return `
+      <div class="dev-field">
+        <label>${themeLabel(f)}</label>
+        <input type="number" class="devThemeVh" data-key="${f.key}" min="0" max="100" step="5" value="${n}">
       </div>`;
   }
   return '';
@@ -3474,6 +3585,14 @@ function wireDevPanel(){
       // spine text size is computed when the shelf is built, not read live
       // from CSS, so rebuild it now if it's the visible screen
       if ($('screen-shelf').classList.contains('active')) renderShelf();
+    });
+  });
+  document.querySelectorAll('.devThemeVh').forEach(el => {
+    el.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (isNaN(n)) return;
+      setThemeValue(e.target.dataset.key, clamp(n, 0, 100) + 'vh');
+      applyTheme();
     });
   });
   const shelfMomentumInput = $('devShelfMomentum');
