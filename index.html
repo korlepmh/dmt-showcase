@@ -6,7 +6,7 @@
 <title>DMT Showcase</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=IM+Fell+English&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=IM+Fell+English&family=IM+Fell+English+SC&family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#f3e9d8;
@@ -19,8 +19,8 @@
     --shadow: 0 12px 30px rgba(0,0,0,.45);
 
     /* ---- theme (editable per-section in Developer Mode) ---- */
-    --font-title:'Berkshire Swash',Georgia,serif;
-    --font-body:'IM Fell English','Georgia','Times New Roman',serif;
+    --font-title:'Berkshire Swash',Georgia,'Noto Serif SC',serif;
+    --font-body:'IM Fell English','Georgia','Times New Roman','Noto Serif SC',serif;
 
     --btn-bg:#f3e9d8;
     --btn-text:#2b2118;
@@ -572,7 +572,8 @@
     color:var(--spread-author-color);
     pointer-events:none;
   }
-  .proj-author span{
+  .proj-author .nm{ white-space:nowrap; }
+  .proj-author .auth-line{
     display:inline-block;
     max-width:100%;
     border-bottom:1px solid color-mix(in srgb, var(--spread-author-color) 60%, transparent);
@@ -580,7 +581,7 @@
   }
   /* the dash sits inside the same inline block as the names, so it stays
      on the first line right before the first name instead of above them */
-  .proj-author span::before{ content:"— "; }
+  .proj-author .auth-line::before{ content:"\2014\00a0"; }
   #pageLeft .proj-author, .flip-page.left .proj-author,
   .flip-page.m-next .proj-author, .flip-page.m-prev .proj-author{
     align-self:flex-end;
@@ -878,9 +879,15 @@
   /* sits in the dark backdrop just outside the window itself (not inside
      the book/paper), so it never lands on a color seam or gets crowded by
      whatever's near the window's own corner */
+  /* the frames shrink-wrap the book / the paper so the × can sit on its corner
+     (the paper's torn-edge clipping is why the button lives outside it) */
+  .overlay-frame, .project-frame{
+    position:relative;
+    display:flex;
+  }
   .overlay-close{
     position:absolute;
-    top:22px;right:26px;
+    top:10px;right:10px;
     width:var(--close-btn-size);height:var(--close-btn-size);
     border-radius:50%;
     background:var(--cream);
@@ -888,9 +895,12 @@
     font-size:0;
     padding:0;
     box-shadow:0 4px 12px rgba(0,0,0,.5);
-    transition:transform .15s ease;
+    transition:transform .15s ease, right .2s ease, top .2s ease;
     z-index:45;
   }
+  /* once the page is scrolled, the × steps out to the side of the page so it
+     never sits on top of the text */
+  .overlay-close.side{ right:max(calc(var(--close-btn-size) / -2), -3vw); }
   /* the × is two bars crossing exactly at the circle's center, so it can't
      sit high or low like a text character does */
   .overlay-close::before, .overlay-close::after{
@@ -1423,10 +1433,30 @@
       letter-spacing:3px;
       padding:0 24px;
     }
+    /* the mascot stays at the top and the dots + NEXT button are pinned to the
+       bottom of the screen, so they never move when the slide text changes */
+    #screen-intro{
+      align-items:flex-start;
+    }
     .intro-wrap{
       flex-direction:column;
       text-align:center;
       gap:26px;
+      padding:64px 0 150px;
+      max-height:100%;
+      overflow-y:auto;
+    }
+    .intro-controls{
+      position:absolute;
+      left:0; right:0;
+      bottom:calc(28px + env(safe-area-inset-bottom, 0px));
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      z-index:3;
+    }
+    .intro-controls .intro-dots{
+      margin-bottom:14px;
     }
     .intro-body{
       min-height:0;
@@ -1529,8 +1559,10 @@
       <div class="intro-text">
         <div class="intro-label">Introduction</div>
         <div class="intro-body" id="introBody"></div>
-        <div class="intro-dots" id="introDots"></div>
-        <button class="btn" id="nextBtn">NEXT</button>
+        <div class="intro-controls">
+          <div class="intro-dots" id="introDots"></div>
+          <button class="btn" id="nextBtn">NEXT</button>
+        </div>
       </div>
     </div>
   </section>
@@ -1550,7 +1582,7 @@
   <!-- CATEGORY SPREAD (overlay window on top of the shelf) -->
   <section id="screen-category">
     <div class="overlay-backdrop" id="categoryBackdrop"></div>
-    <button class="overlay-close" id="categoryClose" aria-label="Close"></button>
+    <div class="overlay-frame" id="spreadFrame">
     <div class="book-spread">
       <div class="cat-title cat-title-left" id="catTitleLeft"></div>
       <div class="cat-title cat-title-right" id="catTitleRight"></div>
@@ -1561,12 +1593,14 @@
         <button id="spreadNext">&#10095;</button>
       </div>
     </div>
+    <button class="overlay-close" id="categoryClose" aria-label="Close"></button>
+    </div>
   </section>
 
   <!-- PROJECT DETAIL (overlay window on top of the rack) -->
   <section id="screen-project">
     <div class="overlay-backdrop" id="projectBackdrop"></div>
-    <button class="overlay-close" id="projectClose" aria-label="Close"></button>
+    <div class="project-frame" id="projectFrame">
     <div class="project-window">
       <div class="project-window-inner">
         <div class="monitor-row">
@@ -1588,6 +1622,8 @@
           <button class="project-navbtn" id="projectNext" title="Next project" aria-label="Next project">&#10095;</button>
         </div>
       </div>
+    </div>
+    <button class="overlay-close" id="projectClose" aria-label="Close"></button>
     </div>
   </section>
 
@@ -1861,12 +1897,20 @@ function filledSections(proj){
 // that is blank, then Ideation & Inspiration, then Abstract
 // group projects: names can be separated by commas, semicolons, "|", new
 // lines, " & " or " / " — they're always shown as "Name, Name, Name"
-function formatAuthors(raw){
+function splitAuthors(raw){
   return String(raw || '')
     .split(/[\n\r,;|]+|\s&\s|\s\/\s/)
     .map(n => n.trim())
-    .filter(Boolean)
-    .join(', ');
+    .filter(Boolean);
+}
+function formatAuthors(raw){ return splitAuthors(raw).join(', '); }
+// each name is kept in one piece (a line break can only fall between names)
+function authorsHTML(raw){
+  const a = splitAuthors(raw);
+  if (!a.length) return '';
+  return `<div class="proj-author"><span class="auth-line">${
+    a.map((n, i) => `<span class="nm">${escapeHTML(n)}${i < a.length - 1 ? ',' : ''}</span>`).join(' ')
+  }</span></div>`;
 }
 function previewText(proj){
   const sec = (proj && proj.sections) || {};
@@ -1893,11 +1937,17 @@ function applyCategoryRenames(){
   });
 }
 
+// spine colors handed out to categories that don't have one yet (new tabs)
+const CATEGORY_PALETTE = ['#60241e', '#95271d', '#b34a44', '#2f2fe4', '#e77b49', '#162e93', '#1a1953', '#ffc349'];
+// the spreadsheet's tabs ARE the categories: one book per tab, in tab order,
+// named after the tab. A category that already exists (matched by name,
+// ignoring any "(...)") keeps its spine color / image / size.
 function applyExcelRowsToSiteData(rows){
   if (!rows || !rows.length) return;
-  const byCategory = {};
+  const order = [];
+  const groups = {};
   rows.forEach(row => {
-    const catName = getCol(row, 'Category') || String(row.__sheet || '').trim();
+    const catName = (getCol(row, 'Category') || String(row.__sheet || '')).trim();
     const projName = getCol(row, 'Project Name', 'Project', 'Name');
     if (!catName || !projName) return;
     const imagesRaw = getCol(row, 'Images', 'Image URLs', 'Image');
@@ -1911,11 +1961,22 @@ function applyExcelRowsToSiteData(rows){
       videoUrl: fixLink(getCol(row, 'Video URL', 'Video')) || null,
       gallery: imagesRaw ? imagesRaw.split(/[\n\r,;]+/).map(s => normalizeImageSrc(s.trim().replace(/^["']|["']$/g, ''))).filter(Boolean) : []
     };
-    (byCategory[catKey(catName)] ||= []).push(proj);
+    const key = catKey(catName);
+    if (!groups[key]){ groups[key] = { name: catName, projects: [] }; order.push(key); }
+    groups[key].projects.push(proj);
   });
-  siteData.categories.forEach(cat => {
-    const rows = byCategory[catKey(cat.name)];
-    if (rows && rows.length) cat.projects = rows;
+  if (!order.length) return; // nothing usable in the sheet: keep the saved categories
+  const existing = {};
+  (siteData.categories || []).forEach(c => { existing[catKey(c.name)] = c; });
+  siteData.categories = order.map((key, i) => {
+    const old = existing[key], g = groups[key];
+    return {
+      name: g.name,
+      color: old ? old.color : CATEGORY_PALETTE[i % CATEGORY_PALETTE.length],
+      big: old ? !!old.big : /final year|\bfyp\b/i.test(g.name),
+      image: old ? old.image : null,
+      projects: g.projects
+    };
   });
 }
 
@@ -1965,11 +2026,19 @@ function normalizeTheme(){
 }
 // pushes every theme value onto the page as a CSS custom property — this is
 // what actually makes a Developer Mode color/font-size change take effect
+// Chinese characters aren't in the decorative fonts, so a Chinese font is
+// slipped in just before the generic fallback of every font setting
+function withCJK(stack){
+  stack = String(stack || '');
+  if (/Noto (Serif|Sans) SC/i.test(stack)) return stack;
+  const cjk = /sans-serif\s*$/i.test(stack) ? "'Noto Sans SC'" : "'Noto Serif SC'";
+  return stack.replace(/,\s*(serif|sans-serif)\s*$/i, ',' + cjk + ',$1');
+}
 function applyTheme(){
   normalizeTheme();
   const root = document.documentElement.style;
   Object.keys(DEFAULT_THEME).forEach(key => {
-    root.setProperty(key, themeVal(key));
+    root.setProperty(key, key.indexOf('--font-') === 0 ? withCJK(themeVal(key)) : themeVal(key));
   });
 }
 
@@ -2461,6 +2530,8 @@ $('shelfBack').addEventListener('click', () => {
 /* ---------------- category spread (overlay window) ---------------- */
 function openCategory(i){
   currentCat = i;
+  document.querySelector('.book-spread').scrollTop = 0;
+  $('categoryClose').classList.remove('side');
   spreadStart = 0;
   renderSpread();
   $('screen-category').classList.add('open');
@@ -2532,7 +2603,7 @@ function pageHTML(proj){
     </div>
     <div class="proj-name">${escapeHTML(proj.name)}</div>
     <div class="proj-desc">${escapeHTML(previewText(proj))}</div>
-    ${formatAuthors(proj.author) ? `<div class="proj-author"><span>${escapeHTML(formatAuthors(proj.author))}</span></div>` : ''}
+    ${authorsHTML(proj.author)}
   `;
 }
 let flipBusy = false;
@@ -2590,14 +2661,31 @@ function flipSpread(direction){
 }
 $('spreadPrev').addEventListener('click', () => flipSpread('prev'));
 $('spreadNext').addEventListener('click', () => flipSpread('next'));
+// the × moves to the side of the page once any part of it has been scrolled
+function wireCloseSide(frameId, btnId){
+  const frame = $(frameId), btn = $(btnId);
+  frame.addEventListener('scroll', () => {
+    const scrolled = Array.from(frame.querySelectorAll('.book-spread, .page, .project-window-inner'))
+      .some(el => el.scrollTop > 24);
+    btn.classList.toggle('side', scrolled);
+  }, true);
+}
+wireCloseSide('spreadFrame', 'categoryClose');
+wireCloseSide('projectFrame', 'projectClose');
 $('categoryClose').addEventListener('click', closeCategory);
 $('categoryBackdrop').addEventListener('click', closeCategory);
 
 /* ---------------- project detail (overlay window) ---------------- */
 let galleryIndex = 0;
 let sectionOpen = null; // which content sections are expanded (null = reset to default)
+function resetProjectScroll(){
+  const inner = document.querySelector('.project-window-inner');
+  if (inner) inner.scrollTop = 0;
+  $('projectClose').classList.remove('side');
+}
 function openProject(catIdx, projIdx){
   currentProjectRef = { catIdx, projIdx };
+  resetProjectScroll();
   galleryIndex = 0;
   sectionOpen = null;
   renderProject();
@@ -2815,6 +2903,7 @@ function goToProject(delta){
   // wraps around so you can keep browsing without going back to the book
   const nextIdx = (projIdx + delta + projects.length) % projects.length;
   currentProjectRef = { catIdx, projIdx: nextIdx };
+  resetProjectScroll();
   galleryIndex = 0;
   sectionOpen = null;
   renderProject();
@@ -3665,8 +3754,10 @@ $('devResetBtn').addEventListener('click', () => {
     const rows = await excelPromise;
     if (rows){
       applyExcelRowsToSiteData(rows);
-      // if a book page was already opened before the sheet arrived, refresh it
-      if (currentCat !== null && $('screen-category').classList.contains('open')) renderSpread();
+      // the books may have changed: close any book that was already open
+      // and rebuild the shelf if it is on screen
+      if ($('screen-category').classList.contains('open')) closeCategory();
+      if ($('screen-shelf').classList.contains('active')) renderShelf();
     }
   } catch(e){ console.warn('Could not apply projects.xlsx', e); }
 })();
