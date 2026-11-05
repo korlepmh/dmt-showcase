@@ -551,17 +551,10 @@
     text-align:center;
     background:linear-gradient(180deg, color-mix(in srgb, var(--spread-page-color) 65%, white), var(--spread-page-color) 55%, color-mix(in srgb, var(--spread-page-color) 80%, black));
     box-shadow:inset 0 0 30px rgba(120,85,35,.15), 0 2px 10px rgba(0,0,0,.35);
-    overflow-y:auto;
-    scrollbar-width:thin;
-    scrollbar-color:rgba(43,33,24,.35) transparent;
+    /* preview pages never scroll: a long description is cut off with "..." */
+    overflow:hidden;
+    min-height:0;
   }
-  .page::-webkit-scrollbar{ width:7px; }
-  .page::-webkit-scrollbar-track{ background:transparent; }
-  .page::-webkit-scrollbar-thumb{
-    background:rgba(43,33,24,.35);
-    border-radius:999px;
-  }
-  .page::-webkit-scrollbar-thumb:hover{ background:rgba(43,33,24,.55); }
   /* signed like a name written inside the front cover of a real book — a
      small, slightly tilted, handwritten-feeling credit tucked in the
      bottom corner of each page, near the outer edge (away from the spine) */
@@ -1128,8 +1121,10 @@
   .project-assets{ margin-bottom:12px; }
   .project-assets a{
     display:block;
-    overflow-wrap:anywhere;
-    word-break:break-all;
+    max-width:100%;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
     margin-top:4px;
     font-size:var(--project-desc-size);
     color:var(--accent);
@@ -1533,9 +1528,10 @@
     .book-spread{
       flex-direction:column;
       width:94vw;
-      height:auto;
-      max-height:90vh;
-      overflow-y:auto;
+      height:min(86vh, 760px);
+      height:min(86dvh, 760px);
+      max-height:none;
+      overflow:hidden;
       padding:34px 16px;
       gap:14px;
     }
@@ -1555,6 +1551,7 @@
     .page{
       width:100%;
       padding:34px 22px;
+      min-height:0;
     }
     .flip-page{
       top:34px; bottom:34px;
@@ -2655,6 +2652,42 @@ function coverOf(proj){
   return (proj.gallery && proj.gallery.length ? proj.gallery[0] : null)
     || (proj.videoUrl ? videoThumbUrl(proj.videoUrl) : null);
 }
+// A preview page never scrolls. The description gets exactly as many lines as
+// fit in the room left between the name and the signature, and anything
+// longer ends in "...". Sizes use offsetTop/offsetHeight (not on-screen
+// rectangles) so the book's open animation doesn't throw the math off.
+function fitPreviewText(page){
+  if (!page) return;
+  const desc = page.querySelector('.proj-desc');
+  if (!desc) return;
+  if (!page.clientHeight) return; // not laid out (yet)
+  const cs = getComputedStyle(page);
+  const author = page.querySelector('.proj-author');
+  const room = page.clientHeight - (parseFloat(cs.paddingBottom) || 0) - desc.offsetTop
+    - (author ? author.offsetHeight : 0) - 4;
+  const dcs = getComputedStyle(desc);
+  const fontPx = parseFloat(dcs.fontSize) || 14;
+  const lh = String(dcs.lineHeight || '');
+  // line-height can come back as pixels ("23px"), a plain multiplier ("1.65")
+  // or "normal" depending on the browser, so handle all three
+  const lineH = /px$/.test(lh) ? parseFloat(lh) : (parseFloat(lh) || 1.65) * fontPx;
+  const lines = Math.floor(room / lineH);
+  if (lines < 1){ desc.style.display = 'none'; return; }
+  desc.style.display = '-webkit-box';
+  desc.style.webkitBoxOrient = 'vertical';
+  desc.style.overflow = 'hidden';
+  desc.style.webkitLineClamp = String(lines);
+}
+function fitPreviewPages(){
+  fitPreviewText($('pageLeft'));
+  fitPreviewText($('pageRight'));
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  if ($('screen-category').classList.contains('open')) fitPreviewPages();
+});
+window.addEventListener('resize', () => {
+  if ($('screen-category').classList.contains('open')) fitPreviewPages();
+});
 function renderSpread(){
   const cat = siteData.categories[currentCat];
   const mobile = isMobileSpread();
@@ -2665,6 +2698,7 @@ function renderSpread(){
   $('pageRight').scrollTop = 0;
   $('pageLeft').innerHTML = spreadPageHTML(left);
   $('pageRight').innerHTML = mobile ? '' : spreadPageHTML(right);
+  fitPreviewPages();
   $('spreadPrev').disabled = spreadStart === 0;
   $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
   // load the covers of the next spread right away so flipping feels instant
@@ -2738,6 +2772,7 @@ function flipSpread(direction){
       clone.className = 'flip-page m-prev';
       clone.innerHTML = spreadPageHTML(cat.projects[target]);
       spreadEl.appendChild(clone);
+      fitPreviewText(clone);
     }
     clone.addEventListener('animationend', finish, { once: true });
     setTimeout(finish, 900); // safety net if the animation event never fires
@@ -2925,7 +2960,7 @@ function renderProject(){
   const assets = (proj.assets || []).filter(u => /^https?:\/\//i.test(u));
   if (assets.length){
     secItems.push({ title: 'Assets', html: `<div class="project-assets">${
-      assets.map(u => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">${escapeHTML(u.replace(/^https?:\/\//i, '').replace(/\/$/, ''))} ↗</a>`).join('')
+      assets.map(u => `<a href="${escapeAttr(u)}" target="_blank" rel="noopener" title="${escapeAttr(u)}">↗ ${escapeHTML(u.replace(/^https?:\/\//i, '').replace(/\/$/, ''))}</a>`).join('')
     }</div>` });
   }
   if (!sectionOpen){
