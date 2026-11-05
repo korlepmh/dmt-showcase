@@ -87,6 +87,9 @@
   #app{
     position:relative;
     width:100vw;height:100vh;
+    /* phone browsers: 100vh counts the area behind the address bar, which
+       pushes bottom-pinned things too low; dvh is the visible height */
+    height:100dvh;
     overflow:hidden;
   }
   .screen{
@@ -1442,14 +1445,14 @@
       flex-direction:column;
       text-align:center;
       gap:26px;
-      padding:64px 0 150px;
+      padding:64px 0 190px;
       max-height:100%;
       overflow-y:auto;
     }
     .intro-controls{
       position:absolute;
       left:0; right:0;
-      bottom:calc(28px + env(safe-area-inset-bottom, 0px));
+      bottom:calc(72px + env(safe-area-inset-bottom, 0px));
       display:flex;
       flex-direction:column;
       align-items:center;
