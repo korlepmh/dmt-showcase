@@ -1445,9 +1445,13 @@
       flex-direction:column;
       text-align:center;
       gap:26px;
-      padding:64px 0 190px;
+      padding:56px 0 170px;
       max-height:100%;
-      overflow-y:auto;
+      overflow:hidden; /* no scrolling here: the text is sized to fit instead */
+    }
+    /* a smaller mascot on phones leaves more room for the text */
+    .mascot{
+      zoom:0.7;
     }
     .intro-controls{
       position:absolute;
@@ -1730,6 +1734,7 @@ const DEFAULTS = {
   logos: [],
   shelfBg: null,
   shelfBgPhone: null,
+  spineImage: null,
   shelfMomentum: 0.5,
   shelfMomentumPhone: null,
   themePhone: { ...DEFAULT_THEME_PHONE },
@@ -2139,9 +2144,26 @@ $('enterBtn').addEventListener('click', () => {
   introIndex = 0;
   renderIntro();
   showScreen('screen-intro');
+  fitIntroText();
 });
 
 /* ---------------- intro ---------------- */
+// phones: shrink the slide text just enough that the whole page fits on
+// screen without scrolling (measured after the screen is visible)
+function fitIntroText(){
+  const body = $('introBody');
+  const wrap = document.querySelector('.intro-wrap');
+  if (!body || !wrap) return;
+  body.style.fontSize = '';
+  if (!isPhoneWidth() || !$('screen-intro').classList.contains('active')) return;
+  let size = parseFloat(getComputedStyle(body).fontSize) || 16;
+  let guard = 0;
+  while (wrap.scrollHeight > wrap.clientHeight + 1 && size > 11 && guard++ < 40){
+    size -= 0.5;
+    body.style.fontSize = size + 'px';
+  }
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitIntroText);
 function renderIntro(){
   $('introBody').textContent = siteData.introSlides[introIndex];
   const dots = $('introDots');
@@ -2160,6 +2182,7 @@ $('nextBtn').addEventListener('click', () => {
   if (introIndex < siteData.introSlides.length - 1){
     introIndex++;
     renderIntro();
+    fitIntroText();
   } else {
     // show the shelf screen first, THEN measure/build it — while the
     // screen is still display:none its width reads as 0, which used to
@@ -2183,6 +2206,7 @@ window.addEventListener('resize', () => {
     if (phone === lastPhoneMode) return;
     lastPhoneMode = phone;
     applyBasics(); // theme values, backgrounds and logos for the new size
+    fitIntroText();
     if (currentCat !== null && $('screen-category').classList.contains('open')) renderSpread();
   }, 120);
 });
@@ -2270,14 +2294,16 @@ function buildPlatform(group, availW){
     nameSpan.textContent = cat.name;
     b.appendChild(nameSpan);
     b.dataset.catIndex = index;
-    if (cat.image){
+    // a book's own image wins; otherwise the one shared by all books is used
+    const spineImg = cat.image || siteData.spineImage;
+    if (spineImg){
       // tint a black & white spine image with the category's own color:
       // a solid color layer multiplied over the (grayscale) image lets the
       // image's light/dark texture show through as shades of that color,
       // so every category can share the same photo/pattern but keep its
       // own distinct spine color
       b.style.backgroundColor = cat.color; // shows immediately while the image loads
-      b.style.backgroundImage = `linear-gradient(${cat.color}, ${cat.color}), url('${cat.image}')`;
+      b.style.backgroundImage = `linear-gradient(${cat.color}, ${cat.color}), url('${spineImg}')`;
       b.style.backgroundSize = 'cover, cover';
       b.style.backgroundPosition = 'center, center';
       b.style.backgroundRepeat = 'no-repeat, no-repeat';
@@ -3235,6 +3261,15 @@ function renderDevPanel(){
         </div>
       </div>
       <div class="dev-field">
+        <label>Spine image for ALL books (a black &amp; white / grayscale image works best; each book's color tints it)</label>
+        <div class="dev-img-preview" id="devSpinePreview" style="${siteData.spineImage ? `background-image:url('${siteData.spineImage}')` : ''}">${siteData.spineImage ? '' : 'No image set'}</div>
+        <div class="dev-row">
+          <input type="file" id="devSpineFile" accept="image/*">
+          <button class="dev-mini-btn" id="devSpineClear">Clear</button>
+        </div>
+        <div class="dev-note">A book with its own spine image (under Categories &amp; projects) uses that one instead.</div>
+      </div>
+      <div class="dev-field">
         <label>Shelf (library) background image${devEditPhone ? ' — phone (empty = same as PC)' : ''}</label>
         <div class="dev-img-preview" id="devShelfPreview" style="${devBg('shelf') ? `background-image:url('${devBg('shelf')}')` : ''}">${devBg('shelf') ? '' : (devEditPhone ? 'Same as PC' : 'No image set')}</div>
         <div class="dev-row">
@@ -3328,7 +3363,7 @@ function renderDevPanel(){
               </div>
             </div>
             <div class="dev-field">
-              <label>Spine image (optional — a black &amp; white/grayscale image works best; the spine color above tints it)</label>
+              <label>This book's own spine image (optional — overrides the image for all books)</label>
               <div class="dev-img-preview" data-cat-preview="${ci}" style="${cat.image ? `background-image:url('${cat.image}')` : ''}">${cat.image ? '' : 'No image set'}</div>
               <div class="dev-row">
                 <input type="file" class="devCatFile" data-cat="${ci}" accept="image/*">
@@ -3539,6 +3574,25 @@ function wireDevPanel(){
     $('devShelfPreview').style.backgroundImage = `url('${devBg('shelf')}')`;
     $('devShelfPreview').textContent = '';
     applyBasics();
+  });
+  $('devSpineFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      siteData.spineImage = await fileToDataURL(file, 400, 0.85);
+    } catch(err){
+      alert('That image could not be read by the browser. Try a JPG or PNG instead.');
+      return;
+    }
+    $('devSpinePreview').style.backgroundImage = `url('${siteData.spineImage}')`;
+    $('devSpinePreview').textContent = '';
+    if ($('screen-shelf').classList.contains('active')) renderShelf();
+  });
+  $('devSpineClear').addEventListener('click', () => {
+    siteData.spineImage = null;
+    $('devSpinePreview').style.backgroundImage = '';
+    $('devSpinePreview').textContent = 'No image set';
+    if ($('screen-shelf').classList.contains('active')) renderShelf();
   });
   $('devShelfClear').addEventListener('click', () => {
     setDevBg('shelf', null);
