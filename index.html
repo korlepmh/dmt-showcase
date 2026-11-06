@@ -976,7 +976,11 @@
      flatscreen TV: a warm wood border (matching the shelf's wood tones)
      with a thin brass inner lip around the screen — no bezel, no stand */
   .monitor{
-    width:min(680px,80vw);
+    /* the wooden frame shrinks to fit the picture inside it */
+    --monitor-max-w:min(680px, 80vw);
+    --screen-max-h:46vh;   /* the picture takes up at most about half the page */
+    width:fit-content;
+    max-width:var(--monitor-max-w);
     background:linear-gradient(160deg, var(--wood), var(--wood-dark));
     border-radius:6px;
     border:1px solid rgba(0,0,0,.5);
@@ -985,9 +989,13 @@
     position:relative;
   }
   .monitor-screen{
-    aspect-ratio:16/9;
-    transition:aspect-ratio .25s ease;
-    max-height:72vh;
+    /* --ar is the picture's width / height (16:9 for videos). The width is
+       whichever is smaller: all the room there is, or the width that keeps
+       the height within the limit; the height then follows from the ratio. */
+    --ar:1.7778;
+    aspect-ratio:var(--ar);
+    width:min(calc(var(--monitor-max-w) - 2 * var(--monitor-frame)), calc(var(--screen-max-h) * var(--ar)));
+    transition:width .25s ease;
     border-radius:2px;
     outline:3px solid var(--gold);
     outline-offset:-3px;
@@ -1643,7 +1651,7 @@
       width:100%;
     }
     .monitor{
-      width:min(680px, 96vw);
+      --monitor-max-w:min(680px, 96vw);
     }
     .project-nav-controls{
       gap:22px;
@@ -2785,23 +2793,6 @@ function preloadImages(list){
     im.src = src;
   });
 }
-// preview thumbnails: the box takes the picture's shape (kept within a sane
-// range so one very tall or very wide picture can't take over the page)
-function fitThumbRatios(root){
-  (root || document).querySelectorAll('.proj-thumb[data-src]').forEach(el => {
-    const src = el.dataset.src;
-    const apply = (r) => {
-      if (!r) return;
-      el.style.aspectRatio = String(clamp(r, 0.8, 2.2));
-      el.style.backgroundSize = 'contain';
-      el.style.backgroundRepeat = 'no-repeat';
-      el.style.backgroundPosition = 'center';
-      fitPreviewPages(); // the description gets the room that is left
-    };
-    if (imgRatios[src]) apply(imgRatios[src]);
-    else getImageRatio(src).then(r => { if (el.isConnected) apply(r); });
-  });
-}
 function coverOf(proj){
   if (!proj) return null;
   return (proj.gallery && proj.gallery.length ? proj.gallery[0] : null)
@@ -2853,7 +2844,6 @@ function renderSpread(){
   $('pageRight').scrollTop = 0;
   $('pageLeft').innerHTML = spreadPageHTML(left);
   $('pageRight').innerHTML = mobile ? '' : spreadPageHTML(right);
-  fitThumbRatios();
   fitPreviewPages();
   $('spreadPrev').disabled = spreadStart === 0;
   $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
@@ -2886,7 +2876,7 @@ function pageHTML(proj){
     : `background-color:${cat.color}`;
   const showPlay = !cover || proj.videoUrl;
   return `
-    <div class="proj-thumb" style="${style}" data-idx="${idx}"${cover ? ` data-src="${escapeAttr(cover)}"` : ''}>
+    <div class="proj-thumb" style="${style}" data-idx="${idx}">
       ${showPlay ? '<div class="play-icon"></div>' : ''}
       <span class="thumb-hint"><span class="hint-tap">Tap here to view more details</span><span class="hint-click">Click here to view more details</span></span>
     </div>
@@ -2928,7 +2918,6 @@ function flipSpread(direction){
       clone.className = 'flip-page m-prev';
       clone.innerHTML = spreadPageHTML(cat.projects[target]);
       spreadEl.appendChild(clone);
-      fitThumbRatios(clone);
       fitPreviewText(clone);
     }
     clone.addEventListener('animationend', finish, { once: true });
@@ -3010,7 +2999,7 @@ function renderProject(){
   if (oldPlayBtn) oldPlayBtn.remove();
 
   // the frame is 16:9 unless it is showing a picture, then it takes that shape
-  screenEl.style.removeProperty('aspect-ratio');
+  screenEl.style.removeProperty('--ar');
   screenEl.style.backgroundSize = '';
   screenEl.style.backgroundRepeat = '';
   screenEl.style.backgroundPosition = '';
@@ -3113,9 +3102,9 @@ function renderProject(){
     screenEl.style.backgroundPosition = 'center';
     screenEl.dataset.src = current.src;
     const shape = (r) => String(clamp(r, 0.5, 2.6));
-    if (imgRatios[current.src]) screenEl.style.aspectRatio = shape(imgRatios[current.src]);
+    if (imgRatios[current.src]) screenEl.style.setProperty('--ar', shape(imgRatios[current.src]));
     else getImageRatio(current.src).then(r => {
-      if (r && screenEl.dataset.src === current.src) screenEl.style.aspectRatio = shape(r);
+      if (r && screenEl.dataset.src === current.src) screenEl.style.setProperty('--ar', shape(r));
     });
     screenEl.querySelector('.play-icon').style.display = 'none';
   } else {
