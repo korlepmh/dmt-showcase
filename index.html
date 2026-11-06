@@ -986,6 +986,8 @@
   }
   .monitor-screen{
     aspect-ratio:16/9;
+    transition:aspect-ratio .25s ease;
+    max-height:72vh;
     border-radius:2px;
     outline:3px solid var(--gold);
     outline-offset:-3px;
@@ -2758,13 +2760,46 @@ function isMobileSpread(){
 }
 // warm the browser cache so images are already there when a page opens
 const preloadedImgs = new Set();
+// width / height of every image seen so far, so a frame can take the shape
+// of the picture inside it instead of cropping the picture to fit
+const imgRatios = {};
+function rememberRatio(src, im){
+  if (im && im.naturalWidth && im.naturalHeight) imgRatios[src] = im.naturalWidth / im.naturalHeight;
+}
+function getImageRatio(src){
+  return new Promise(resolve => {
+    if (imgRatios[src]) return resolve(imgRatios[src]);
+    const im = new Image();
+    im.onload = () => { rememberRatio(src, im); resolve(imgRatios[src] || null); };
+    im.onerror = () => resolve(null);
+    im.src = src;
+  });
+}
 function preloadImages(list){
   (list || []).forEach(src => {
     if (!src || preloadedImgs.has(src)) return;
     preloadedImgs.add(src);
     const im = new Image();
     im.decoding = 'async';
+    im.onload = () => rememberRatio(src, im);
     im.src = src;
+  });
+}
+// preview thumbnails: the box takes the picture's shape (kept within a sane
+// range so one very tall or very wide picture can't take over the page)
+function fitThumbRatios(root){
+  (root || document).querySelectorAll('.proj-thumb[data-src]').forEach(el => {
+    const src = el.dataset.src;
+    const apply = (r) => {
+      if (!r) return;
+      el.style.aspectRatio = String(clamp(r, 0.8, 2.2));
+      el.style.backgroundSize = 'contain';
+      el.style.backgroundRepeat = 'no-repeat';
+      el.style.backgroundPosition = 'center';
+      fitPreviewPages(); // the description gets the room that is left
+    };
+    if (imgRatios[src]) apply(imgRatios[src]);
+    else getImageRatio(src).then(r => { if (el.isConnected) apply(r); });
   });
 }
 function coverOf(proj){
@@ -2818,6 +2853,7 @@ function renderSpread(){
   $('pageRight').scrollTop = 0;
   $('pageLeft').innerHTML = spreadPageHTML(left);
   $('pageRight').innerHTML = mobile ? '' : spreadPageHTML(right);
+  fitThumbRatios();
   fitPreviewPages();
   $('spreadPrev').disabled = spreadStart === 0;
   $('spreadNext').disabled = spreadStart + step >= cat.projects.length;
@@ -2850,7 +2886,7 @@ function pageHTML(proj){
     : `background-color:${cat.color}`;
   const showPlay = !cover || proj.videoUrl;
   return `
-    <div class="proj-thumb" style="${style}" data-idx="${idx}">
+    <div class="proj-thumb" style="${style}" data-idx="${idx}"${cover ? ` data-src="${escapeAttr(cover)}"` : ''}>
       ${showPlay ? '<div class="play-icon"></div>' : ''}
       <span class="thumb-hint"><span class="hint-tap">Tap here to view more details</span><span class="hint-click">Click here to view more details</span></span>
     </div>
@@ -2892,6 +2928,7 @@ function flipSpread(direction){
       clone.className = 'flip-page m-prev';
       clone.innerHTML = spreadPageHTML(cat.projects[target]);
       spreadEl.appendChild(clone);
+      fitThumbRatios(clone);
       fitPreviewText(clone);
     }
     clone.addEventListener('animationend', finish, { once: true });
@@ -2972,6 +3009,12 @@ function renderProject(){
   const oldPlayBtn = screenEl.querySelector('.video-play-btn');
   if (oldPlayBtn) oldPlayBtn.remove();
 
+  // the frame is 16:9 unless it is showing a picture, then it takes that shape
+  screenEl.style.removeProperty('aspect-ratio');
+  screenEl.style.backgroundSize = '';
+  screenEl.style.backgroundRepeat = '';
+  screenEl.style.backgroundPosition = '';
+  screenEl.dataset.src = '';
   if (current && current.type === 'video'){
     // show the video's own thumbnail behind everything first, so there's
     // always something visible even if the embed itself fails to render
@@ -3065,6 +3108,15 @@ function renderProject(){
   } else if (current && current.type === 'image'){
     screenEl.style.backgroundImage = `linear-gradient(135deg, rgba(255,255,255,.12), transparent), url('${current.src}')`;
     screenEl.style.backgroundColor = '';
+    screenEl.style.backgroundSize = 'contain';   // the whole picture, never cropped
+    screenEl.style.backgroundRepeat = 'no-repeat';
+    screenEl.style.backgroundPosition = 'center';
+    screenEl.dataset.src = current.src;
+    const shape = (r) => String(clamp(r, 0.5, 2.6));
+    if (imgRatios[current.src]) screenEl.style.aspectRatio = shape(imgRatios[current.src]);
+    else getImageRatio(current.src).then(r => {
+      if (r && screenEl.dataset.src === current.src) screenEl.style.aspectRatio = shape(r);
+    });
     screenEl.querySelector('.play-icon').style.display = 'none';
   } else {
     screenEl.style.backgroundImage = 'linear-gradient(135deg, rgba(255,255,255,.12), transparent)';
@@ -3178,6 +3230,9 @@ function addMediaGhost(dir){
   g.className = 'media-ghost ' + (dir > 0 ? 'out-left' : 'out-right');
   g.style.backgroundImage = cs.backgroundImage;
   g.style.backgroundColor = cs.backgroundColor;
+  g.style.backgroundSize = cs.backgroundSize;
+  g.style.backgroundRepeat = cs.backgroundRepeat;
+  g.style.backgroundPosition = cs.backgroundPosition;
   screenEl.appendChild(g);
   g.addEventListener('animationend', () => g.remove(), { once: true });
   setTimeout(() => g.remove(), 700);
