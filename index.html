@@ -67,6 +67,8 @@
     --detail-min-h:0vh;
     --book-frame:22px;
     --monitor-frame:14px;
+    --preview-slot-h:44vh;
+    --back-size:14px;
     --shelf-hint-delay:2s;
     --lh-intro:1.7;
     --lh-spread:1.65;
@@ -176,10 +178,10 @@
 
   .back-btn{
     position:absolute;
-    top:24px;left:24px;
+    top:var(--intro-back-top);left:var(--intro-back-left);
     z-index:20;
     padding:10px 22px;
-    font-size:14px;
+    font-size:var(--back-size);
     letter-spacing:1px;
   }
 
@@ -264,10 +266,7 @@
   .intro-controls .intro-dots{
     margin-bottom:14px;
   }
-  #screen-intro .back-btn{
-    top:var(--intro-back-top);
-    left:var(--intro-back-left);
-  }
+
   .mascot{
     width:180px;height:220px;
     flex-shrink:0;
@@ -872,10 +871,18 @@
   /* project switcher: sits below the TV set as its own row, kept well
      away from the screen itself so it never reads as a "switch preview"
      control */
+  /* The picture area is a fixed-size slot: the frame sits in the middle of it
+     and shrinks or grows to fit each picture, but the slot, the arrows and
+     everything under it (thumbnail row, title, text) never move.
+     The slot's height is set in Developer Mode ("Image area height"). */
   .monitor-row{
+    position:relative;
     display:flex;
+    align-items:center;
     justify-content:center;
     flex-shrink:0;
+    width:100%;
+    height:var(--preview-slot-h);
   }
   /* switching between projects is a distinct, less-frequent action than
      browsing this one project's own previews/gallery — so it sits below
@@ -926,9 +933,9 @@
     z-index:6;
   }
   .media-nav:hover{ background:rgba(0,0,0,.7); }
-  .media-nav-left{ left:10px; }
-  .media-nav-right{ right:10px; }
-  .monitor-screen:hover .media-nav{ opacity:1; }
+  .media-nav-left{ left:4px; }
+  .media-nav-right{ right:4px; }
+  .monitor-row:hover .media-nav{ opacity:1; }
   .media-nav:focus-visible{ opacity:1; }
   @media (hover:none){
     .media-nav{ opacity:.55; }
@@ -977,8 +984,10 @@
      with a thin brass inner lip around the screen — no bezel, no stand */
   .monitor{
     /* the wooden frame shrinks to fit the picture inside it */
-    --monitor-max-w:min(680px, 80vw);
-    --screen-max-h:46vh;   /* the picture takes up at most about half the page */
+    /* the room inside the paper: its width minus the padding on both sides */
+    --monitor-max-w:min(680px, calc(min(760px, 90vw) - 76px));
+    /* the tallest the picture can be: the slot minus the frame around it */
+    --screen-max-h:calc(var(--preview-slot-h) - 2 * var(--monitor-frame) - 2px);
     width:fit-content;
     max-width:var(--monitor-max-w);
     background:linear-gradient(160deg, var(--wood), var(--wood-dark));
@@ -1651,7 +1660,7 @@
       width:100%;
     }
     .monitor{
-      --monitor-max-w:min(680px, 96vw);
+      --monitor-max-w:calc(90vw - 28px);
     }
     .project-nav-controls{
       gap:22px;
@@ -1745,10 +1754,10 @@
           <div class="monitor">
             <div class="monitor-screen" id="projectScreen">
               <div class="play-icon"></div>
-              <button class="media-nav media-nav-left" id="mediaPrev" title="Previous preview" aria-label="Previous preview">&#10094;</button>
-              <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
             </div>
           </div>
+          <button class="media-nav media-nav-left" id="mediaPrev" title="Previous preview" aria-label="Previous preview">&#10094;</button>
+          <button class="media-nav media-nav-right" id="mediaNext" title="Next preview" aria-label="Next preview">&#10095;</button>
         </div>
         <div class="gallery-strip" id="galleryStrip"></div>
         <div class="project-info">
@@ -1860,6 +1869,8 @@ const DEFAULT_THEME = {
   '--detail-min-h': '0vh',
   '--book-frame': '22px',
   '--monitor-frame': '14px',
+  '--preview-slot-h': '44vh',
+  '--back-size': '14px',
   '--shelf-hint-delay': '2s',
   '--lh-intro': '1.7',
   '--lh-spread': '1.65',
@@ -1880,6 +1891,7 @@ const DEFAULT_THEME_PHONE = {
   '--spine-text-scale': '1.15',
   '--book-frame': '8px',      // thinner book cover on phones
   '--monitor-frame': '6px',   // thinner frame around the preview image
+  '--preview-slot-h': '30vh', // fixed-height area for the preview image
   '--lh-spine': '1.15'
 };
 
@@ -3448,7 +3460,10 @@ const THEME_GROUPS = [
     { key: '--btn-bg', label: 'Text fill color', type: 'color' },
     { key: '--btn-border', label: 'Text outline color', type: 'color' },
     { key: '--btn-size', label: 'Text size (px)', type: 'size' },
-    { key: '--btn-outline-width', label: 'Outline thickness (px)', type: 'size', min: 0, max: 5, step: 0.2 }
+    { key: '--btn-outline-width', label: 'Outline thickness (px)', type: 'size', min: 0, max: 5, step: 0.2 },
+    { key: '--back-size', label: 'BACK button text size (px) — introduction + shelf pages', type: 'size', min: 8, max: 60 },
+    { key: '--intro-back-top', label: 'BACK button: distance from top (px)', type: 'size', min: 0, max: 500 },
+    { key: '--intro-back-left', label: 'BACK button: distance from left (px)', type: 'size', min: 0, max: 500 }
   ]},
   { title: 'Icons & controls', fields: [
     { key: '--close-btn-size', label: 'Close (×) button size (px)', type: 'size' },
@@ -3470,9 +3485,7 @@ const THEME_GROUPS = [
     { key: '--intro-main-x', label: 'Mascot + text: left / right (px)', type: 'size', min: -400, max: 400 },
     { key: '--intro-main-y', label: 'Mascot + text: up / down (px)', type: 'size', min: -400, max: 400 },
     { key: '--intro-controls-x', label: 'Dots + button: left / right (px)', type: 'size', min: -400, max: 400 },
-    { key: '--intro-controls-bottom', label: 'Dots + button: distance from bottom (px)', type: 'size', min: 0, max: 700 },
-    { key: '--intro-back-top', label: 'Back button: distance from top (px)', type: 'size', min: 0, max: 500 },
-    { key: '--intro-back-left', label: 'Back button: distance from left (px)', type: 'size', min: 0, max: 500 }
+    { key: '--intro-controls-bottom', label: 'Dots + button: distance from bottom (px)', type: 'size', min: 0, max: 700 }
   ]},
   { title: 'Bookshelf page', fields: [
     { key: '--shelf-bg', label: 'Background color', type: 'color' },
@@ -3501,6 +3514,7 @@ const THEME_GROUPS = [
     { key: '--project-desc-color', label: 'Description color', type: 'color' },
     { key: '--project-desc-size', label: 'Description size (px)', type: 'size' },
     { key: '--monitor-frame', label: 'Image frame thickness (px)', type: 'size', min: 0, max: 40 },
+    { key: '--preview-slot-h', label: 'Image area height (% of screen) — fixed, so arrows and text below never move', type: 'vh' },
     { key: '--detail-min-h', label: 'Minimum page height (% of screen)', type: 'vh' }
   ]},
   { title: 'Line spacing (1 = tight, 2 = airy)', fields: [
