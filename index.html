@@ -190,7 +190,7 @@
   #screen-sponsors .btn:hover{ color:var(--accent); }
   .sponsors-wrap{
     width:90%; max-width:900px;
-    max-height:calc(100dvh - 190px);
+    max-height:calc(100dvh - var(--intro-controls-bottom) * 2 - 120px); /* stays clear of the NEXT button */
     overflow-y:auto;
     text-align:center;
     -webkit-overflow-scrolling:touch;
@@ -198,11 +198,11 @@
   .sponsors-title{
     letter-spacing:4px; font-size:13px; font-weight:bold;
     color:var(--intro-label-color);
-    text-transform:uppercase; margin-bottom:22px;
+    text-transform:uppercase; margin-bottom:12px;
   }
   .sponsors-grid{
     display:flex; flex-wrap:wrap;
-    justify-content:center; align-items:center;
+    justify-content:center; align-items:flex-start;
     gap:28px 40px;
   }
   .sponsor-tier{
@@ -210,22 +210,22 @@
     color:var(--intro-label-color); opacity:.8; margin:22px 0 12px;
   }
   .sponsor-tier:first-child{ margin-top:0; }
-  .sponsors-grid{ gap:6px 16px; }
+  .sponsors-grid{ gap:2px 16px; }
   .sponsor-card{
     display:flex; flex-direction:column; align-items:center; gap:6px;
-    width:150px; padding:8px; background:none; border:0; font:inherit;
+    width:150px; padding:4px 8px; background:none; border:0; font:inherit;
     color:inherit; text-align:center;
   }
   .sponsor-card.has-more{ cursor:pointer; }
   .sponsor-card.has-more:hover .sponsor-name{ text-decoration:underline; }
   .sponsor-logos{ display:flex; justify-content:center; align-items:center; gap:10px; width:100%; }
-  .sd-logos{ display:flex; justify-content:center; align-items:center; gap:14px; margin-bottom:10px; }
+  .sd-logos{ display:flex; justify-content:center; align-items:center; gap:14px; margin-bottom:4px; }
   .sd-logos img{ margin:0 !important; }
   .sponsor-card img{
     width:auto; max-width:100%; object-fit:contain;
     -webkit-user-drag:none; user-select:none;
   }
-  .sponsor-noimg{ font-weight:bold; font-size:18px; line-height:1.2; }
+  .sponsor-noimg{ font-weight:bold; font-size:18px; line-height:1.2; display:flex; align-items:center; justify-content:center; width:100%; }
   .sponsor-name{ font-weight:bold; font-size:14px; }
   .sponsor-item{ font-size:12px; opacity:.75; line-height:1.3; }
   .sponsor-more{ font-size:11px; color:var(--intro-label-color); }
@@ -238,13 +238,14 @@
   .sponsor-detail-box{
     position:relative; background:var(--intro-bg); color:inherit;
     width:min(92%,640px); max-height:88dvh; overflow-y:auto;
-    padding:28px 24px; border-radius:6px; text-align:center;
+    padding:18px 18px 16px; border-radius:6px; text-align:center;
     box-shadow:0 10px 40px rgba(0,0,0,.5);
   }
-  .sponsor-detail-box img{ max-height:110px; max-width:70%; object-fit:contain; margin-bottom:10px; }
-  .sponsor-detail-box h2{ margin:0 0 4px; font-size:22px; }
+  .sponsor-detail-box img{ max-height:80px; max-width:70%; object-fit:contain; margin-bottom:4px; }
+  .sponsor-detail-box h2{ margin:0 0 6px; font-size:19px; }
   .sponsor-detail-box .sd-meta{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--intro-label-color); margin-bottom:14px; }
-  .sponsor-detail-box .sd-desc{ font-size:14px; line-height:1.6; text-align:left; white-space:pre-line; margin-bottom:16px; }
+  .sponsor-detail-box .sd-desc{ font-size:13px; line-height:1.4; text-align:left; white-space:pre-line; margin-bottom:10px; }
+  .sd-desc p{ margin:0 0 6px; }
   .sponsor-detail-box video{ width:100%; aspect-ratio:16/9; background:#000; }
   .sd-video{ position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
   .sd-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
@@ -2306,7 +2307,7 @@ function migrateLogos(){
   if (!Array.isArray(siteData.logos)) siteData.logos = [];
 }
 const SPONSOR_TIERS = ['Diamond', 'Platinum', 'Gold', 'Silver'];
-const SPONSOR_LOGO_H = { diamond: 100, platinum: 88, gold: 76, silver: 60 };
+const SPONSOR_LOGO_H = { diamond: 76, platinum: 68, gold: 60, silver: 48 };
 function escHtml(t){
   return String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
@@ -2340,20 +2341,23 @@ function renderSponsors(){
     return i < 0 ? 99 : i;
   };
   list.sort((x, y) => rank(x) - rank(y));
+  // every logo box is as tall as the tallest logo, so all names line up evenly
+  const logoH = sp => sp.size || SPONSOR_LOGO_H[String(sp.tier || '').toLowerCase()] || 70;
+  const boxH = Math.max(60, ...list.map(logoH));
   {
     list.forEach(sp => {
       const card = document.createElement('button');
       card.type = 'button';
       const more = !!(sp.desc || sp.video);
       card.className = 'sponsor-card' + (more ? ' has-more' : '');
-      const h = sp.size || SPONSOR_LOGO_H[String(sp.tier || '').toLowerCase()] || 70;
+      const h = logoH(sp);
       const logos = sponsorLogos(sp);
       const n = logos.length;
       if (n > 1) card.style.width = Math.min(150 * n, 300) + 'px';
       card.innerHTML =
-        (n ? `<div class="sponsor-logos">` + logos.map(u =>
+        (n ? `<div class="sponsor-logos" style="height:${boxH}px">` + logos.map(u =>
                `<img src="${escHtml(normalizeImageSrc(u))}" alt="${escHtml(sp.name)}" draggable="false" style="height:${h}px;max-width:${Math.floor(100 / n) - 2}%" onerror="sponsorImgFail(this)">`).join('') + `</div>`
-           : `<div class="sponsor-noimg">${escHtml(sp.name)}</div>`) +
+           : `<div class="sponsor-noimg" style="height:${boxH}px">${escHtml(sp.name)}</div>`) +
         (n ? `<div class="sponsor-name">${escHtml(sp.name)}</div>` : '') +
         (more ? `<div class="sponsor-more">Tap to learn more</div>` : '');
       if (more) card.addEventListener('click', () => openSponsor(sp));
@@ -2381,9 +2385,10 @@ function openSponsor(sp){
     '<button class="overlay-close sd-close" aria-label="Close"></button>' +
     (sponsorLogos(sp).length ? `<div class="sd-logos">` + sponsorLogos(sp).map(u => `<img src="${escHtml(normalizeImageSrc(u))}" alt="">`).join('') + `</div>` : '') +
     `<h2>${escHtml(sp.name)}</h2>` +
-    (sp.desc ? `<div class="sd-desc">${escHtml(sp.desc)}</div>` : '') + media;
+    (sp.desc ? `<div class="sd-desc">${String(sp.desc).split(/\n+/).filter(x => x.trim()).map(x => '<p>' + escHtml(x) + '</p>').join('')}</div>` : '') + media;
   box.querySelector('.sd-close').addEventListener('click', closeSponsor);
   $('sponsorDetail').classList.add('open');
+  box.scrollTop = 0; // always start at the top
   // Google Drive's player looks cramped on phones: load it at 960x540 and
   // shrink it to the box (same fix as the project videos)
   const wrap = box.querySelector('.sd-video'), fr = wrap && wrap.querySelector('iframe');
@@ -2415,9 +2420,13 @@ function hasSponsors(){
 function parseLogoCell(v){
   v = String(v || '').trim();
   if (!v) return [];
-  const urls = v.match(/https?:\/\/[^\s,;]+/gi);
-  if (urls && urls.length) return urls;
-  return v.split(/[,;\n]+/).map(x => fixLink(x.trim())).filter(Boolean);
+  const out = [];
+  v.split(/[\n;]+/).forEach(part => {
+    const urls = part.match(/https?:\/\/[^\s,;]+/gi);
+    if (urls) urls.forEach(u => out.push(u));
+    else part.split(',').forEach(x => { x = x.trim(); if (x) out.push(fixLink(x)); });
+  });
+  return out;
 }
 async function loadSponsorsFromExcel(){
   try {
