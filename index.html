@@ -218,6 +218,9 @@
   }
   .sponsor-card.has-more{ cursor:pointer; }
   .sponsor-card.has-more:hover .sponsor-name{ text-decoration:underline; }
+  .sponsor-logos{ display:flex; justify-content:center; align-items:center; gap:10px; width:100%; }
+  .sd-logos{ display:flex; justify-content:center; align-items:center; gap:14px; margin-bottom:10px; }
+  .sd-logos img{ margin:0 !important; }
   .sponsor-card img{
     width:auto; max-width:100%; object-fit:contain;
     -webkit-user-drag:none; user-select:none;
@@ -255,12 +258,6 @@
     border:2px solid currentColor; box-shadow:0 2px 8px rgba(0,0,0,.35);
     font-size:24px; line-height:1; cursor:pointer;
   }
-  .sponsors-next{
-    position:absolute; left:0; right:0;
-    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
-    display:flex; justify-content:center;
-  }
-
   .back-btn{
     position:absolute;
     top:var(--intro-back-top);left:var(--intro-back-left);
@@ -1763,7 +1760,7 @@
       <div class="sponsors-title" id="sponsorsTitle">Our Sponsors</div>
       <div class="sponsors-grid" id="sponsorsGrid"></div>
     </div>
-    <div class="sponsors-next"><button class="btn" id="sponsorsNext">NEXT</button></div>
+    <div class="intro-controls"><button class="btn" id="sponsorsNext">NEXT</button></div>
     <div id="sponsorDetail"><div class="sponsor-detail-box" id="sponsorDetailBox"></div></div>
   </section>
 
@@ -2319,6 +2316,21 @@ function escHtml(t){
 function sponsorShown(sp){
   return !!(sp.src || sp.name);
 }
+// a sponsor can have several logos: sp.logos (list) or sp.src (single)
+function sponsorLogos(sp){
+  return (Array.isArray(sp.logos) && sp.logos.length ? sp.logos : (sp.src ? [sp.src] : [])).filter(Boolean);
+}
+// drop a logo that fails to load; if none are left show the name instead
+function sponsorImgFail(img){
+  const box = img.parentElement;
+  img.remove();
+  if (box && !box.querySelector('img')){
+    const nm = box.parentElement && box.parentElement.querySelector('.sponsor-name');
+    if (nm) nm.remove();
+    box.className = 'sponsor-noimg';
+    box.textContent = img.alt;
+  }
+}
 function renderSponsors(){
   if (!Array.isArray(siteData.sponsors)) siteData.sponsors = [];
   const t = $('sponsorsTitle'), g = $('sponsorsGrid');
@@ -2338,10 +2350,14 @@ function renderSponsors(){
       const more = !!(sp.desc || sp.video);
       card.className = 'sponsor-card' + (more ? ' has-more' : '');
       const h = sp.size || SPONSOR_LOGO_H[String(sp.tier || '').toLowerCase()] || 70;
+      const logos = sponsorLogos(sp);
+      const n = logos.length;
+      if (n > 1) card.style.width = Math.min(150 * n, 300) + 'px';
       card.innerHTML =
-        (sp.src ? `<img src="${escHtml(normalizeImageSrc(sp.src))}" alt="${escHtml(sp.name)}" draggable="false" style="height:${h}px" onerror="var n=this.nextElementSibling;if(n&&n.className=='sponsor-name')n.remove();this.outerHTML='<div class=sponsor-noimg></div>'.replace('></','>'+this.alt.replace(/[<>&]/g,'')+'</')">`
-                : `<div class="sponsor-noimg">${escHtml(sp.name)}</div>`) +
-        (sp.src ? `<div class="sponsor-name">${escHtml(sp.name)}</div>` : '') +
+        (n ? `<div class="sponsor-logos">` + logos.map(u =>
+               `<img src="${escHtml(normalizeImageSrc(u))}" alt="${escHtml(sp.name)}" draggable="false" style="height:${h}px;max-width:${Math.floor(100 / n) - 2}%" onerror="sponsorImgFail(this)">`).join('') + `</div>`
+           : `<div class="sponsor-noimg">${escHtml(sp.name)}</div>`) +
+        (n ? `<div class="sponsor-name">${escHtml(sp.name)}</div>` : '') +
         (more ? `<div class="sponsor-more">Tap to learn more</div>` : '');
       if (more) card.addEventListener('click', () => openSponsor(sp));
       g.appendChild(card);
@@ -2366,7 +2382,7 @@ function openSponsor(sp){
   }
   box.innerHTML =
     '<button class="sd-close" aria-label="Close">&times;</button>' +
-    (sp.src ? `<img src="${escHtml(normalizeImageSrc(sp.src))}" alt="">` : '') +
+    (sponsorLogos(sp).length ? `<div class="sd-logos">` + sponsorLogos(sp).map(u => `<img src="${escHtml(normalizeImageSrc(u))}" alt="">`).join('') + `</div>` : '') +
     `<h2>${escHtml(sp.name)}</h2>` +
     (sp.desc ? `<div class="sd-desc">${escHtml(sp.desc)}</div>` : '') + media;
   box.querySelector('.sd-close').addEventListener('click', closeSponsor);
@@ -2397,6 +2413,15 @@ function hasSponsors(){
   return Array.isArray(siteData.sponsors) && siteData.sponsors.some(sponsorShown);
 }
 // sponsors.xlsx (next to index.html): Sponsor Name | Tier | Item | Quantity | Logo | Description | Video URL
+// the Logo cell may hold several logos: links separated by space / comma /
+// new line, or several file names separated by comma / semicolon / new line
+function parseLogoCell(v){
+  v = String(v || '').trim();
+  if (!v) return [];
+  const urls = v.match(/https?:\/\/[^\s,;]+/gi);
+  if (urls && urls.length) return urls;
+  return v.split(/[,;\n]+/).map(x => fixLink(x.trim())).filter(Boolean);
+}
 async function loadSponsorsFromExcel(){
   try {
     const [res, libOk] = await Promise.all([fetch('sponsors.xlsx', { cache: 'no-cache' }), loadXlsxLibrary()]);
@@ -2424,7 +2449,7 @@ async function loadSponsorsFromExcel(){
       tier: getCol(row, 'Tier'),
       item: getCol(row, 'Item', 'Items'),
       qty: getCol(row, 'Quantity', 'Quantities', 'Qty'),
-      src: fixLink(getCol(row, 'Logo', 'Logo File')),
+      logos: parseLogoCell(getCol(row, 'Logo', 'Logo File')),
       desc: getCol(row, 'Description'),
       video: fixLink(getCol(row, 'Video URL', 'Video', 'Vid'))
     })).filter(sp => sp.name);
