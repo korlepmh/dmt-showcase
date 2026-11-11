@@ -191,9 +191,18 @@
   .sponsors-wrap{
     width:90%; max-width:900px;
     max-height:calc(100dvh - var(--intro-controls-bottom) * 2 - 120px); /* stays clear of the NEXT button */
-    overflow-y:auto;
+    display:flex; flex-direction:column;
     text-align:center;
-    -webkit-overflow-scrolling:touch;
+  }
+  /* the title stays pinned; only the list below it moves */
+  .sponsors-viewport{ flex:1 1 auto; min-height:0; overflow:hidden; position:relative; touch-action:pan-y; }
+  .sponsors-track.marquee{ animation:sponsorsMarquee var(--sp-dur,20s) linear infinite; will-change:transform; }
+  .sponsors-track.marquee.paused{ animation-play-state:paused; }
+  .sponsors-track .sponsors-grid{ padding-bottom:28px; }
+  @keyframes sponsorsMarquee{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
+  @media (prefers-reduced-motion: reduce){
+    .sponsors-track.marquee{ animation:none; }
+    .sponsors-viewport{ overflow-y:auto; }
   }
   .sponsors-title{
     letter-spacing:4px; font-size:13px; font-weight:bold;
@@ -1756,7 +1765,9 @@
     <button class="btn back-btn" id="sponsorsBack">BACK</button>
     <div class="sponsors-wrap">
       <div class="sponsors-title" id="sponsorsTitle">Our Sponsors</div>
-      <div class="sponsors-grid" id="sponsorsGrid"></div>
+      <div class="sponsors-viewport" id="sponsorsViewport">
+        <div class="sponsors-track" id="sponsorsTrack"><div class="sponsors-grid" id="sponsorsGrid"></div></div>
+      </div>
     </div>
     <div class="intro-controls"><button class="btn" id="sponsorsNext">NEXT</button></div>
     <div id="sponsorDetail"><div class="sponsor-detail-box" id="sponsorDetailBox"></div></div>
@@ -2329,12 +2340,49 @@ function sponsorImgFail(img){
     box.textContent = img.alt;
   }
 }
+let sponsorList = [];
+// when the list is taller than the space, it scrolls by itself like a marquee
+// (looping seamlessly); pressing / hovering pauses it
+function setupSponsorMarquee(){
+  const vp = $('sponsorsViewport'), track = $('sponsorsTrack'), grid = $('sponsorsGrid');
+  if (!vp || !track || !grid) return;
+  track.classList.remove('marquee', 'paused');
+  track.querySelectorAll('.sponsors-grid.clone').forEach(c => c.remove());
+  vp.style.height = '';
+  if (!vp.offsetParent) return;            // screen not visible yet
+  const natural = grid.offsetHeight;
+  if (natural <= vp.clientHeight + 1) return;   // fits: stay still
+  vp.style.height = vp.clientHeight + 'px';
+  const clone = grid.cloneNode(true);
+  clone.removeAttribute('id'); clone.classList.add('clone');
+  track.appendChild(clone);
+  track.style.setProperty('--sp-dur', Math.max(8, natural / 28) + 's');   // ~28px per second
+  track.classList.add('marquee');
+}
+(function(){
+  const track = document.getElementById('sponsorsTrack');
+  if (!track) return;
+  track.addEventListener('click', e => {
+    const card = e.target.closest('.sponsor-card.has-more');
+    if (card) openSponsor(sponsorList[+card.dataset.i]);
+  });
+  let t = null;
+  const again = () => { clearTimeout(t); t = setTimeout(setupSponsorMarquee, 150); };
+  if (window.ResizeObserver) new ResizeObserver(again).observe(document.getElementById('sponsorsGrid'));
+  window.addEventListener('resize', again);
+  const hold = on => () => track.classList.toggle('paused', on);
+  track.addEventListener('pointerdown', hold(true));
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => track.addEventListener(ev, hold(false)));
+  track.addEventListener('mouseenter', hold(true));
+  track.addEventListener('mouseleave', hold(false));
+})();
 function renderSponsors(){
   if (!Array.isArray(siteData.sponsors)) siteData.sponsors = [];
   const t = $('sponsorsTitle'), g = $('sponsorsGrid');
   if (!t || !g) return;
   t.textContent = siteData.sponsorsTitle || 'Our Sponsors';
   g.innerHTML = '';
+  sponsorList = [];
   const list = siteData.sponsors.filter(sponsorShown);
   const rank = sp => {
     const i = SPONSOR_TIERS.findIndex(x => x.toLowerCase() === String(sp.tier || '').trim().toLowerCase());
@@ -2360,10 +2408,12 @@ function renderSponsors(){
            : `<div class="sponsor-noimg" style="height:${boxH}px">${escHtml(sp.name)}</div>`) +
         (n ? `<div class="sponsor-name">${escHtml(sp.name)}</div>` : '') +
         (more ? `<div class="sponsor-more">Tap to learn more</div>` : '');
-      if (more) card.addEventListener('click', () => openSponsor(sp));
+      card.dataset.i = sponsorList.length;
+      sponsorList.push(sp);
       g.appendChild(card);
     });
   }
+  setupSponsorMarquee();
 }
 function openSponsor(sp){
   const box = $('sponsorDetailBox');
@@ -2550,7 +2600,7 @@ function tryLockPortrait(){
 }
 $('enterBtn').addEventListener('click', () => {
   tryLockPortrait();
-  if (hasSponsors()){ renderSponsors(); showScreen('screen-sponsors'); }
+  if (hasSponsors()){ renderSponsors(); showScreen('screen-sponsors'); setupSponsorMarquee(); }
   else startIntro();
 });
 $('sponsorsNext').addEventListener('click', () => { closeSponsor(); startIntro(); });
@@ -2587,6 +2637,7 @@ function renderIntro(){
 }
 $('introBack').addEventListener('click', () => {
   showScreen(hasSponsors() ? 'screen-sponsors' : 'screen-landing');
+  setupSponsorMarquee();
 });
 $('nextBtn').addEventListener('click', () => {
   if (introIndex < siteData.introSlides.length - 1){
