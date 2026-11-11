@@ -2309,11 +2309,8 @@ const SPONSOR_LOGO_H = { diamond: 100, platinum: 88, gold: 76, silver: 60 };
 function escHtml(t){
   return String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
-// only Gold and above are shown (a sponsor with no tier set is shown too)
 function sponsorShown(sp){
-  if (!(sp.src || sp.name)) return false;
-  const t = String(sp.tier || '').trim().toLowerCase();
-  return !t || ['diamond', 'platinum', 'gold'].includes(t);
+  return !!(sp.src || sp.name);
 }
 function renderSponsors(){
   if (!Array.isArray(siteData.sponsors)) siteData.sponsors = [];
