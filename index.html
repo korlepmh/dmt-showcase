@@ -242,7 +242,10 @@
   .sponsor-detail-box h2{ margin:0 0 4px; font-size:22px; }
   .sponsor-detail-box .sd-meta{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--intro-label-color); margin-bottom:14px; }
   .sponsor-detail-box .sd-desc{ font-size:14px; line-height:1.6; text-align:left; white-space:pre-line; margin-bottom:16px; }
-  .sponsor-detail-box video, .sponsor-detail-box iframe{ width:100%; aspect-ratio:16/9; border:0; background:#000; }
+  .sponsor-detail-box video{ width:100%; aspect-ratio:16/9; background:#000; }
+  .sd-video{ position:relative; width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
+  .sd-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+  .sd-watch{ display:block; margin-top:10px; font-size:13px; }
   .sponsor-detail-box a{ color:var(--intro-label-color); font-weight:bold; }
   .sd-close{
     position:absolute; top:8px; right:12px; background:none; border:0;
@@ -2351,7 +2354,8 @@ function openSponsor(sp){
       const src = /^https?:/i.test(v) ? v : 'video/' + v;
       media = `<video controls playsinline preload="none" src="${escHtml(src)}"></video>`;
     } else if (emb){
-      media = `<iframe src="${escHtml(emb)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      media = `<div class="sd-video"><iframe src="${escHtml(emb)}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no"></iframe></div>` +
+              `<a class="sd-watch" href="${escHtml(v)}" target="_blank" rel="noopener">Open video in a new tab &#8599;</a>`;
     } else if (/^https?:/i.test(v)){
       media = `<a href="${escHtml(v)}" target="_blank" rel="noopener">&#9654; Watch video</a>`;
     }
@@ -2363,9 +2367,26 @@ function openSponsor(sp){
     (sp.desc ? `<div class="sd-desc">${escHtml(sp.desc)}</div>` : '') + media;
   box.querySelector('.sd-close').addEventListener('click', closeSponsor);
   $('sponsorDetail').classList.add('open');
+  // Google Drive's player looks cramped on phones: load it at 960x540 and
+  // shrink it to the box (same fix as the project videos)
+  const wrap = box.querySelector('.sd-video'), fr = wrap && wrap.querySelector('iframe');
+  if (fr && parseDriveId(v)){
+    const fit = () => {
+      if (window.innerWidth <= 700){
+        fr.style.cssText = 'position:absolute;left:0;top:0;border:0;max-width:none;width:960px;height:540px;transform-origin:0 0;transform:scale(' + (wrap.clientWidth / 960) + ')';
+      } else {
+        fr.style.cssText = '';
+      }
+    };
+    fit();
+    sponsorFit = fit;
+  }
 }
+let sponsorFit = null;
+window.addEventListener('resize', () => { if (sponsorFit && $('sponsorDetail').classList.contains('open')) sponsorFit(); });
 function closeSponsor(){
   $('sponsorDetail').classList.remove('open');
+  sponsorFit = null;
   $('sponsorDetailBox').innerHTML = ''; // also stops any playing video
 }
 function hasSponsors(){
