@@ -176,6 +176,84 @@
   }
   #screen-intro .btn:hover{ color:var(--accent); }
 
+  /* sponsors page: same light look as the introduction page */
+  #screen-sponsors{
+    align-items:center;
+    justify-content:center;
+    background:var(--intro-bg);
+  }
+  #screen-sponsors .btn{
+    color:var(--btn-border);
+    -webkit-text-stroke-color:var(--btn-bg);
+    text-stroke-color:var(--btn-bg);
+  }
+  #screen-sponsors .btn:hover{ color:var(--accent); }
+  .sponsors-wrap{
+    width:90%; max-width:900px;
+    max-height:calc(100dvh - 190px);
+    overflow-y:auto;
+    text-align:center;
+    -webkit-overflow-scrolling:touch;
+  }
+  .sponsors-title{
+    letter-spacing:4px; font-size:13px; font-weight:bold;
+    color:var(--intro-label-color);
+    text-transform:uppercase; margin-bottom:22px;
+  }
+  .sponsors-grid{
+    display:flex; flex-wrap:wrap;
+    justify-content:center; align-items:center;
+    gap:28px 40px;
+  }
+  .sponsor-tier{
+    letter-spacing:3px; font-size:11px; font-weight:bold; text-transform:uppercase;
+    color:var(--intro-label-color); opacity:.8; margin:22px 0 12px;
+  }
+  .sponsor-tier:first-child{ margin-top:0; }
+  .sponsors-grid{ gap:6px 16px; }
+  .sponsor-card{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    width:150px; padding:8px; background:none; border:0; font:inherit;
+    color:inherit; text-align:center;
+  }
+  .sponsor-card.has-more{ cursor:pointer; }
+  .sponsor-card.has-more:hover .sponsor-name{ text-decoration:underline; }
+  .sponsor-card img{
+    width:auto; max-width:100%; object-fit:contain;
+    -webkit-user-drag:none; user-select:none;
+  }
+  .sponsor-noimg{ font-weight:bold; font-size:18px; line-height:1.2; }
+  .sponsor-name{ font-weight:bold; font-size:14px; }
+  .sponsor-item{ font-size:12px; opacity:.75; line-height:1.3; }
+  .sponsor-more{ font-size:11px; color:var(--intro-label-color); }
+  #sponsorDetail{
+    position:absolute; inset:0; z-index:5; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(0,0,0,.55);
+  }
+  #sponsorDetail.open{ display:flex; }
+  .sponsor-detail-box{
+    position:relative; background:var(--intro-bg); color:inherit;
+    width:min(92%,640px); max-height:88dvh; overflow-y:auto;
+    padding:28px 24px; border-radius:6px; text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .sponsor-detail-box img{ max-height:110px; max-width:70%; object-fit:contain; margin-bottom:10px; }
+  .sponsor-detail-box h2{ margin:0 0 4px; font-size:22px; }
+  .sponsor-detail-box .sd-meta{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--intro-label-color); margin-bottom:14px; }
+  .sponsor-detail-box .sd-desc{ font-size:14px; line-height:1.6; text-align:left; white-space:pre-line; margin-bottom:16px; }
+  .sponsor-detail-box video, .sponsor-detail-box iframe{ width:100%; aspect-ratio:16/9; border:0; background:#000; }
+  .sponsor-detail-box a{ color:var(--intro-label-color); font-weight:bold; }
+  .sd-close{
+    position:absolute; top:8px; right:12px; background:none; border:0;
+    font-size:28px; line-height:1; color:inherit; cursor:pointer;
+  }
+  .sponsors-next{
+    position:absolute; left:0; right:0;
+    bottom:calc(40px + env(safe-area-inset-bottom, 0px));
+    display:flex; justify-content:center;
+  }
+
   .back-btn{
     position:absolute;
     top:var(--intro-back-top);left:var(--intro-back-left);
@@ -1671,6 +1749,17 @@
     <button class="btn" id="enterBtn">ENTER</button>
   </section>
 
+  <!-- SPONSORS -->
+  <section id="screen-sponsors" class="screen">
+    <button class="btn back-btn" id="sponsorsBack">BACK</button>
+    <div class="sponsors-wrap">
+      <div class="sponsors-title" id="sponsorsTitle">Our Sponsors</div>
+      <div class="sponsors-grid" id="sponsorsGrid"></div>
+    </div>
+    <div class="sponsors-next"><button class="btn" id="sponsorsNext">NEXT</button></div>
+    <div id="sponsorDetail"><div class="sponsor-detail-box" id="sponsorDetailBox"></div></div>
+  </section>
+
   <!-- INTRO -->
   <section id="screen-intro" class="screen">
     <button class="btn back-btn" id="introBack">BACK</button>
@@ -1882,6 +1971,8 @@ const DEFAULTS = {
   landingBg: null,
   landingBgPhone: null,
   logos: [],
+  sponsorsTitle: "Our Sponsors",
+  sponsors: [],
   shelfBg: null,
   shelfBgPhone: null,
   spineImage: null,
@@ -2213,6 +2304,116 @@ function migrateLogos(){
   delete siteData.logo;
   if (!Array.isArray(siteData.logos)) siteData.logos = [];
 }
+const SPONSOR_TIERS = ['Diamond', 'Platinum', 'Gold', 'Silver'];
+const SPONSOR_LOGO_H = { diamond: 100, platinum: 88, gold: 76, silver: 60 };
+function escHtml(t){
+  return String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+// only Gold and above are shown (a sponsor with no tier set is shown too)
+function sponsorShown(sp){
+  if (!(sp.src || sp.name)) return false;
+  const t = String(sp.tier || '').trim().toLowerCase();
+  return !t || ['diamond', 'platinum', 'gold'].includes(t);
+}
+function renderSponsors(){
+  if (!Array.isArray(siteData.sponsors)) siteData.sponsors = [];
+  const t = $('sponsorsTitle'), g = $('sponsorsGrid');
+  if (!t || !g) return;
+  t.textContent = siteData.sponsorsTitle || 'Our Sponsors';
+  g.innerHTML = '';
+  const list = siteData.sponsors.filter(sponsorShown);
+  const rank = sp => {
+    const i = SPONSOR_TIERS.findIndex(x => x.toLowerCase() === String(sp.tier || '').trim().toLowerCase());
+    return i < 0 ? 99 : i;
+  };
+  list.sort((x, y) => rank(x) - rank(y));
+  {
+    list.forEach(sp => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      const more = !!(sp.desc || sp.video);
+      card.className = 'sponsor-card' + (more ? ' has-more' : '');
+      const h = sp.size || SPONSOR_LOGO_H[String(sp.tier || '').toLowerCase()] || 70;
+      card.innerHTML =
+        (sp.src ? `<img src="${escHtml(normalizeImageSrc(sp.src))}" alt="${escHtml(sp.name)}" draggable="false" style="height:${h}px" onerror="var n=this.nextElementSibling;if(n&&n.className=='sponsor-name')n.remove();this.outerHTML='<div class=sponsor-noimg></div>'.replace('></','>'+this.alt.replace(/[<>&]/g,'')+'</')">`
+                : `<div class="sponsor-noimg">${escHtml(sp.name)}</div>`) +
+        (sp.src ? `<div class="sponsor-name">${escHtml(sp.name)}</div>` : '') +
+        (more ? `<div class="sponsor-more">Tap to learn more</div>` : '');
+      if (more) card.addEventListener('click', () => openSponsor(sp));
+      g.appendChild(card);
+    });
+  }
+}
+function openSponsor(sp){
+  const box = $('sponsorDetailBox');
+  let media = '';
+  const v = String(sp.video || '').trim();
+  if (v){
+    const emb = (typeof videoEmbedUrl === 'function') ? videoEmbedUrl(v) : null;
+    if (/\.(mp4|webm|mov)$/i.test(v) && !/^https?:\/\/(www\.)?(dropbox|drive)/i.test(v)){
+      const src = /^https?:/i.test(v) ? v : 'video/' + v;
+      media = `<video controls playsinline preload="none" src="${escHtml(src)}"></video>`;
+    } else if (emb){
+      media = `<iframe src="${escHtml(emb)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+    } else if (/^https?:/i.test(v)){
+      media = `<a href="${escHtml(v)}" target="_blank" rel="noopener">&#9654; Watch video</a>`;
+    }
+  }
+  box.innerHTML =
+    '<button class="sd-close" aria-label="Close">&times;</button>' +
+    (sp.src ? `<img src="${escHtml(normalizeImageSrc(sp.src))}" alt="">` : '') +
+    `<h2>${escHtml(sp.name)}</h2>` +
+    (sp.desc ? `<div class="sd-desc">${escHtml(sp.desc)}</div>` : '') + media;
+  box.querySelector('.sd-close').addEventListener('click', closeSponsor);
+  $('sponsorDetail').classList.add('open');
+}
+function closeSponsor(){
+  $('sponsorDetail').classList.remove('open');
+  $('sponsorDetailBox').innerHTML = ''; // also stops any playing video
+}
+function hasSponsors(){
+  return Array.isArray(siteData.sponsors) && siteData.sponsors.some(sponsorShown);
+}
+// sponsors.xlsx (next to index.html): Sponsor Name | Tier | Item | Quantity | Logo | Description | Video URL
+async function loadSponsorsFromExcel(){
+  try {
+    const [res, libOk] = await Promise.all([fetch('sponsors.xlsx', { cache: 'no-cache' }), loadXlsxLibrary()]);
+    if (!libOk || typeof XLSX === 'undefined' || !res.ok) return null;
+    const wb = XLSX.read(await res.arrayBuffer(), { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const grid = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    let hi = grid.findIndex(r => r.some(c => /^sponsor( name)?$/i.test(String(c).trim())));
+    if (hi < 0) hi = 0;
+    try { // recover hyperlinks hidden behind link text
+      const rng = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      for (let C = rng.s.c; C <= rng.e.c; C++){
+        const h = ws[XLSX.utils.encode_cell({ r: rng.s.r + hi, c: C })];
+        if (!h || !/video|logo/i.test(String(h.v))) continue;
+        for (let R = rng.s.r + hi + 1; R <= rng.e.r; R++){
+          const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+          if (cell && cell.l && cell.l.Target && !/^https?:\/\//i.test(String(cell.v ?? '').trim())){
+            cell.v = cell.l.Target; cell.t = 's';
+          }
+        }
+      }
+    } catch(e){}
+    return XLSX.utils.sheet_to_json(ws, { defval: '', range: hi }).map(row => ({
+      name: getCol(row, 'Sponsor Name', 'Sponsor', 'Name'),
+      tier: getCol(row, 'Tier'),
+      item: getCol(row, 'Item', 'Items'),
+      qty: getCol(row, 'Quantity', 'Quantities', 'Qty'),
+      src: fixLink(getCol(row, 'Logo', 'Logo File')),
+      desc: getCol(row, 'Description'),
+      video: fixLink(getCol(row, 'Video URL', 'Video', 'Vid'))
+    })).filter(sp => sp.name);
+  } catch(e){ return null; }
+}
+function startIntro(){
+  introIndex = 0;
+  renderIntro();
+  showScreen('screen-intro');
+  fitIntroText();
+}
 function renderLogos(){
   migrateLogos();
   const box = $('landingLogos');
@@ -2247,6 +2448,7 @@ function applyBasics(){
     landing.style.backgroundImage = '';
   }
   renderLogos();
+  renderSponsors();
   const shelf = $('screen-shelf');
   const shelfBg = shelfBgNow();
   if (shelfBg){
@@ -2295,11 +2497,12 @@ function tryLockPortrait(){
 }
 $('enterBtn').addEventListener('click', () => {
   tryLockPortrait();
-  introIndex = 0;
-  renderIntro();
-  showScreen('screen-intro');
-  fitIntroText();
+  if (hasSponsors()){ renderSponsors(); showScreen('screen-sponsors'); }
+  else startIntro();
 });
+$('sponsorsNext').addEventListener('click', () => { closeSponsor(); startIntro(); });
+$('sponsorsBack').addEventListener('click', () => { closeSponsor(); showScreen('screen-landing'); });
+$('sponsorDetail').addEventListener('click', e => { if (e.target.id === 'sponsorDetail') closeSponsor(); });
 
 /* ---------------- intro ---------------- */
 // phones: shrink the slide text just enough that the whole page fits on
@@ -2330,7 +2533,7 @@ function renderIntro(){
   $('nextBtn').textContent = introIndex === siteData.introSlides.length - 1 ? 'ENTER LIBRARY' : 'NEXT';
 }
 $('introBack').addEventListener('click', () => {
-  showScreen('screen-landing');
+  showScreen(hasSponsors() ? 'screen-sponsors' : 'screen-landing');
 });
 $('nextBtn').addEventListener('click', () => {
   if (introIndex < siteData.introSlides.length - 1){
@@ -3730,6 +3933,28 @@ function renderDevPanel(){
     </div>
 
     <div class="dev-section">
+      <h3>Sponsors page (before the introduction)</h3>
+      <div class="dev-field"><label>Page title</label>
+        <input type="text" id="devSponsorsTitle" value="${(siteData.sponsorsTitle || '').replace(/"/g,'&quot;')}"></div>
+      ${(siteData.sponsors || []).map((sp, i) => `
+        <div class="dev-proj">
+          <div class="dev-proj-label">
+            <span>Sponsor ${i + 1}</span>
+            <button class="dev-mini-btn dev-danger devSponsorRemove" data-i="${i}">Remove</button>
+          </div>
+          <div class="dev-img-preview" style="background-image:url('${sp.src}');background-size:contain;background-repeat:no-repeat"></div>
+          <div class="dev-field"><label>Logo height (px)</label>
+            <input type="number" class="devSponsorSize" data-i="${i}" min="20" max="400" step="5" value="${sp.size || 90}"></div>
+        </div>
+      `).join('')}
+      <div class="dev-field" style="margin-top:10px;">
+        <label>Add a sponsor logo</label>
+        <input type="file" id="devSponsorAdd" accept="image/*">
+      </div>
+      <div class="dev-note">If sponsors.xlsx exists next to index.html it replaces this list (it also carries tier, item, description and video). With no sponsors at all, the page is skipped.</div>
+    </div>
+
+    <div class="dev-section">
       <h3>Theme — fonts, colors &amp; sizes</h3>
       <button class="dev-mini-btn" id="devThemeResetBtn" style="margin-bottom:10px;">${devEditPhone ? 'Clear phone values' : 'Reset theme only'}</button>
       ${themeGroupsHTML()}
@@ -3954,6 +4179,34 @@ function wireDevPanel(){
       return null;
     }
   };
+  $('devSponsorsTitle').addEventListener('input', e => {
+    siteData.sponsorsTitle = e.target.value;
+    renderSponsors();
+  });
+  $('devSponsorAdd').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const src = await logoRead(file);
+    if (!src) return;
+    siteData.sponsors.push({ src, size: 90 });
+    renderSponsors();
+    renderDevPanel();
+  });
+  document.querySelectorAll('.devSponsorSize').forEach(el => {
+    el.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (isNaN(n)) return;
+      siteData.sponsors[parseInt(e.target.dataset.i, 10)].size = n;
+      renderSponsors();
+    });
+  });
+  document.querySelectorAll('.devSponsorRemove').forEach(el => {
+    el.addEventListener('click', e => {
+      siteData.sponsors.splice(parseInt(e.target.dataset.i, 10), 1);
+      renderSponsors();
+      renderDevPanel();
+    });
+  });
   $('devLogoAdd').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -4233,6 +4486,7 @@ $('devResetBtn').addEventListener('click', () => {
 (async () => {
   // start fetching the project sheet right away, in parallel with data.json
   const excelPromise = loadProjectsFromExcel();
+  const sponsorsPromise = loadSponsorsFromExcel();
   siteData = await loadSiteData();
   applyCategoryRenames();
   applyBasics(); // the cover page appears now, without waiting for the sheet
@@ -4246,6 +4500,10 @@ $('devResetBtn').addEventListener('click', () => {
       if ($('screen-shelf').classList.contains('active')) renderShelf();
     }
   } catch(e){ console.warn('Could not apply projects.xlsx', e); }
+  try {
+    const sp = await sponsorsPromise;
+    if (sp && sp.length){ siteData.sponsors = sp; renderSponsors(); }
+  } catch(e){ console.warn('Could not apply sponsors.xlsx', e); }
 })();
 </script>
 </body>
