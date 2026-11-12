@@ -195,15 +195,9 @@
     text-align:center;
   }
   /* the title stays pinned; only the list below it moves */
-  .sponsors-viewport{ flex:1 1 auto; min-height:0; overflow:hidden; position:relative; touch-action:pan-y; }
-  .sponsors-track.marquee{ animation:sponsorsMarquee var(--sp-dur,20s) linear infinite; will-change:transform; }
-  .sponsors-track.marquee.paused{ animation-play-state:paused; }
+  .sponsors-viewport{ flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; position:relative; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .sponsors-viewport::-webkit-scrollbar{ display:none; }
   .sponsors-track .sponsors-grid{ padding-bottom:28px; }
-  @keyframes sponsorsMarquee{ from{ transform:translateY(0); } to{ transform:translateY(-50%); } }
-  @media (prefers-reduced-motion: reduce){
-    .sponsors-track.marquee{ animation:none; }
-    .sponsors-viewport{ overflow-y:auto; }
-  }
   .sponsors-title{
     letter-spacing:4px; font-size:13px; font-weight:bold;
     color:var(--intro-label-color);
@@ -2342,26 +2336,49 @@ function sponsorImgFail(img){
 }
 let sponsorList = [];
 // when the list is taller than the space, it scrolls by itself like a marquee
-// (looping seamlessly); pressing / hovering pauses it
+// (looping seamlessly). Touching / wheel-scrolling / hovering pauses it, and it
+// carries on a moment after the person stops.
+const SPONSOR_SPEED = 28;        // px per second
+const SPONSOR_RESUME_MS = 2500;  // pause after the last scroll
+let spRaf = 0, spPos = 0, spLast = 0, spLoopH = 0, spPausedUntil = 0, spHold = false, spSelf = false;
+function sponsorPause(){ spPausedUntil = performance.now() + SPONSOR_RESUME_MS; }
+function sponsorStep(ts){
+  const vp = $('sponsorsViewport'), track = $('sponsorsTrack');
+  if (!vp || !track.classList.contains('marquee')){ spRaf = 0; return; }
+  const dt = Math.min(64, ts - (spLast || ts)); spLast = ts;
+  if (vp.offsetParent){
+    if (spHold || performance.now() < spPausedUntil){
+      spPos = vp.scrollTop;                     // follow the person's scrolling
+    } else {
+      spPos += SPONSOR_SPEED * dt / 1000;
+      if (spPos >= spLoopH) spPos -= spLoopH;
+      spSelf = true; vp.scrollTop = spPos;
+    }
+  }
+  spRaf = requestAnimationFrame(sponsorStep);
+}
 function setupSponsorMarquee(){
   const vp = $('sponsorsViewport'), track = $('sponsorsTrack'), grid = $('sponsorsGrid');
   if (!vp || !track || !grid) return;
-  track.classList.remove('marquee', 'paused');
+  cancelAnimationFrame(spRaf); spRaf = 0;
+  track.classList.remove('marquee');
   track.querySelectorAll('.sponsors-grid.clone').forEach(c => c.remove());
-  vp.style.height = '';
-  if (!vp.offsetParent) return;            // screen not visible yet
+  vp.style.height = ''; vp.scrollTop = 0; spPos = 0;
+  if (!vp.offsetParent) return;                 // screen not visible yet
   const natural = grid.offsetHeight;
   if (natural <= vp.clientHeight + 1) return;   // fits: stay still
   vp.style.height = vp.clientHeight + 'px';
   const clone = grid.cloneNode(true);
   clone.removeAttribute('id'); clone.classList.add('clone');
   track.appendChild(clone);
-  track.style.setProperty('--sp-dur', Math.max(8, natural / 28) + 's');   // ~28px per second
+  spLoopH = natural;
   track.classList.add('marquee');
+  spLast = 0;
+  spRaf = requestAnimationFrame(sponsorStep);
 }
 (function(){
-  const track = document.getElementById('sponsorsTrack');
-  if (!track) return;
+  const vp = document.getElementById('sponsorsViewport'), track = document.getElementById('sponsorsTrack');
+  if (!vp || !track) return;
   track.addEventListener('click', e => {
     const card = e.target.closest('.sponsor-card.has-more');
     if (card) openSponsor(sponsorList[+card.dataset.i]);
@@ -2370,11 +2387,20 @@ function setupSponsorMarquee(){
   const again = () => { clearTimeout(t); t = setTimeout(setupSponsorMarquee, 150); };
   if (window.ResizeObserver) new ResizeObserver(again).observe(document.getElementById('sponsorsGrid'));
   window.addEventListener('resize', again);
-  const hold = on => () => track.classList.toggle('paused', on);
-  track.addEventListener('pointerdown', hold(true));
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => track.addEventListener(ev, hold(false)));
-  track.addEventListener('mouseenter', hold(true));
-  track.addEventListener('mouseleave', hold(false));
+  // the person is scrolling: pause, then resume a moment after they stop
+  vp.addEventListener('scroll', () => {
+    if (spSelf){ spSelf = false; return; }
+    sponsorPause();
+    if (track.classList.contains('marquee')){          // keep the loop endless both ways
+      if (vp.scrollTop <= 0){ spSelf = true; vp.scrollTop = spLoopH; }
+      else if (vp.scrollTop >= spLoopH){ spSelf = true; vp.scrollTop -= spLoopH; }
+    }
+  }, { passive: true });
+  vp.addEventListener('wheel', sponsorPause, { passive: true });
+  vp.addEventListener('touchstart', () => { spHold = true; sponsorPause(); }, { passive: true });
+  ['touchend', 'touchcancel'].forEach(ev => vp.addEventListener(ev, () => { spHold = false; sponsorPause(); }, { passive: true }));
+  vp.addEventListener('mouseenter', () => { spHold = true; });
+  vp.addEventListener('mouseleave', () => { spHold = false; sponsorPause(); });
 })();
 function renderSponsors(){
   if (!Array.isArray(siteData.sponsors)) siteData.sponsors = [];
